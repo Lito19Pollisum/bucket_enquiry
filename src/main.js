@@ -6,7 +6,7 @@ const urls = import.meta.glob('./assets/images/*.{jpg,png}', { eager: true, quer
 const IMG = Object.fromEntries(Object.entries(urls).map(([p, u]) => [p.split('/').pop().replace(/\.\w+$/, ''), u]));
 /* ===== Configuration ===== */
 // Set VITE_SALES_EMAIL in Vercel (Project Settings > Environment Variables) or in .env
-const SALES_EMAIL = import.meta.env.VITE_SALES_EMAIL || "sales@pollisum.com";
+const SALES_EMAIL = import.meta.env.VITE_SALES_EMAIL || "fabrication@pollisum.com";
 const COMPANY="Pollisum Fabrication Pte Ltd";
 document.getElementById('brandLogo').src=IMG.brand_logo;document.getElementById('brandPic').src=IMG.brand_strips;
 
@@ -198,10 +198,10 @@ function vDone(){
 <p class="lead" style="margin:0 auto 12px">Reference <span class="ref">${S.ref}</span></p>
 <p class="lead" style="margin:0 auto">Our sales team has received it and will reply to <b>${esc(S.cust.email)}</b> with a quotation. Please keep your reference${att?'. To send drawings or photos, email them to '+SALES_EMAIL+' and quote the reference':''}. Need to chase us later? Use the Follow up chat at the bottom right.</p></div>
 <div class="actions"><button class="btn pri" id="csv">Download CSV</button><button class="btn" id="print">Print / Save as PDF</button><button class="btn" id="newEnq">Start a new enquiry</button></div>`
-  :`<div class="done-hero"><div class="ok">!</div><h1 style="margin-top:0">One last step: email it to sales</h1>
+  :`<div class="done-hero"><div class="ok">!</div><h1 style="margin-top:0">We could not send your enquiry</h1>
 <p class="lead" style="margin:0 auto 12px">Reference <span class="ref">${S.ref}</span></p>
-<p class="lead" style="margin:0 auto">We could not send your enquiry automatically. Press “Email to sales” to send it from your own email${att?', and attach your drawings or photos to that email':''}. You can also download or print a copy.</p></div>
-<div class="actions"><button class="btn pri" id="mail">✉ Email to sales</button><button class="btn" id="csv">Download CSV</button><button class="btn" id="print">Print / Save as PDF</button><button class="btn" id="newEnq">Start a new enquiry</button></div>`;
+<p class="lead" style="margin:0 auto">Please check your connection and press “Try sending again”. If it still fails, call us on (65) 6755 7600 and quote your reference.</p></div>
+<div class="actions"><button class="btn pri" id="retry">Try sending again</button><button class="btn" id="csv">Download CSV</button><button class="btn" id="print">Print / Save as PDF</button><button class="btn" id="newEnq">Start a new enquiry</button></div>`;
  return head+`
 <div class="sheet"><h2><span>Enquiry sheet</span><span style="font-size:15px;font-weight:600">${S.ref}</span></h2>
 <p style="color:var(--mute);margin:0 0 4px;font-size:14px">${COMPANY} · Submitted ${new Date().toLocaleString('en-SG',{dateStyle:'medium',timeStyle:'short'})} · Quotation requested</p>
@@ -269,9 +269,13 @@ function bind(){
   S.ref=makeRef();
   const hp=document.getElementById('hp');
   S.sent=await postSales({kind:'enquiry',ref:S.ref,company:S.cust.company,contact:S.cust.contact,email:S.cust.email,text:plainText(),csv:csvText(),website:hp?hp.value:''});
-  if(!S.sent)toast('Could not send automatically. Please use “Email to sales”.');
+  if(!S.sent)toast('Could not send your enquiry. Please try again.');
   go(4)};
- const m=$('#mail');if(m)m.onclick=()=>{location.href=`mailto:${SALES_EMAIL}?subject=${encodeURIComponent('['+S.ref+'] Enquiry — '+S.cust.company)}&body=${encodeURIComponent(plainText())}`};
+ const rt=$('#retry');if(rt)rt.onclick=async()=>{
+  if(rt.disabled)return;rt.disabled=true;rt.textContent='Sending…';
+  S.sent=await postSales({kind:'enquiry',ref:S.ref,company:S.cust.company,contact:S.cust.contact,email:S.cust.email,text:plainText(),csv:csvText(),website:''});
+  if(!S.sent)toast('Still could not send. Please call (65) 6755 7600.');
+  render();window.scrollTo({top:0})};
  const cv=$('#csv');if(cv)cv.onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csvText()],{type:'text/csv'}));a.download=S.ref+'.csv';a.click()};
  const pr=$('#print');if(pr)pr.onclick=()=>window.print();
  const ne=$('#newEnq');if(ne)ne.onclick=()=>{S.sel={};S.customs=[];S.cust={};S.ref=null;S.sent=false;S.draft=null;S.editing=null;S.cat='All';go(0)};
@@ -294,7 +298,7 @@ function chatBody(){
  return L.join('\n')}
 function chatLog(){
  const el=document.getElementById('chatLog');if(!el)return;
- el.innerHTML=CHAT.msgs.map(m=>`<div class="msg ${m.who}">${esc(m.text)}${m.acts?`<div class="acts"><button class="btn pri sm" data-chat="mail">Email sales</button><button class="btn sm" data-chat="copy">Copy message</button></div>`:''}</div>`).join('');
+ el.innerHTML=CHAT.msgs.map(m=>`<div class="msg ${m.who}">${esc(m.text)}</div>`).join('');
  const q=document.querySelector('#chat .qr');if(q)q.hidden=CHAT.msgs.some(m=>m.who==='me');
  el.scrollTop=el.scrollHeight}
 function chatRender(){
@@ -323,7 +327,7 @@ async function chatSend(text){
  const ok=await postSales({kind:'followup',ref,company:c.company||'',contact:c.contact||'',email:em,text:'Enquiry reference: '+ref+'\nFrom: '+(c.contact||'')+' <'+em+'>'+(c.company?'\nCompany: '+c.company:'')+(c.phone?'\nPhone: '+c.phone:'')+'\n\n'+text,website:''});
  CHAT.msgs.pop();
  CHAT.msgs.push(ok?{who:'bot',text:`Sent. Our sales team will reply to ${em} and has noted this against ${ref}. For urgent matters call (65) 6755 7600.`}
-  :{who:'bot',acts:true,text:`We could not send that automatically. Email it to ${SALES_EMAIL} (the reference goes in the subject) or call (65) 6755 7600.`});
+  :{who:'bot',text:'We could not send that. Please try again, or call (65) 6755 7600.'});
  chatLog()}
 (function(){
  const root=document.getElementById('chat');
@@ -332,8 +336,6 @@ async function chatSend(text){
   if(t.id==='chatFab'){CHAT.open=!CHAT.open;chatRender();return}
   if(t.id==='chatClose'){CHAT.open=false;chatRender();return}
   if(t.dataset.q2){chatSend(t.dataset.q2);return}
-  if(t.dataset.chat==='mail'){if(!chatRef()){toast('Enter your enquiry reference first');const r=document.getElementById('chatRef');r&&r.focus();return}location.href=`mailto:${SALES_EMAIL}?subject=${encodeURIComponent('['+chatRef()+'] Follow-up'+(S.cust.company?' — '+S.cust.company:''))}&body=${encodeURIComponent(chatBody())}`}
-  if(t.dataset.chat==='copy')copyText(chatBody(),'Message copied');
  });
  root.addEventListener('submit',e=>{e.preventDefault();const i=document.getElementById('chatIn');chatSend(i.value);i.value='';i.focus()});
  root.addEventListener('input',e=>{if(e.target.id==='chatRef')CHAT.ref=e.target.value.trim();if(e.target.id==='chatEmail')CHAT.email=e.target.value.trim()});
