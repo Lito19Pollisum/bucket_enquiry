@@ -23,6 +23,13 @@ const totalAll=()=>totalStd()+S.customs.reduce((a,c)=>a+c.qty,0);
 const itemCount=()=>Object.keys(S.sel).length+S.customs.length;
 
 function stepper(){return `<ol class="steps">${STEPS.map((s,i)=>`<li class="${i===S.step?'on':i<S.step?'done':''}"><span class="n">${i+1}</span><span class="l">${s}</span></li>`).join('')}</ol>`}
+async function postSales(payload){
+ try{
+  const r=await fetch('/api/enquiry',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+  const j=await r.json().catch(()=>({}));
+  return r.ok&&j.ok===true;
+ }catch(e){return false}
+}
 function go(n){S.step=n;render();window.scrollTo({top:0})}
 
 function render(){
@@ -176,6 +183,7 @@ function vReview(){
  ${summaryHTML()}
  <div class="rev-h" style="margin-top:18px"><span></span><button class="btn sm" data-go="2">Edit details</button></div>
 </div>
+<input id="hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0">
 <div class="nav"><button class="btn" data-go="2">Back</button><button class="btn pri" id="submit">Submit enquiry / Request quotation</button></div>`}
 
 /* ---------- Done ---------- */
@@ -184,10 +192,17 @@ function makeRef(){
  let n=1;try{const k='bkt_enq_'+day;n=(parseInt(localStorage.getItem(k))||0)+1;localStorage.setItem(k,n)}catch(e){n=Math.floor(Math.random()*900)+100}
  return `ENQ-${day}-${String(n).padStart(3,'0')}`}
 function vDone(){
- return `<div class="done-hero"><div class="ok">✓</div><h1 style="margin-top:0">Your enquiry is ready to send</h1>
+ const att=S.customs.some(c=>c.files.length);
+ const head=S.sent
+  ?`<div class="done-hero"><div class="ok">✓</div><h1 style="margin-top:0">Your enquiry has been sent</h1>
 <p class="lead" style="margin:0 auto 12px">Reference <span class="ref">${S.ref}</span></p>
-<p class="lead" style="margin:0 auto"><b>One last step:</b> press “Email to sales” to send it to our team${S.customs.some(c=>c.files.length)?', and attach your drawings or photos to that email':''}. You can also download or print a copy. Need to chase us later? Use the Follow up chat at the bottom right.</p></div>
-<div class="actions"><button class="btn pri" id="mail">✉ Email to sales</button><button class="btn" id="csv">Download CSV</button><button class="btn" id="print">Print / Save as PDF</button><button class="btn" id="newEnq">Start a new enquiry</button></div>
+<p class="lead" style="margin:0 auto">Our sales team has received it and will reply with a quotation. A confirmation has been emailed to <b>${esc(S.cust.email)}</b>${att?'. To send your drawings or photos, reply to that confirmation email and attach them':''}. Need to chase us later? Use the Follow up chat at the bottom right.</p></div>
+<div class="actions"><button class="btn pri" id="csv">Download CSV</button><button class="btn" id="print">Print / Save as PDF</button><button class="btn" id="newEnq">Start a new enquiry</button></div>`
+  :`<div class="done-hero"><div class="ok">!</div><h1 style="margin-top:0">One last step: email it to sales</h1>
+<p class="lead" style="margin:0 auto 12px">Reference <span class="ref">${S.ref}</span></p>
+<p class="lead" style="margin:0 auto">We could not send your enquiry automatically. Press “Email to sales” to send it from your own email${att?', and attach your drawings or photos to that email':''}. You can also download or print a copy.</p></div>
+<div class="actions"><button class="btn pri" id="mail">✉ Email to sales</button><button class="btn" id="csv">Download CSV</button><button class="btn" id="print">Print / Save as PDF</button><button class="btn" id="newEnq">Start a new enquiry</button></div>`;
+ return head+`
 <div class="sheet"><h2><span>Enquiry sheet</span><span style="font-size:15px;font-weight:600">${S.ref}</span></h2>
 <p style="color:var(--mute);margin:0 0 4px;font-size:14px">${COMPANY} · Submitted ${new Date().toLocaleString('en-SG',{dateStyle:'medium',timeStyle:'short'})} · Quotation requested</p>
 ${summaryHTML(true)}</div>`}
@@ -249,20 +264,29 @@ function bind(){
  A.querySelectorAll('[data-delc]').forEach(b=>b.onclick=()=>{readDraft();S.customs.splice(+b.dataset.delc,1);S.editing=null;render()});
  // details & review
  const tr=$('#toReview');if(tr)tr.onclick=()=>{if(validateDetails()){go(3)}else{render();toast('Please complete the required fields');const e=document.querySelector('.f.bad');e&&e.scrollIntoView({block:'center'})}};
- const sb=$('#submit');if(sb)sb.onclick=()=>{S.ref=makeRef();go(4)};
+ const sb=$('#submit');if(sb)sb.onclick=async()=>{
+  if(sb.disabled)return;sb.disabled=true;sb.textContent='Sending…';
+  S.ref=makeRef();
+  const hp=document.getElementById('hp');
+  S.sent=await postSales({kind:'enquiry',ref:S.ref,company:S.cust.company,contact:S.cust.contact,email:S.cust.email,text:plainText(),csv:csvText(),website:hp?hp.value:''});
+  if(!S.sent)toast('Could not send automatically. Please use “Email to sales”.');
+  go(4)};
  const m=$('#mail');if(m)m.onclick=()=>{location.href=`mailto:${SALES_EMAIL}?subject=${encodeURIComponent('['+S.ref+'] Enquiry — '+S.cust.company)}&body=${encodeURIComponent(plainText())}`};
  const cv=$('#csv');if(cv)cv.onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csvText()],{type:'text/csv'}));a.download=S.ref+'.csv';a.click()};
  const pr=$('#print');if(pr)pr.onclick=()=>window.print();
- const ne=$('#newEnq');if(ne)ne.onclick=()=>{S.sel={};S.customs=[];S.cust={};S.ref=null;S.draft=null;S.editing=null;S.cat='All';go(0)};
+ const ne=$('#newEnq');if(ne)ne.onclick=()=>{S.sel={};S.customs=[];S.cust={};S.ref=null;S.sent=false;S.draft=null;S.editing=null;S.cat='All';go(0)};
 }
 function guessType(n){n=n.toLowerCase();
  if(/man|basket/.test(n))return'Man cage / basket';if(/cage/.test(n))return'Storage / transfer cage';if(/hopper/.test(n)&&!/self/.test(n))return'Hopper';
  if(/frame|spreader/.test(n))return'Lifting frame / spreader beam';if(/tank|trolley/.test(n))return'Tank / other fabrication';return'Concrete bucket'}
 
 /* ---------- Follow-up chat ---------- */
-const CHAT={open:false,msgs:[{who:'bot',text:'Hi. Following up on an enquiry? Pick an option or type your message.'}],ref:''};
+const CHAT={open:false,msgs:[{who:'bot',text:'Hi. Following up on an enquiry? Pick an option or type your message.'}],ref:'',email:''};
 const QUICK=['Where is my quotation?','I need to change my enquiry','I want to add an item','I need to speak to someone'];
 const chatRef=()=>S.ref||CHAT.ref||'';
+const chatEmail=()=>(S.cust&&S.cust.email)||CHAT.email||'';
+const okEmail=v=>/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+const okRef=v=>/^ENQ-\d{8}-\d{3}$/.test(v);
 function chatBody(){
  const c=S.cust,L=['Enquiry reference: '+(chatRef()||'(not given)'),''];
  if(c.company)L.push('Company: '+c.company);if(c.contact)L.push('Contact: '+c.contact);if(c.phone)L.push('Phone: '+c.phone);if(c.email)L.push('Email: '+c.email);
@@ -280,6 +304,7 @@ function chatRender(){
  root.innerHTML=`<section class="chatbox" id="chatPanel" role="dialog" aria-label="Follow up with sales" ${CHAT.open?'':'hidden'}>
   <header><div><b>Follow up with sales</b><small>Pollisum Fabrication · Tel (65) 6755 7600</small></div><button id="chatClose" aria-label="Close chat">✕</button></header>
   <div class="refrow"><label for="chatRef">Enquiry reference</label><input id="chatRef" type="text" placeholder="e.g. ENQ-20261007-001" value="${esc(ref||CHAT.ref)}" ${ref?'readonly':''}></div>
+  ${S.cust&&S.cust.email?'':`<div class="refrow"><label for="chatEmail">Your email</label><input id="chatEmail" type="email" placeholder="So sales can reply to you" value="${esc(CHAT.email)}"></div>`}
   <div class="log" id="chatLog" aria-live="polite"></div>
   <div class="qr">${QUICK.map(q=>`<button type="button" data-q2="${esc(q)}">${esc(q)}</button>`).join('')}</div>
   <form id="chatForm"><input id="chatIn" type="text" placeholder="Type your message" autocomplete="off" aria-label="Your message"><button class="btn pri sm" type="submit">Send</button></form>
@@ -287,11 +312,18 @@ function chatRender(){
  <button class="fab" id="chatFab" aria-expanded="${CHAT.open}" aria-controls="chatPanel"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/></svg>${CHAT.open?'Close':'Follow up'}</button>`;
  chatLog();
  if(CHAT.open){const i=document.getElementById('chatIn');i&&i.focus()}}
-function chatSend(text){
+async function chatSend(text){
  text=(text||'').trim();if(!text)return;
  CHAT.msgs.push({who:'me',text});
- const ref=chatRef();
- CHAT.msgs.push({who:'bot',acts:true,text:(ref?`Thanks. I have noted this against ${ref}.`:'Thanks. Add your enquiry reference above so sales can find your enquiry.')+`\n\nThis chat does not send by itself. Email it to ${SALES_EMAIL} (the reference goes in the subject) or call (65) 6755 7600, and our sales team will reply.`});
+ const ref=chatRef(),em=chatEmail();
+ if(!okRef(ref)){CHAT.msgs.push({who:'bot',text:'Please enter your enquiry reference above (it looks like ENQ-20261007-001, and is in your confirmation email) so sales can find your enquiry.'});chatLog();return}
+ if(!okEmail(em)){CHAT.msgs.push({who:'bot',text:'Please enter your email above so sales can reply to you.'});chatLog();return}
+ CHAT.msgs.push({who:'bot',text:'Sending to our sales team…'});chatLog();
+ const c=S.cust||{};
+ const ok=await postSales({kind:'followup',ref,company:c.company||'',contact:c.contact||'',email:em,text:'Enquiry reference: '+ref+'\nFrom: '+(c.contact||'')+' <'+em+'>'+(c.company?'\nCompany: '+c.company:'')+(c.phone?'\nPhone: '+c.phone:'')+'\n\n'+text,website:''});
+ CHAT.msgs.pop();
+ CHAT.msgs.push(ok?{who:'bot',text:`Sent. Our sales team will reply to ${em} and has noted this against ${ref}. For urgent matters call (65) 6755 7600.`}
+  :{who:'bot',acts:true,text:`We could not send that automatically. Email it to ${SALES_EMAIL} (the reference goes in the subject) or call (65) 6755 7600.`});
  chatLog()}
 (function(){
  const root=document.getElementById('chat');
@@ -304,7 +336,7 @@ function chatSend(text){
   if(t.dataset.chat==='copy')copyText(chatBody(),'Message copied');
  });
  root.addEventListener('submit',e=>{e.preventDefault();const i=document.getElementById('chatIn');chatSend(i.value);i.value='';i.focus()});
- root.addEventListener('input',e=>{if(e.target.id==='chatRef')CHAT.ref=e.target.value.trim()});
+ root.addEventListener('input',e=>{if(e.target.id==='chatRef')CHAT.ref=e.target.value.trim();if(e.target.id==='chatEmail')CHAT.email=e.target.value.trim()});
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&CHAT.open){CHAT.open=false;chatRender();const f=document.getElementById('chatFab');f&&f.focus()}});
 })();
 const _render=render;render=function(){_render();const r=document.getElementById('chat');if(r)r.classList.toggle('up',S.step===1);const i=document.getElementById('chatRef');if(i&&S.ref){i.value=S.ref;i.readOnly=true}};

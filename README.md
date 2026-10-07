@@ -25,18 +25,23 @@ npm run dev
 | `src/assets/images/` | Product photos and banner images. File name (without extension) is the key used in `data.js`. |
 | `index.html` | Page shell, banner markup, Google Fonts link (Roboto). |
 
-## How submission works
+## Automatic email (Resend)
 
-There is no backend. After the customer submits, the page shows an enquiry sheet with a reference (`ENQ-YYYYMMDD-###`) and offers:
+`api/enquiry.js` is a Vercel serverless function. When the customer presses Submit, the form posts to it and it emails the enquiry (with the CSV attached) to sales, and a confirmation with the reference to the customer. Follow-up chat messages go the same way. If the function is not configured or fails, the page falls back to the manual "Email to sales" button.
 
-- **Email to sales** opens a pre-filled email to `VITE_SALES_EMAIL`, with the reference in the subject.
-- **Download CSV** and **Print / Save as PDF** for the customer's own copy.
-- **Follow up chat** (bottom right) prepares a follow-up email quoting the reference.
+Set these in Vercel (Settings > Environment Variables, Production), then redeploy:
+
+| Variable | Value |
+|---|---|
+| `RESEND_API_KEY` | API key from resend.com |
+| `RESEND_FROM` | e.g. `Pollisum Enquiries <enquiries@pollisum.com>`. The domain must be verified in Resend. |
+| `SALES_EMAIL` | Inbox that receives enquiries. Defaults to `fabrication@pollisum.com`. |
+| `VITE_SALES_EMAIL` | Same inbox, shown in the manual fallback. |
+
+Until the domain is verified, Resend only delivers to the account owner's own address, so customer confirmations will not arrive.
 
 Limits to know about:
 
-- Reference numbers come from a counter in the customer's browser, so two customers can get the same number on the same day. Check for duplicates when replying.
-- Attachments are not uploaded. The form lists file names and tells the customer to attach the files to the email.
-- The follow-up chat cannot reply live.
-
-To receive enquiries automatically without relying on the customer's email app, add a backend (for example a Vercel serverless function in `api/` that sends the email, or a Power Automate HTTP trigger) and call it from `submit` in `src/main.js`.
+- Reference numbers come from a counter in the customer's browser, so two customers can get the same number on the same day. The sales subject line also carries the company name.
+- Attachments are not uploaded. The confirmation email tells the customer to reply with drawings or photos.
+- The follow-up chat cannot reply live; sales replies by email.
