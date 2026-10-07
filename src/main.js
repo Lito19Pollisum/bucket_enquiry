@@ -196,7 +196,7 @@ function vDone(){
  const head=S.sent
   ?`<div class="done-hero"><div class="ok">✓</div><h1 style="margin-top:0">Your enquiry has been sent</h1>
 <p class="lead" style="margin:0 auto 12px">Reference <span class="ref">${S.ref}</span></p>
-<p class="lead" style="margin:0 auto">Our sales team has received it and will reply with a quotation. A confirmation has been emailed to <b>${esc(S.cust.email)}</b>${att?'. To send your drawings or photos, reply to that confirmation email and attach them':''}. Need to chase us later? Use the Follow up chat at the bottom right.</p></div>
+<p class="lead" style="margin:0 auto">Our sales team has received it and will reply to <b>${esc(S.cust.email)}</b> with a quotation. Please keep your reference${att?'. To send drawings or photos, email them to '+SALES_EMAIL+' and quote the reference':''}. Need to chase us later? Use the Follow up chat at the bottom right.</p></div>
 <div class="actions"><button class="btn pri" id="csv">Download CSV</button><button class="btn" id="print">Print / Save as PDF</button><button class="btn" id="newEnq">Start a new enquiry</button></div>`
   :`<div class="done-hero"><div class="ok">!</div><h1 style="margin-top:0">One last step: email it to sales</h1>
 <p class="lead" style="margin:0 auto 12px">Reference <span class="ref">${S.ref}</span></p>
@@ -316,7 +316,7 @@ async function chatSend(text){
  text=(text||'').trim();if(!text)return;
  CHAT.msgs.push({who:'me',text});
  const ref=chatRef(),em=chatEmail();
- if(!okRef(ref)){CHAT.msgs.push({who:'bot',text:'Please enter your enquiry reference above (it looks like ENQ-20261007-001, and is in your confirmation email) so sales can find your enquiry.'});chatLog();return}
+ if(!okRef(ref)){CHAT.msgs.push({who:'bot',text:'Please enter your enquiry reference above (it looks like ENQ-20261007-001 and is shown on your enquiry sheet) so sales can find your enquiry.'});chatLog();return}
  if(!okEmail(em)){CHAT.msgs.push({who:'bot',text:'Please enter your email above so sales can reply to you.'});chatLog();return}
  CHAT.msgs.push({who:'bot',text:'Sending to our sales team…'});chatLog();
  const c=S.cust||{};

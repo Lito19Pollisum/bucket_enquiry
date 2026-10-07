@@ -1,5 +1,4 @@
-// Vercel serverless function: emails an enquiry (or follow-up) to sales and,
-// for new enquiries, a confirmation copy to the customer. Uses the Resend REST API.
+// Vercel serverless function: emails an enquiry (or follow-up) to sales only. Uses the Resend REST API.
 //
 // Environment variables (Vercel > Project Settings > Environment Variables):
 //   RESEND_API_KEY  required  API key from resend.com
@@ -65,30 +64,6 @@ export default async function handler(req, res) {
     }
     await send(toSales);
 
-    if (kind === 'enquiry') {
-      // Customer confirmation is best-effort: do not fail the enquiry if it bounces.
-      try {
-        await send({
-          from: FROM,
-          to: [email],
-          reply_to: SALES,
-          subject: `${tag}We have received your enquiry — Pollisum Fabrication`,
-          text:
-`Dear ${contact || 'Customer'},
-
-Thank you for your enquiry. Our sales team has received it and will reply with a quotation.
-
-Your reference: ${ref}
-Please quote this reference in any follow-up. If you have drawings or photos to send, reply to this email and attach them.
-
-Pollisum Fabrication Pte Ltd
-Tel (65) 6755 7600
-
------ Your enquiry -----
-${text}`,
-        });
-      } catch (e) { console.error('confirmation failed', e.message); }
-    }
     return res.status(200).json({ ok: true });
   } catch (e) {
     console.error('send failed', e.message);

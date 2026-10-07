@@ -27,7 +27,7 @@ npm run dev
 
 ## Automatic email (Resend)
 
-`api/enquiry.js` is a Vercel serverless function. When the customer presses Submit, the form posts to it and it emails the enquiry (with the CSV attached) to sales, and a confirmation with the reference to the customer. Follow-up chat messages go the same way. If the function is not configured or fails, the page falls back to the manual "Email to sales" button.
+`api/enquiry.js` is a Vercel serverless function. When the customer presses Submit, the form posts to it and it emails the enquiry (with the CSV attached) to sales only. The customer's email is set as reply-to. No confirmation is sent to the customer. Follow-up chat messages go the same way. If the function is not configured or fails, the page falls back to the manual "Email to sales" button.
 
 Set these in Vercel (Settings > Environment Variables, Production), then redeploy:
 
@@ -38,10 +38,10 @@ Set these in Vercel (Settings > Environment Variables, Production), then redeplo
 | `SALES_EMAIL` | Inbox that receives enquiries. Defaults to `fabrication@pollisum.com`. |
 | `VITE_SALES_EMAIL` | Same inbox, shown in the manual fallback. |
 
-Until the domain is verified, Resend only delivers to the account owner's own address, so customer confirmations will not arrive.
+Until the domain is verified, Resend only delivers to the account owner's own address.
 
 Limits to know about:
 
 - Reference numbers come from a counter in the customer's browser, so two customers can get the same number on the same day. The sales subject line also carries the company name.
-- Attachments are not uploaded. The confirmation email tells the customer to reply with drawings or photos.
+- Attachments are not uploaded. The done page tells the customer to email drawings or photos to sales, quoting the reference.
 - The follow-up chat cannot reply live; sales replies by email.
