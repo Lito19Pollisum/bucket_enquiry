@@ -45,3 +45,7 @@ Limits to know about:
 - Reference numbers come from a counter in the customer's browser, so two customers can get the same number on the same day. The sales subject line also carries the company name.
 - Attachments are not uploaded. The done page tells the customer to email drawings or photos to sales, quoting the reference.
 - The follow-up chat cannot reply live; sales replies by email.
+
+## Supabase
+
+Enquiries and follow-ups are also saved to the `public.enquiries` table (project `pollisum-bucket-enquiry`, Singapore). The write happens inside `api/enquiry.js` with `SUPABASE_SERVICE_ROLE_KEY`, set only in Vercel. RLS is on with no policies, so the browser cannot read or write the table. If the save fails the email is still sent. `ref` is not unique, since reference numbers come from a browser counter.

@@ -4,10 +4,14 @@
 //   RESEND_API_KEY  required  API key from resend.com
 //   RESEND_FROM     required  e.g. Pollisum Enquiries <enquiries@pollisum.com> (domain verified in Resend)
 //   SALES_EMAIL     optional  inbox that receives enquiries (default fabrication@pollisum.com)
+//   SUPABASE_URL                optional  e.g. https://vzcxtymvoyjzzfdoyzds.supabase.co
+//   SUPABASE_SERVICE_ROLE_KEY   optional  secret key; enquiries are saved to public.enquiries when both are set
 
 const SALES = process.env.SALES_EMAIL || 'fabrication@pollisum.com';
 const FROM = process.env.RESEND_FROM || '';
 const KEY = process.env.RESEND_API_KEY || '';
+const SB_URL = (process.env.SUPABASE_URL || '').replace(/\/$/, '');
+const SB_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || ''; // server-only secret, never expose to the browser
 const EMAIL_RE = /^[^\s@<>"]+@[^\s@<>"]+\.[^\s@<>"]+$/;
 const REF_RE = /^ENQ-\d{8}-\d{3}$/;
 
@@ -22,6 +26,20 @@ async function send(payload) {
     body: JSON.stringify(payload),
   });
   if (!r.ok) throw new Error(`Resend ${r.status}: ${(await r.text()).slice(0, 300)}`);
+}
+
+async function save(row) {
+  if (!SB_URL || !SB_KEY) return;
+  try {
+    const r = await fetch(`${SB_URL}/rest/v1/enquiries`, {
+      method: 'POST',
+      headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+      body: JSON.stringify(row),
+    });
+    if (!r.ok) console.error('supabase save failed', r.status, (await r.text()).slice(0, 200));
+  } catch (e) {
+    console.error('supabase save error', e.message);
+  }
 }
 
 export default async function handler(req, res) {
@@ -49,6 +67,9 @@ export default async function handler(req, res) {
   const subject = kind === 'followup'
     ? `${tag}Follow-up${company ? ' — ' + company : ''}`
     : `${tag}Enquiry — ${company || contact || email}`;
+
+  // Save to Supabase first (best-effort: a database failure must never block the email).
+  await save({ kind, ref, company, contact, email, body: text, csv: kind === 'enquiry' ? csv : null });
 
   try {
     const toSales = {
