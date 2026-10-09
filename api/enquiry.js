@@ -29,22 +29,25 @@ async function send(payload) {
 }
 
 async function save(row) {
-  if (!SB_URL || !SB_KEY) return;
+  if (!SB_URL || !SB_KEY) return false;
   try {
     const r = await fetch(`${SB_URL}/rest/v1/enquiries`, {
       method: 'POST',
       headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
       body: JSON.stringify(row),
     });
-    if (!r.ok) console.error('supabase save failed', r.status, (await r.text()).slice(0, 200));
+    if (!r.ok) { console.error('supabase save failed', r.status, (await r.text()).slice(0, 200)); return false; }
+    return true;
   } catch (e) {
     console.error('supabase save error', e.message);
+    return false;
   }
 }
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ ok: false, error: 'method' });
-  if (!KEY || !FROM) return res.status(503).json({ ok: false, error: 'not_configured' });
+  const emailReady = !!(KEY && FROM);
+  if (!emailReady && !(SB_URL && SB_KEY)) return res.status(503).json({ ok: false, error: 'not_configured' });
 
   let b = req.body;
   if (typeof b === 'string') { try { b = JSON.parse(b); } catch { b = null; } }
@@ -69,7 +72,13 @@ export default async function handler(req, res) {
     : `${tag}Enquiry — ${company || contact || email}`;
 
   // Save to Supabase first (best-effort: a database failure must never block the email).
-  await save({ kind, ref, company, contact, email, body: text, csv: kind === 'enquiry' ? csv : null });
+  const saved = await save({ kind, ref, company, contact, email, body: text, csv: kind === 'enquiry' ? csv : null });
+
+  if (!emailReady) {
+    // Email not configured: succeed only if the enquiry was stored.
+    if (saved) return res.status(200).json({ ok: true, saved: true, emailed: false });
+    return res.status(502).json({ ok: false, error: 'save_failed' });
+  }
 
   try {
     const toSales = {
