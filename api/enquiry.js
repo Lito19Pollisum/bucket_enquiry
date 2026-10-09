@@ -7,11 +7,11 @@
 //   SUPABASE_URL                optional  e.g. https://vzcxtymvoyjzzfdoyzds.supabase.co
 //   SUPABASE_SERVICE_ROLE_KEY   optional  secret key; enquiries are saved to public.enquiries when both are set
 
+import { sb, sbReady, splitEnquiryCsv } from './_sb.js';
+
 const SALES = process.env.SALES_EMAIL || 'fabrication@pollisum.com';
 const FROM = process.env.RESEND_FROM || '';
 const KEY = process.env.RESEND_API_KEY || '';
-const SB_URL = (process.env.SUPABASE_URL || '').replace(/\/$/, '');
-const SB_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || ''; // server-only secret, never expose to the browser
 const EMAIL_RE = /^[^\s@<>"]+@[^\s@<>"]+\.[^\s@<>"]+$/;
 const REF_RE = /^ENQ-\d{8}-\d{3}$/;
 
@@ -29,14 +29,17 @@ async function send(payload) {
 }
 
 async function save(row) {
-  if (!SB_URL || !SB_KEY) return false;
+  if (!sbReady()) return false;
   try {
-    const r = await fetch(`${SB_URL}/rest/v1/enquiries`, {
-      method: 'POST',
-      headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
-      body: JSON.stringify(row),
-    });
-    if (!r.ok) { console.error('supabase save failed', r.status, (await r.text()).slice(0, 200)); return false; }
+    const { fields, items } = row.kind === 'enquiry' && row.csv ? splitEnquiryCsv(row.csv) : { fields: {}, items: [] };
+    const [saved] = await sb('enquiries', { method: 'POST', prefer: 'return=representation', body: { ...row, ...fields } });
+    if (items.length) {
+      try {
+        await sb('enquiry_items', { method: 'POST', prefer: 'return=minimal', body: items.map(x => ({ ...x, enquiry_id: saved.id })) });
+      } catch (e) {
+        console.error('supabase items save failed', e.message); // enquiry itself is stored with its CSV
+      }
+    }
     return true;
   } catch (e) {
     console.error('supabase save error', e.message);
@@ -47,7 +50,7 @@ async function save(row) {
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ ok: false, error: 'method' });
   const emailReady = !!(KEY && FROM);
-  if (!emailReady && !(SB_URL && SB_KEY)) return res.status(503).json({ ok: false, error: 'not_configured' });
+  if (!emailReady && !sbReady()) return res.status(503).json({ ok: false, error: 'not_configured' });
 
   let b = req.body;
   if (typeof b === 'string') { try { b = JSON.parse(b); } catch { b = null; } }

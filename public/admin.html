@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow"><title>Pollisum Enquiries</title>
+<style>
+:root{--maroon:#7A0C1C;--red:#990000;--mist:#F3F3F3;--line:#E4E4E4;--ink:#191D24;--blush:#EDD4D4}
+*{box-sizing:border-box}body{margin:0;font:14px/1.45 Roboto,Arial,sans-serif;color:var(--ink);background:#fff}
+header{background:var(--maroon);color:#fff;padding:14px 20px;display:flex;justify-content:space-between;align-items:center}
+header h1{margin:0;font-size:18px;font-weight:900;letter-spacing:.04em;text-transform:uppercase}
+main{padding:16px 20px;max-width:1200px;margin:0 auto}
+button,input,select{font:inherit}button{background:var(--red);color:#fff;border:0;border-radius:6px;padding:8px 14px;cursor:pointer}
+button.ghost{background:#fff;color:var(--ink);border:1px solid var(--line)}
+input,select{border:1px solid var(--line);border-radius:6px;padding:8px 10px}
+#login{max-width:340px;margin:80px auto;display:grid;gap:10px}
+.bar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}.bar input[type=search]{flex:1;min-width:200px}
+table{border-collapse:collapse;width:100%}th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:var(--mist);font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+tr.row{cursor:pointer}tr.row:hover{background:var(--mist)}tr.detail td{background:#fafafa}
+.ref{font-weight:700;color:var(--red);white-space:nowrap}.tag{background:var(--blush);border-radius:10px;padding:2px 8px;font-size:12px}
+.old{background:#fdeaea}.muted{color:#666}.err{color:var(--red)}
+table.items{margin:6px 0}table.items th,table.items td{font-size:13px}
+@media(max-width:700px){.hide-s{display:none}}
+</style></head><body>
+<header><h1>Pollisum Enquiries</h1><button class="ghost" id="out" hidden>Sign out</button></header>
+<main>
+<form id="login"><label for="pw">Dashboard password</label><input id="pw" type="password" autocomplete="current-password" required><button>Sign in</button><div class="err" id="lerr"></div></form>
+<section id="app" hidden>
+ <div class="bar"><input type="search" id="q" placeholder="Search company, contact, reference, model"><select id="st"><option value="">All status</option><option>new</option><option>quoted</option><option>won</option><option>lost</option><option>closed</option></select><select id="kd"><option value="">Enquiries and follow-ups</option><option value="enquiry">Enquiries</option><option value="followup">Follow-ups</option></select><button class="ghost" id="rf">Refresh</button></div>
+ <div class="muted" id="cnt"></div>
+ <table><thead><tr><th>Ref</th><th>Received</th><th>Company</th><th class="hide-s">Contact</th><th>Items</th><th>Status</th></tr></thead><tbody id="tb"></tbody></table>
+</section></main>
+<script>
+const $=s=>document.querySelector(s);let PW='',ROWS=[];const OPEN=new Set();
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+async function api(opts){const r=await fetch('/api/admin',{...opts,headers:{'x-admin-password':PW,'Content-Type':'application/json'}});if(r.status===401)throw new Error('Wrong password');if(!r.ok)throw new Error('Could not load ('+r.status+')');return r.json()}
+async function load(){const d=await api({});ROWS=d.rows;render()}
+function render(){
+ const q=$('#q').value.toLowerCase(),st=$('#st').value,kd=$('#kd').value;
+ const list=ROWS.filter(r=>(!st||r.status===st)&&(!kd||r.kind===kd)&&(!q||[r.ref,r.company,r.contact,r.email,r.project,...(r.enquiry_items||[]).map(i=>i.model+' '+i.product)].join(' ').toLowerCase().includes(q)));
+ $('#cnt').textContent=list.length+' of '+ROWS.length+' shown';
+ $('#tb').innerHTML=list.map(r=>{
+  const its=r.enquiry_items||[],age=(Date.now()-new Date(r.created_at))/864e5,old=r.status==='new'&&age>1;
+  const n=its.reduce((a,i)=>a+i.qty,0);
+  let h=`<tr class="row ${old?'old':''}" data-id="${r.id}"><td class="ref">${esc(r.ref||'(follow-up)')}</td><td>${new Date(r.created_at).toLocaleString('en-SG',{dateStyle:'medium',timeStyle:'short'})}</td><td>${esc(r.company)}${r.kind==='followup'?' <span class="tag">follow-up</span>':''}</td><td class="hide-s">${esc(r.contact)}</td><td>${r.kind==='enquiry'?its.length+' lines / '+n+' pcs':''}</td><td><select data-st="${r.id}">${['new','quoted','won','lost','closed'].map(s=>`<option ${s===r.status?'selected':''}>${s}</option>`).join('')}</select></td></tr>`;
+  if(OPEN.has(r.id)){
+   h+=`<tr class="detail"><td colspan="6"><div><b>${esc(r.contact)}</b> · <a href="mailto:${esc(r.email)}">${esc(r.email)}</a> · ${esc(r.phone)}</div>`+
+   (r.project||r.location||r.required_date?`<div class="muted">${[r.project&&'Project: '+esc(r.project),r.location&&'Site: '+esc(r.location),r.required_date&&'Required: '+esc(r.required_date)].filter(Boolean).join(' · ')}</div>`:'')+
+   (r.remarks?`<div>Remarks: ${esc(r.remarks)}</div>`:'')+
+   (its.length?`<table class="items"><tr><th>#</th><th>Type</th><th>Model</th><th>Product</th><th>Capacity</th><th>SWL</th><th>Size / requirements</th><th>Qty</th><th>Notes</th></tr>${its.sort((a,b)=>a.id-b.id).map(i=>`<tr><td>${esc(i.item_no)}</td><td>${esc(i.type)}</td><td>${esc(i.model)}</td><td>${esc(i.product)}</td><td>${esc(i.capacity)}</td><td>${esc(i.swl)}</td><td>${esc(i.size_requirements)}</td><td>${i.qty}</td><td>${esc(i.notes)}</td></tr>`).join('')}</table>`:`<pre style="white-space:pre-wrap">${esc(r.body)}</pre>`)+`</td></tr>`}
+  return h}).join('')}
+$('#tb').addEventListener('click',async e=>{
+ const s=e.target.closest('select[data-st]');if(s){try{await api({method:'POST',body:JSON.stringify({id:+s.dataset.st,status:s.value})});ROWS.find(r=>r.id==s.dataset.st).status=s.value;render()}catch(x){alert(x.message)}return}
+ const tr=e.target.closest('tr.row');if(tr){const id=+tr.dataset.id;OPEN.has(id)?OPEN.delete(id):OPEN.add(id);render()}});
+['q','st','kd'].forEach(i=>$('#'+i).addEventListener('input',render));$('#rf').onclick=()=>load().catch(x=>alert(x.message));
+$('#login').onsubmit=async e=>{e.preventDefault();PW=$('#pw').value;try{await load();$('#login').hidden=true;$('#app').hidden=false;$('#out').hidden=false}catch(x){$('#lerr').textContent=x.message}};
+$('#out').onclick=()=>location.reload();
+</script></body></html>

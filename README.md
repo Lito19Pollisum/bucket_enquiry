@@ -49,3 +49,7 @@ Limits to know about:
 ## Supabase
 
 Enquiries and follow-ups are also saved to the `public.enquiries` table (project `pollisum-bucket-enquiry`, Singapore). The write happens inside `api/enquiry.js` with `SUPABASE_SERVICE_ROLE_KEY`, set only in Vercel. RLS is on with no policies, so the browser cannot read or write the table. If the save fails the email is still sent. `ref` is not unique, since reference numbers come from a browser counter.
+
+### Dashboard
+
+`/admin.html` is a private enquiries dashboard (search, filter, line items, status). It calls `api/admin.js`, which checks the `ADMIN_PASSWORD` env var and reads Supabase with the service key. Each submitted enquiry CSV is also split into rows in `public.enquiry_items`, linked to its enquiry.
