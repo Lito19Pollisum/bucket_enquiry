@@ -197,11 +197,11 @@ function vDone(){
   ?`<div class="done-hero"><div class="ok">✓</div><h1 style="margin-top:0">Your enquiry has been sent</h1>
 <p class="lead" style="margin:0 auto 12px">Reference <span class="ref">${S.ref}</span></p>
 <p class="lead" style="margin:0 auto">Our sales team has received it and will reply to <b>${esc(S.cust.email)}</b> with a quotation. Please keep your reference${att?'. To send drawings or photos, email them to '+SALES_EMAIL+' and quote the reference':''}. Need to chase us later? Use the Follow up chat at the bottom right.</p></div>
-<div class="actions"><button class="btn pri" id="csv">Download CSV</button><button class="btn" id="print">Print / Save as PDF</button><button class="btn" id="newEnq">Start a new enquiry</button></div>`
+<div class="actions"><button class="btn pri" id="csv">Download Excel</button><button class="btn" id="print">Print / Save as PDF</button><button class="btn" id="newEnq">Start a new enquiry</button></div>`
   :`<div class="done-hero"><div class="ok">!</div><h1 style="margin-top:0">We could not send your enquiry</h1>
 <p class="lead" style="margin:0 auto 12px">Reference <span class="ref">${S.ref}</span></p>
 <p class="lead" style="margin:0 auto">Please check your connection and press “Try sending again”. If it still fails, call us on (65) 6755 7600 and quote your reference.</p></div>
-<div class="actions"><button class="btn pri" id="retry">Try sending again</button><button class="btn" id="csv">Download CSV</button><button class="btn" id="print">Print / Save as PDF</button><button class="btn" id="newEnq">Start a new enquiry</button></div>`;
+<div class="actions"><button class="btn pri" id="retry">Try sending again</button><button class="btn" id="csv">Download Excel</button><button class="btn" id="print">Print / Save as PDF</button><button class="btn" id="newEnq">Start a new enquiry</button></div>`;
  return head+`
 <div class="sheet"><h2><span>Enquiry sheet</span><span style="font-size:15px;font-weight:600">${S.ref}</span></h2>
 <p style="color:var(--mute);margin:0 0 4px;font-size:14px">${COMPANY} · Submitted ${new Date().toLocaleString('en-SG',{dateStyle:'medium',timeStyle:'short'})} · Quotation requested</p>
@@ -276,7 +276,10 @@ function bind(){
   S.sent=await postSales({kind:'enquiry',ref:S.ref,company:S.cust.company,contact:S.cust.contact,email:S.cust.email,text:plainText(),csv:csvText(),website:''});
   if(!S.sent)toast('Still could not send. Please call (65) 6755 7600.');
   render();window.scrollTo({top:0})};
- const cv=$('#csv');if(cv)cv.onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csvText()],{type:'text/csv'}));a.download=S.ref+'.csv';a.click()};
+ const cv=$('#csv');if(cv)cv.onclick=async()=>{
+  const save=(blob,name)=>{const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click()};
+  try{const r=await fetch('/api/xlsx',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({csv:csvText()})});if(!r.ok)throw 0;save(await r.blob(),S.ref+'.xlsx')}
+  catch{save(new Blob([csvText()],{type:'text/csv'}),S.ref+'.csv')}};
  const pr=$('#print');if(pr)pr.onclick=()=>window.print();
  const ne=$('#newEnq');if(ne)ne.onclick=()=>{S.sel={};S.customs=[];S.cust={};S.ref=null;S.sent=false;S.draft=null;S.editing=null;S.cat='All';go(0)};
 }

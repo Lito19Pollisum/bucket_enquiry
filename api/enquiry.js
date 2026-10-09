@@ -8,6 +8,7 @@
 //   SUPABASE_SERVICE_ROLE_KEY   optional  secret key; enquiries are saved to public.enquiries when both are set
 
 import { sb, sbReady, splitEnquiryCsv } from './_sb.js';
+import { buildXlsx } from './_xlsx.js';
 
 const SALES = process.env.SALES_EMAIL || 'fabrication@pollisum.com';
 const FROM = process.env.RESEND_FROM || '';
@@ -94,6 +95,11 @@ export default async function handler(req, res) {
     };
     if (kind === 'enquiry' && csv) {
       toSales.attachments = [{ filename: `${ref}.csv`, content: Buffer.from(csv, 'utf8').toString('base64') }];
+      try {
+        toSales.attachments.unshift({ filename: `${ref}.xlsx`, content: (await buildXlsx(csv)).toString('base64') });
+      } catch (e) {
+        console.error('xlsx attach failed', e.message); // CSV is still attached
+      }
     }
     await send(toSales);
 
