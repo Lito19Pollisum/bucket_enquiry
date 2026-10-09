@@ -16,7 +16,7 @@ export async function buildXlsx(csv) {
   const ref = (meta.find(m => m[0] === 'Enquiry reference') || [])[1] || '';
 
   const wb = new ExcelJS.Workbook();
-  wb.creator = 'Pollisum Engineering';
+  wb.creator = 'Pollisum Fabrication';
   const ws = wb.addWorksheet('Enquiry', { views: [{ showGridLines: false }], pageSetup: { orientation: 'landscape', paperSize: 9, fitToPage: true, fitToWidth: 1, fitToHeight: 0, margins: { left: .4, right: .4, top: .5, bottom: .6, header: .3, footer: .3 } } });
   ws.columns = [7, 12, 15, 34, 12, 12, 46, 7, 36].map(width => ({ width }));
   const base = { font: { name: 'Arial', size: 10, color: { argb: INK } }, alignment: { vertical: 'middle', wrapText: true } };
@@ -25,7 +25,7 @@ export async function buildXlsx(csv) {
   Object.assign(ws.getCell('A1'), { value: 'REQUEST FOR QUOTATION', font: { name: 'Arial', size: 18, bold: true, color: { argb: 'FFFFFFFF' } }, fill: fill(MAROON), alignment: { vertical: 'middle', indent: 1 } });
   ws.getRow(1).height = 34;
   ws.mergeCells('A2:I2');
-  Object.assign(ws.getCell('A2'), { value: `Pollisum Engineering  ·  Enquiry reference ${ref}`, font: { name: 'Arial', size: 11, bold: true, color: { argb: MAROON } }, fill: fill(BLUSH), alignment: { vertical: 'middle', indent: 1 } });
+  Object.assign(ws.getCell('A2'), { value: `Pollisum Fabrication  ·  Enquiry reference ${ref}`, font: { name: 'Arial', size: 11, bold: true, color: { argb: MAROON } }, fill: fill(BLUSH), alignment: { vertical: 'middle', indent: 1 } });
   ws.getRow(2).height = 22;
 
   let r = 4;
@@ -67,7 +67,7 @@ export async function buildXlsx(csv) {
 
   r += 2;
   ws.mergeCells(r, 1, r, 9);
-  Object.assign(ws.getCell(r, 1), { value: 'POLLISUM ENGINEERING  ·  TEL (65) 6755 7600  ·  POLLISUM.COM', font: { name: 'Arial', size: 9, bold: true, color: { argb: 'FFFFFFFF' } }, fill: fill('FF6A0303'), alignment: { vertical: 'middle', indent: 1 } });
+  Object.assign(ws.getCell(r, 1), { value: 'POLLISUM FABRICATION  ·  TEL (65) 6755 7600  ·  POLLISUM.COM', font: { name: 'Arial', size: 9, bold: true, color: { argb: 'FFFFFFFF' } }, fill: fill('FF6A0303'), alignment: { vertical: 'middle', indent: 1 } });
   ws.getRow(r).height = 20;
   ws.pageSetup.printArea = `A1:I${r}`;
   ws.pageSetup.printTitlesRow = `${hr}:${hr}`;
