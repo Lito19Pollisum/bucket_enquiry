@@ -12,7 +12,8 @@ document.getElementById('brandLogo').src=IMG.brand_logo;document.getElementById(
 
 const FAM=DATA.fam, CATS=[...new Set(FAM.map(f=>f.cat))];
 const BYCODE={};FAM.forEach(f=>f.models.forEach(m=>BYCODE[m.code]={fam:f,m}));
-const CUSTOM_TYPES=["Concrete bucket","Sand / skip bucket","Hopper","Man cage / basket","Cylinder rack","Lifting frame / spreader beam","Storage / transfer cage","Tank / other fabrication","Not sure"].concat([]);
+const LIFT_TYPES=["Lifting frame","Spreader beam"],LIFT_IMGS=["c_liftframe","c_spreader"],isLift=c=>c.kind==="lift";
+const CUSTOM_TYPES=["Concrete bucket","Sand / skip bucket","Hopper","Man cage / basket","Cylinder rack","Storage / transfer cage","Tank / other fabrication","Not sure"].concat([]);
 const S={step:0,tab:'std',cat:'All',sel:{},customs:[],cust:{},ref:null,editing:null,draft:null,files:[]};
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -52,7 +53,7 @@ function vType(){return `
 <p class="purpose">Start here. You can add the other kind later.</p>
 <div class="big2">
  <button class="choice" data-type="std"><img src="${IMG.cdcb}" alt=""><h2>Standard bucket</h2><p>Pick from our catalogue of buckets, hoppers, racks and cages.</p><span class="go">Browse the catalogue →</span></button>
- <button class="choice" data-type="custom"><img src="${IMG.c_liftframe}" alt=""><h2>Custom-made bucket</h2><p>Need a different size? Tell us what you need and we will design it.</p><span class="go">Describe what you need →</span></button>
+ <button class="choice" data-type="custom"><img src="${IMG.c_liftbucket}" alt=""><h2>Custom-made bucket</h2><p>Need a different size? Tell us what you need and we will design it.</p><span class="go">Describe what you need →</span></button>
 </div>`}
 
 /* ---------- Step 2: items ---------- */
@@ -63,9 +64,10 @@ function vItems(){
 <p class="purpose">Select the models you want and set quantities, or describe a custom-made item. Everything you pick is collected for your quotation.</p>
 <div class="tabs" role="tablist">
  <button class="tab ${S.tab==='std'?'on':''}" data-tab="std">Standard bucket${Object.keys(S.sel).length?`<span class="badge">${Object.keys(S.sel).length}</span>`:''}</button>
- <button class="tab ${S.tab==='custom'?'on':''}" data-tab="custom">Custom-made${S.customs.length?`<span class="badge">${S.customs.length}</span>`:''}</button>
+ <button class="tab ${S.tab==='custom'?'on':''}" data-tab="custom">Custom-made${S.customs.filter(c=>!isLift(c)).length?`<span class="badge">${S.customs.filter(c=>!isLift(c)).length}</span>`:''}</button>
+ <button class="tab ${S.tab==='lift'?'on':''}" data-tab="lift">Lifting Frame &amp; Spreader Beam${S.customs.filter(isLift).length?`<span class="badge">${S.customs.filter(isLift).length}</span>`:''}</button>
 </div>
-${S.tab==='std'?vStd():vCustom()}
+${S.tab==='std'?vStd():vCustom(S.tab==='lift')}
 <div class="bar"><div class="wrap">
  <div class="sum">${cnt?`<b>${cnt} item${cnt>1?'s':''}</b> · ${totalAll()} unit${totalAll()>1?'s':''} selected`:'Nothing selected yet'}</div>
  <div style="display:flex;gap:10px"><button class="btn" data-go="0">Back</button><button class="btn pri" id="toDetails">Continue</button></div>
@@ -95,18 +97,19 @@ function vStd(){
  <div class="grid">${f.models.map(m=>card(f,m)).join('')}</div></section>`).join('')+
  `<div class="panel" style="text-align:center"><b>Can't find the right size?</b><p style="margin:4px 0 12px;color:var(--mute)">We fabricate to your requirements.</p><button class="btn" data-tab="custom">Request a custom-made item</button></div>`}
 
-function vCustom(){
+function vCustom(lift){
  const d=S.draft||(S.draft=newDraft());
+ const mine=S.customs.map((c,i)=>[c,i]).filter(([c])=>!!lift===isLift(c)),TYPES=lift?LIFT_TYPES:CUSTOM_TYPES;
  const ns=d.unsure;
  return `
 <div class="purpose" style="margin-bottom:12px">Describe what you need. If you are not sure about the technical details, tick the recommendation box and we will advise.</div>
-${S.customs.length?`<h2>Custom items in your enquiry</h2><div class="list">${S.customs.map((c,i)=>`<div class="item"><img src="${IMG[c.img||'c_liftframe']}" alt=""><div class="t"><b>${esc(c.type)} × ${c.qty}</b><span>${esc(customSummary(c))}</span></div><button class="btn sm" data-editc="${i}">Edit</button><button class="btn sm" data-delc="${i}" aria-label="Remove">✕</button></div>`).join('')}</div>`:''}
+${mine.length?`<h2>${lift?'Lifting frame / spreader beam items in your enquiry':'Custom items in your enquiry'}</h2><div class="list">${mine.map(([c,i])=>`<div class="item"><img src="${IMG[c.img||'c_liftframe']}" alt=""><div class="t"><b>${esc(c.type)} × ${c.qty}</b><span>${esc(customSummary(c))}</span></div><button class="btn sm" data-editc="${i}">Edit</button><button class="btn sm" data-delc="${i}" aria-label="Remove">✕</button></div>`).join('')}</div>`:''}
 <div class="panel">
- <h2>${S.editing!==null?'Edit custom item':'Add a custom item'}</h2>
+ <h2>${S.editing!==null?(lift?'Edit item':'Edit custom item'):(lift?'Add a lifting frame or spreader beam':'Add a custom item')}</h2>
  <p style="margin:0;color:var(--mute);font-size:14px">Start from something similar in our past work (optional):</p>
- <div class="quick">${DATA.custom.map(c=>`<button data-quick="${c.img}" class="${d.img===c.img?'on':''}"><img src="${IMG[c.img]}" alt=""><span>${c.name}</span></button>`).join('')}</div>
+ <div class="quick">${DATA.custom.filter(c=>lift===LIFT_IMGS.includes(c.img)).map(c=>`<button data-quick="${c.img}" class="${d.img===c.img?'on':''}"><img src="${IMG[c.img]}" alt=""><span>${c.name}</span></button>`).join('')}</div>
  <div class="form">
-  <div class="f ${d.bad?.type?'bad':''}"><label>What type of item? <small>(required)</small></label><select id="c_type"><option value="">Select…</option>${CUSTOM_TYPES.map(t=>`<option ${d.type===t?'selected':''}>${t}</option>`).concat(d.type&&!CUSTOM_TYPES.includes(d.type)?[`<option selected>${esc(d.type)}</option>`]:[]).join('')}</select><div class="err">Please choose or select a starting point above.</div></div>
+  <div class="f ${d.bad?.type?'bad':''}"><label>What type of item? <small>(required)</small></label><select id="c_type"><option value="">Select…</option>${TYPES.map(t=>`<option ${d.type===t?'selected':''}>${t}</option>`).concat(d.type&&!TYPES.includes(d.type)?[`<option selected>${esc(d.type)}</option>`]:[]).join('')}</select><div class="err">Please choose or select a starting point above.</div></div>
   <div class="f"><label>Quantity</label><div class="qty"><button data-cq="-1" type="button" aria-label="Decrease">−</button><input type="number" id="c_qty" min="1" max="999" value="${d.qty}"><button data-cq="1" type="button" aria-label="Increase">+</button></div></div>
   <div class="f full"><label class="recommend"><input type="checkbox" id="c_unsure" ${ns?'checked':''}><span><b>I'm not sure about the specifications — please recommend</b><span>Our team will suggest suitable dimensions and capacity based on your application.</span></span></label></div>
   <div class="f full"><label>Intended application / use <small>(what will it be used for?)</small></label><input type="text" id="c_app" value="${esc(d.app)}" placeholder="e.g. lifting concrete to a 10th-floor slab"></div>
@@ -126,7 +129,7 @@ ${S.customs.length?`<h2>Custom items in your enquiry</h2><div class="list">${S.c
   ${S.editing!==null?'<button class="btn" id="cancelEdit">Cancel</button>':''}
  </div>
 </div>
-${!S.customs.length?`<div class="empty"><span class="ic">🛠️</span>No custom items yet. Fill in the form above and press “Add to enquiry”.</div>`:''}`}
+${!mine.length?`<div class="empty"><span class="ic">🛠️</span>${lift?'No lifting frames or spreader beams yet.':'No custom items yet.'} Fill in the form above and press “Add to enquiry”.</div>`:''}`}
 function newDraft(){return{type:'',img:null,qty:1,unsure:false,app:'',l:'',w:'',h:'',dia:'',cap:'',swl:'',swlu:'ton',mat:'',spec:'',rem:'',files:[],bad:{}}}
 function customSummary(c){
  if(c.unsure)return 'Recommendation requested'+(c.app?' · '+c.app:'');
@@ -227,7 +230,7 @@ function csvText(){
  rows.push(['Enquiry reference',S.ref],['Date',new Date().toISOString().slice(0,10)],['Company',c.company],['Contact person',c.contact],['Email',c.email],['Phone',c.phone],['Project / ref',c.project],['Delivery location',c.location],['Required date',c.date],['Remarks',c.remarks],[]);
  rows.push(['Item','Type','Model / item','Product','Capacity','SWL','Size / requirements','Qty','Notes']);
  stdRows().forEach((r,i)=>rows.push([i+1,'Standard',r.code,r.fam,r.cap,r.swl,r.dims,r.qty,'']));
- S.customs.forEach((x,i)=>rows.push(['C'+(i+1),'Custom',x.type,'','',x.unsure?'':(x.swl?x.swl+' '+x.swlu:''),customSummary(x),x.qty,[x.spec&&'Specs: '+x.spec,x.rem&&'Remarks: '+x.rem,x.files.length&&'Attachments: '+x.files.join('; ')].filter(Boolean).join(' | ')]));
+ S.customs.forEach((x,i)=>rows.push(['C'+(i+1),isLift(x)?'Lifting frame / spreader beam':'Custom',x.type,'','',x.unsure?'':(x.swl?x.swl+' '+x.swlu:''),customSummary(x),x.qty,[x.spec&&'Specs: '+x.spec,x.rem&&'Remarks: '+x.rem,x.files.length&&'Attachments: '+x.files.join('; ')].filter(Boolean).join(' | ')]));
  return '﻿'+rows.map(r=>r.map(q).join(',')).join('\r\n')}
 
 /* ---------- events ---------- */
@@ -235,7 +238,7 @@ function bind(){
  const A=$('#app');
  A.querySelectorAll('[data-type]').forEach(b=>b.onclick=()=>{S.tab=b.dataset.type;go(1)});
  A.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>{readDraft();go(+b.dataset.go)});
- A.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{readDraft();S.tab=b.dataset.tab;render();window.scrollTo({top:0})});
+ A.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{readDraft();const t=b.dataset.tab;if(t!=='std'&&S.draft){const ok=t==='lift'?LIFT_TYPES:CUSTOM_TYPES;if(S.draft.type&&!ok.includes(S.draft.type)||S.editing!==null&&(t==='lift')!==isLift(S.customs[S.editing]||{})){S.editing=null;S.draft=newDraft()}else if(S.draft.img&&(t==='lift')!==LIFT_IMGS.includes(S.draft.img))S.draft.img=null}S.tab=b.dataset.tab;render();window.scrollTo({top:0})});
  A.querySelectorAll('[data-cat]').forEach(b=>b.onclick=()=>{S.cat=b.dataset.cat;render()});
  A.querySelectorAll('.card').forEach(c=>{
   const code=c.dataset.code;
@@ -256,9 +259,9 @@ function bind(){
  const ac=$('#addCustom');if(ac)ac.onclick=()=>{
   readDraft();const d=S.draft;
   if(!d.type){d.bad={type:1};render();toast('Please choose the type of item');return}
-  const item={...d};delete item.bad;
+  const item={...d,kind:S.tab==='lift'?'lift':'custom'};delete item.bad;
   if(S.editing!==null){S.customs[S.editing]=item;S.editing=null}else S.customs.push(item);
-  S.draft=newDraft();render();toast('Custom item added');window.scrollTo({top:0})};
+  S.draft=newDraft();render();toast(item.kind==='lift'?'Item added':'Custom item added');window.scrollTo({top:0})};
  const ce=$('#cancelEdit');if(ce)ce.onclick=()=>{S.editing=null;S.draft=newDraft();render()};
  A.querySelectorAll('[data-editc]').forEach(b=>b.onclick=()=>{readDraft();S.editing=+b.dataset.editc;S.draft={...S.customs[S.editing],bad:{}};render();window.scrollTo({top:document.querySelector('.panel').offsetTop-20})});
  A.querySelectorAll('[data-delc]').forEach(b=>b.onclick=()=>{readDraft();S.customs.splice(+b.dataset.delc,1);S.editing=null;render()});
@@ -285,7 +288,7 @@ function bind(){
 }
 function guessType(n){n=n.toLowerCase();
  if(/man|basket/.test(n))return'Man cage / basket';if(/cage/.test(n))return'Storage / transfer cage';if(/hopper/.test(n)&&!/self/.test(n))return'Hopper';
- if(/frame|spreader/.test(n))return'Lifting frame / spreader beam';if(/tank|trolley/.test(n))return'Tank / other fabrication';return'Concrete bucket'}
+ if(/spreader/.test(n))return'Spreader beam';if(/frame/.test(n))return'Lifting frame';if(/tank|trolley/.test(n))return'Tank / other fabrication';return'Concrete bucket'}
 
 /* ---------- Follow-up chat ---------- */
 const CHAT={open:false,msgs:[{who:'bot',text:'Hi. Following up on an enquiry? Pick an option or type your message.'}],ref:'',email:''};
