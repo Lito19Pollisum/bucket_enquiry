@@ -300,7 +300,7 @@ export const DATA = {
   },
   {
    "id": "sdb",
-   "cat": "Concrete Buckets",
+   "cat": "Self-Dumping Buckets",
    "name": "Self Dumping Crane Bucket",
    "img": "selfdump",
    "desc": "Holds a large volume of material. The under-the-hook attachment makes operation hands-free and safer.",
@@ -391,7 +391,7 @@ export const DATA = {
   },
   {
    "id": "sb",
-   "cat": "Sand & Skip Buckets",
+   "cat": "Sand Buckets",
    "name": "Sand Bucket",
    "img": "sand",
    "desc": "Made from mild steel plate for heavy materials such as sand, gravel, excavation waste and scrap metal.",

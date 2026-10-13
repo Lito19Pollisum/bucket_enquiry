@@ -62,7 +62,7 @@ function vItems(){
 <h1>Choose your items</h1>
 <p class="purpose">Select the models you want and set quantities, or describe a custom-made item. Everything you pick is collected for your quotation.</p>
 <div class="tabs" role="tablist">
- <button class="tab ${S.tab==='std'?'on':''}" data-tab="std">Standard catalogue${Object.keys(S.sel).length?`<span class="badge">${Object.keys(S.sel).length}</span>`:''}</button>
+ <button class="tab ${S.tab==='std'?'on':''}" data-tab="std">Standard bucket${Object.keys(S.sel).length?`<span class="badge">${Object.keys(S.sel).length}</span>`:''}</button>
  <button class="tab ${S.tab==='custom'?'on':''}" data-tab="custom">Custom-made${S.customs.length?`<span class="badge">${S.customs.length}</span>`:''}</button>
 </div>
 ${S.tab==='std'?vStd():vCustom()}
