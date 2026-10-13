@@ -53,7 +53,8 @@ function vType(){return `
 <p class="purpose">Start here. You can add the other kind later.</p>
 <div class="big2">
  <button class="choice" data-type="std"><img src="${IMG.cdcb}" alt=""><h2>Standard bucket</h2><p>Pick from our catalogue of buckets, hoppers, racks and cages.</p><span class="go">Browse the catalogue →</span></button>
- <button class="choice" data-type="custom"><img src="${IMG.c_liftbucket}" alt=""><h2>Custom-made bucket</h2><p>Need a different size? Tell us what you need and we will design it.</p><span class="go">Describe what you need →</span></button>
+ <button class="choice" data-type="custom"><img src="${IMG.c_fronthandle}" alt=""><h2>Custom-made bucket</h2><p>Need a different size? Tell us what you need and we will design it.</p><span class="go">Describe what you need →</span></button>
+ <button class="choice" data-type="lift"><img src="${IMG.c_liftframe}" alt=""><h2>Lifting frame &amp; spreader beam</h2><p>Tell us the load, span and lifting points and we will design it.</p><span class="go">Describe what you need →</span></button>
 </div>`}
 
 /* ---------- Step 2: items ---------- */
