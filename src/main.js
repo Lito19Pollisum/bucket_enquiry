@@ -40,7 +40,10 @@ async function postSales(payload){
   return r.ok&&j.ok===true;
  }catch(e){return false}
 }
-function go(n){S.step=n;render();window.scrollTo({top:0})}
+function go(n){S.step=n;if(!history.state||history.state.step!==n)history.pushState({step:n},'');render();window.scrollTo({top:0})}
+// Browser back / forward arrows move between the steps instead of leaving the page.
+history.replaceState({step:0},'');
+window.addEventListener('popstate',e=>{const n=e.state&&Number.isInteger(e.state.step)?e.state.step:0;if(n>0&&!itemCount()&&n!==1){S.step=1}else S.step=n;if(S.step===1&&!S.tab)S.tab='std';render();window.scrollTo({top:0})});
 
 function render(){
  const a=$('#app');
