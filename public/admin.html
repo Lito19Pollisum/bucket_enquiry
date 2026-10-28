@@ -24,7 +24,8 @@ table.items{margin:6px 0}table.items th,table.items td{font-size:13px}
 <main>
 <form id="login"><label for="pw">Dashboard password</label><input id="pw" type="password" autocomplete="current-password" required><button>Sign in</button><div class="err" id="lerr"></div></form>
 <section id="app" hidden>
- <div class="bar"><input type="search" id="q" placeholder="Search company, contact, reference, model"><select id="st"><option value="">All status</option><option>new</option><option>quoted</option><option>won</option><option>lost</option><option>closed</option></select><select id="kd"><option value="">Enquiries and follow-ups</option><option value="enquiry">Enquiries</option><option value="followup">Follow-ups</option></select><button class="ghost" id="rf">Refresh</button></div>
+ <div class="bar"><input type="search" id="q" placeholder="Search company, contact, reference, model"><select id="st"><option value="">All status</option><option>new</option><option>quoted</option><option>won</option><option>lost</option><option>closed</option></select><select id="kd"><option value="">Enquiries and follow-ups</option><option value="enquiry">Enquiries</option><option value="followup">Follow-ups</option></select><button class="ghost" id="rf">Refresh</button><button class="ghost" id="qs" hidden>Auto-save quotations to folder</button></div>
+ <div class="muted" id="qmsg"></div>
  <div class="muted" id="cnt"></div>
  <table><thead><tr><th>Ref</th><th>Received</th><th>Company</th><th class="hide-s">Contact</th><th>Items</th><th>Status</th></tr></thead><tbody id="tb"></tbody></table>
 </section></main>
@@ -51,6 +52,23 @@ $('#tb').addEventListener('click',async e=>{
  const s=e.target.closest('select[data-st]');if(s){try{await api({method:'POST',body:JSON.stringify({id:+s.dataset.st,status:s.value})});ROWS.find(r=>r.id==s.dataset.st).status=s.value;render()}catch(x){alert(x.message)}return}
  const tr=e.target.closest('tr.row');if(tr){const id=+tr.dataset.id;OPEN.has(id)?OPEN.delete(id):OPEN.add(id);render()}});
 ['q','st','kd'].forEach(i=>$('#'+i).addEventListener('input',render));$('#rf').onclick=()=>load().catch(x=>alert(x.message));
-$('#login').onsubmit=async e=>{e.preventDefault();PW=$('#pw').value;try{await load();$('#login').hidden=true;$('#app').hidden=false;$('#out').hidden=false}catch(x){$('#lerr').textContent=x.message}};
+$('#login').onsubmit=async e=>{e.preventDefault();PW=$('#pw').value;try{await load();$('#login').hidden=true;$('#app').hidden=false;$('#out').hidden=false;qinit()}catch(x){$('#lerr').textContent=x.message}};
 $('#out').onclick=()=>location.reload();
+// Auto-save draft quotations (PDF + Excel) into a chosen folder (e.g. the M: drive AUTO QUOTE folder) while this page is open.
+const idb=()=>new Promise((ok,no)=>{const r=indexedDB.open('qs',1);r.onupgradeneeded=()=>r.result.createObjectStore('k');r.onsuccess=()=>ok(r.result);r.onerror=no});
+const kv=async(m,k,v)=>{const d=await idb();return new Promise((ok,no)=>{const t=d.transaction('k',m==='get'?'readonly':'readwrite').objectStore('k');const q=m==='get'?t.get(k):t.put(v,k);q.onsuccess=()=>ok(q.result);q.onerror=no})};
+let DIR=null,BUSY=false;
+async function qsync(){if(!DIR||BUSY)return;BUSY=true;try{
+ if(await DIR.queryPermission({mode:'readwrite'})!=='granted'){$('#qs').textContent='Resume auto-save (click)';$('#qmsg').textContent='Auto-save paused: click the button to allow folder access again.';return}
+ const r=await fetch('/api/quotes',{headers:{'x-admin-password':PW}});if(!r.ok)throw new Error('list '+r.status);const {files}=await r.json();let n=0;
+ for(const f of files){const [ref,name]=f.split('/');const d=await DIR.getDirectoryHandle(ref,{create:true});
+  let have=true;try{await d.getFileHandle(name)}catch{have=false}
+  if(have)continue;const x=await fetch('/api/quotes?file='+encodeURIComponent(f),{headers:{'x-admin-password':PW}});if(!x.ok)continue;
+  const w=await(await d.getFileHandle(name,{create:true})).createWritable();await w.write(await x.blob());await w.close();n++}
+ $('#qs').textContent='Auto-save ON ('+DIR.name+')';$('#qmsg').textContent='Auto-save on: checked '+new Date().toLocaleTimeString()+(n?', saved '+n+' new file(s)':', nothing new')+'. Keep this tab open.';
+}catch(e){$('#qmsg').textContent='Auto-save error: '+e.message}finally{BUSY=false}}
+async function qinit(){if(!window.showDirectoryPicker)return;$('#qs').hidden=false;try{DIR=await kv('get','dir')}catch{}if(DIR){$('#qs').textContent='Auto-save ON ('+DIR.name+')';qsync()}
+ $('#qs').onclick=async()=>{try{if(!DIR||await DIR.queryPermission({mode:'readwrite'})!=='granted'){if(DIR&&await DIR.requestPermission({mode:'readwrite'})==='granted'){}else{DIR=await showDirectoryPicker({mode:'readwrite',id:'autoquote'});await kv('put','dir',DIR)}}qsync()}catch(e){if(e.name!=='AbortError')$('#qmsg').textContent='Could not use folder: '+e.message}};
+ setInterval(qsync,60000)}
+
 </script></body></html>
