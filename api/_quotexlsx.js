@@ -10,6 +10,18 @@ import { QDRAW } from './_qdraw.js';
 
 // Pictures from the sample quotations (they carry the W/L/H markers); other families use their catalogue photo.
 const SAMPLE_PHOTO = { spb: 'super', sb: 'sand', sdcb: 'side', rcb: 'recphoto', cdcb: 'cdcb', sdb: 'sdb', cr: 'cr', lcr: 'lcr', mc: 'mc', rmc: 'rmc' };
+// Sand buckets: the sample quotation (AS-IS Builders, 10/4/2023) uses a different picture per size, and gives the wire sling per size.
+const SAND_PHOTO = { 'SB-072': 'sand', 'SB-100': 'sand100', 'SB-120': 'sand100', 'SB-150': 'sand150', 'SB-200': 'sand150', 'SB-250': 'sand250', 'SB-300': 'sand250' };
+// Wire sling per model, from the sample quotations (Sand, Center/Side Discharge Concrete Bucket, Super Center Discharge, Man Cage, Rescue Man Cage).
+const SLINGS = {};
+const sl4 = (size, swl) => ({ size: size + ' 4-legged', swl });
+for (const [code, v] of Object.entries({ 'SB-072': ['14mm x 1.5m', '4T'], 'SB-100': ['14mm x 1.5m', '4T'], 'SB-150': ['16mm x 2m', '6T'], 'SB-200': ['16mm x 2m', '6T'], 'SB-250': ['18mm x 2m', '8T'], 'SB-300': ['18mm x 2m', '8T'],
+  'MC-1500': ['16mm x 1.5m', '6T'], 'MC-2000': ['16mm x 2m', '6T'], 'MC-2500': ['16mm x 2.5m', '6T'], 'RMC-2500': ['16mm x 2.5m', '6T'], 'RMC-3000': ['16mm x 3m', '6T'] })) SLINGS[code] = sl4(v[0], v[1]);
+for (const f of ['CDCB', 'SDCB', 'SPB']) {
+  for (const n of ['050', '075', '100', '120']) SLINGS[`${f}-${n}`] = sl4('14mm x 1.5m', '4T');
+  SLINGS[`${f}-150`] = sl4('16mm x 2m', '6T'); SLINGS[`${f}-200`] = sl4('18mm x 2m', '8T'); SLINGS[`${f}-250`] = sl4('18mm x 2m', '8T');
+  SLINGS[`${f}-300`] = sl4(f === 'SPB' ? '20mm x 2m' : '20mm x 2.5m', '10T');
+}
 // Dimension drawing matched to the model's size (from the sample quotations); SB-072 uses the sand bucket sample drawing.
 const drawingFor = code => (code === 'SB-072' ? QIMGS.sanddraw : QDRAW[code]) || null;
 
@@ -95,8 +107,8 @@ export async function buildQuoteXlsx(csv) {
   // Items: one block of 11 rows each (photo left, text, qty / unit price / amount right)
   let r0 = 13; const amtCells = [];
   for (const it of items) {
-    const m = it.model || {}, pr = PRICES[it.code], sl = sling(pr?.note);
-    const photo = it.fam && (SAMPLE_PHOTO[it.fam.id] || FAM_IMG[it.fam.id]);
+    const m = it.model || {}, pr = PRICES[it.code], sl = sling(pr?.note) || SLINGS[it.code] || null;
+    const photo = SAND_PHOTO[it.code] || (it.fam && (SAMPLE_PHOTO[it.fam.id] || FAM_IMG[it.fam.id]));
     const drw = drawingFor(it.code);
     const BLOCK = drw ? 22 : 11; // with a drawing: photo + details on top, drawing below across the left of the table
     for (let r = r0; r < r0 + BLOCK; r++) {
