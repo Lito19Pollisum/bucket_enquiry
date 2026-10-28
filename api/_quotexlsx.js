@@ -8,7 +8,7 @@ import { IMGS } from './_assets.js';
 import { QIMGS } from './_qimgs.js';
 
 // Pictures from the sample quotations (they carry the W/L/H markers); other families use their catalogue photo.
-const SAMPLE_IMGS = { spb: ['super'], sb: ['sand'], sdcb: ['side'], rcb: ['recdraw', 'recphoto'] };
+const SAMPLE_IMGS = { spb: ['super'], sb: ['sand', 'sanddraw'], sdcb: ['side'], rcb: ['recdraw', 'recphoto'], cdcb: ['cdcb'], sdb: ['sdb'], cr: ['cr'], lcr: ['lcr'], mc: ['mc'], rmc: ['rmc'] };
 
 function imgSize(buf) {
   if (buf[0] === 0x89 && buf[1] === 0x50) return { w: buf.readUInt32BE(16), h: buf.readUInt32BE(20) }; // PNG
