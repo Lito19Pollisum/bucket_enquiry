@@ -61,8 +61,8 @@ export async function buildQuoteXlsx(csv) {
   const FONT = { name: 'Roboto', size: 10, color: { argb: INK } };
   const fill = argb => ({ type: 'pattern', pattern: 'solid', fgColor: { argb } });
   const cell = (a, v, o = {}) => { const c = ws.getCell(a); c.value = v; c.font = { ...FONT, ...(o.font || {}) }; if (o.al) c.alignment = o.al; if (o.numFmt) c.numFmt = o.numFmt; return c; };
-  const thin = { style: 'thin', color: { argb: 'FF000000' } };
-  const rule = { style: 'thin', color: { argb: 'FF000000' } };
+  const thin = { style: 'thin', color: { argb: 'FF595959' } };
+  const rule = { style: 'thin', color: { argb: 'FF595959' } };
   const addImg = (key, col0, row0, maxW, maxH) => {
     const src = key.startsWith('data:') ? key.slice(5) : (QIMGS[key] || IMGS[key]);
     if (!src) return;
@@ -138,7 +138,7 @@ export async function buildQuoteXlsx(csv) {
     if (pr?.note) { if (!pic) ws.mergeCells(`${L}${r0 + 9}:G${r0 + 10}`); cell(`${L}${r0 + 9}`, 'Incl. ' + pr.note.replace(/^incl\.\s*/i, '').replace(/,\s*new .*? wire sling/i, ''), { font: { size: 8, italic: true, color: { argb: GREY } }, al: { vertical: 'top', wrapText: !pic } }); }
     if (photo) addImg(photo, 1.05, r0 + 0.6, 165, 105);
     if (drw) addImg('data:' + drw, 1.05, r0 + 11.4, 385, 205);
-    if (pic) addImg('data:' + pic, 1.05, r0 + 10.6, PIC_W, 190);
+    if (pic) addImg('data:' + pic, 1.12, r0 + 10.6, PIC_W, 190);
     const q = cell(`H${r0 + 1}`, it.qty, { al: { horizontal: 'center', vertical: 'top' } });
     const u = cell(`I${r0 + 1}`, pr ? pr.price : null, { al: { horizontal: 'center', vertical: 'top' }, numFmt: '"$"#,##0.00' });
     const a = cell(`J${r0 + 1}`, { formula: `IF(I${r0 + 1}="","",H${r0 + 1}*I${r0 + 1})`, result: pr ? pr.price * it.qty : '' }, { font: { bold: true }, al: { horizontal: 'center', vertical: 'top' }, numFmt: '"$"#,##0.00' });
@@ -151,6 +151,9 @@ export async function buildQuoteXlsx(csv) {
     const c = ws.getCell(`${col}${rr}`);
     c.border = { ...(col === 'B' ? { left: thin } : {}), ...(['G', 'H', 'I', 'J'].includes(col) ? { right: thin } : {}) };
   }
+
+  // Left edge of the table also drawn as the right edge of column A, so it never breaks where text overflows or a picture sits
+  for (let rr = 12; rr <= r0; rr++) ws.getCell(`A${rr}`).border = { right: rr === 12 || rr === r0 ? rule : thin };
 
   // Total
   ws.mergeCells(`B${r0}:G${r0}`); ws.mergeCells(`H${r0}:J${r0}`);
