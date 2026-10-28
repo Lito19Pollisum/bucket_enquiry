@@ -6,9 +6,12 @@ import { standardItems, FAM_IMG } from './_quote.js';
 import { PRICES } from './_prices.js';
 import { IMGS } from './_assets.js';
 import { QIMGS } from './_qimgs.js';
+import { QDRAW } from './_qdraw.js';
 
 // Pictures from the sample quotations (they carry the W/L/H markers); other families use their catalogue photo.
-const SAMPLE_IMGS = { spb: ['super'], sb: ['sand', 'sanddraw'], sdcb: ['side'], rcb: ['recdraw', 'recphoto'], cdcb: ['cdcb'], sdb: ['sdb'], cr: ['cr'], lcr: ['lcr'], mc: ['mc'], rmc: ['rmc'] };
+const SAMPLE_PHOTO = { spb: 'super', sb: 'sand', sdcb: 'side', rcb: 'recphoto', cdcb: 'cdcb', sdb: 'sdb', cr: 'cr', lcr: 'lcr', mc: 'mc', rmc: 'rmc' };
+// Dimension drawing matched to the model's size (from the sample quotations); SB-072 uses the sand bucket sample drawing.
+const drawingFor = code => (code === 'SB-072' ? QIMGS.sanddraw : QDRAW[code]) || null;
 
 function imgSize(buf) {
   if (buf[0] === 0x89 && buf[1] === 0x50) return { w: buf.readUInt32BE(16), h: buf.readUInt32BE(20) }; // PNG
@@ -48,8 +51,8 @@ export async function buildQuoteXlsx(csv) {
   const thin = { style: 'thin', color: { argb: LINE } };
   const rule = { style: 'thin', color: { argb: 'FFBFBFBF' } };
   const addImg = (key, col0, row0, maxW, maxH) => {
-    if (!QIMGS[key] && !IMGS[key]) return;
-    const src = QIMGS[key] || IMGS[key];
+    const src = key.startsWith('data:') ? key.slice(5) : (QIMGS[key] || IMGS[key]);
+    if (!src) return;
     const buf = Buffer.from(src, 'base64'); const { w, h } = imgSize(buf);
     const k = Math.min(maxW / w, maxH / h);
     ws.addImage(wb.addImage({ base64: src, extension: buf[0] === 0x89 ? 'png' : 'jpeg' }), { tl: { col: col0, row: row0 }, ext: { width: Math.round(w * k), height: Math.round(h * k) } });
@@ -93,8 +96,9 @@ export async function buildQuoteXlsx(csv) {
   let r0 = 13; const amtCells = [];
   for (const it of items) {
     const m = it.model || {}, pr = PRICES[it.code], sl = sling(pr?.note);
-    const pics = (it.fam && SAMPLE_IMGS[it.fam.id]) || (it.fam && FAM_IMG[it.fam.id] ? [FAM_IMG[it.fam.id]] : []);
-    const BLOCK = Math.max(11, 1 + pics.length * 7);
+    const photo = it.fam && (SAMPLE_PHOTO[it.fam.id] || FAM_IMG[it.fam.id]);
+    const drw = drawingFor(it.code);
+    const BLOCK = drw ? 22 : 11; // with a drawing: photo + details on top, drawing below across the left of the table
     for (let r = r0; r < r0 + BLOCK; r++) {
       ws.getRow(r).height = 15;
       for (const col of 'BCDEFGHIJ') { const b = {}; if (col === 'B') b.left = thin; if (['G', 'H', 'I', 'J'].includes(col)) b.right = thin; ws.getCell(`${col}${r}`).border = b; }
@@ -111,7 +115,8 @@ export async function buildQuoteXlsx(csv) {
       ws.mergeCells(`F${r0 + 7 + i}:G${r0 + 7 + i}`); cell(`F${r0 + 7 + i}`, v || '', T);
     });
     if (pr?.note) { ws.mergeCells(`D${r0 + 9}:G${r0 + 10}`); cell(`D${r0 + 9}`, 'Incl. ' + pr.note.replace(/^incl\.\s*/i, '').replace(/,\s*new .*? wire sling/i, ''), { font: { size: 8, italic: true, color: { argb: GREY } }, al: { vertical: 'top', wrapText: true } }); }
-    pics.forEach((key, i) => addImg(key, 1.05, r0 + 0.6 + i * 7, 165, 105));
+    if (photo) addImg(photo, 1.05, r0 + 0.6, 165, 105);
+    if (drw) addImg('data:' + drw, 1.05, r0 + 11.4, 385, 205);
     const q = cell(`H${r0 + 1}`, it.qty, { al: { horizontal: 'center', vertical: 'top' } });
     const u = cell(`I${r0 + 1}`, pr ? pr.price : null, { al: { horizontal: 'center', vertical: 'top' }, numFmt: '"$"#,##0.00' });
     const a = cell(`J${r0 + 1}`, { formula: `IF(I${r0 + 1}="","",H${r0 + 1}*I${r0 + 1})`, result: pr ? pr.price * it.qty : '' }, { font: { bold: true }, al: { horizontal: 'center', vertical: 'top' }, numFmt: '"$"#,##0.00' });
