@@ -55,7 +55,7 @@ export async function buildQuoteXlsx(csv) {
     views: [{ showGridLines: false }],
     pageSetup: { paperSize: 9, orientation: 'portrait', fitToPage: true, fitToWidth: 1, fitToHeight: 0, margins: { left: 0.4, right: 0.4, top: 0.5, bottom: 0.5, header: 0.3, footer: 0.3 } },
   });
-  ws.columns = [{ width: 2.7 }, { width: 8.4 }, { width: 14.9 }, { width: 12.4 }, { width: 2.8 }, { width: 12.8 }, { width: 22 }, { width: 6.5 }, { width: 12.5 }, { width: 13 }, { width: 2.7 }]; // A and K equal so the page margins are even
+  ws.columns = [{ width: 2.7 }, { width: 12 }, { width: 20 }, { width: 12.4 }, { width: 2.8 }, { width: 12.8 }, { width: 22 }, { width: 6.5 }, { width: 12.5 }, { width: 13 }, { width: 2.7 }]; // A and K equal so the page margins are even
   // Pollisum Style Guide: Roboto, ink body text, Pollisum Red titles, Mist/Blush panels, E4E4E4 lines, maroon rule at the end.
   const INK = 'FF191D24', RED = 'FF990000', MAROON = 'FF6A0303', MIST = 'FFF3F3F3', LINE = 'FFE4E4E4', BLUSH = 'FFEDD4D4', GREY = 'FF6B7280';
   const FONT = { name: 'Roboto', size: 10, color: { argb: INK } };
@@ -112,9 +112,9 @@ export async function buildQuoteXlsx(csv) {
     const pic = QPICS[it.code] || null; // exact crop of this model's picture from the Word reference quotation
     const photo = pic ? null : (SAND_PHOTO[it.code] || (it.fam && (SAMPLE_PHOTO[it.fam.id] || FAM_IMG[it.fam.id])));
     const drw = pic ? null : drawingFor(it.code);
-    const PIC_W = 340; let picH = 0;
-    if (pic) { const { w, h } = imgSize(Buffer.from(pic, 'base64')); picH = Math.round(h * Math.min(PIC_W / w, 170 / h, 1)); }
-    const BLOCK = pic ? 14 + Math.ceil(picH / 18) : (drw ? 22 : 11); // with a drawing: photo + details on top, drawing below across the left of the table
+    const PIC_W = 420; let picH = 0, below = false; // wide drawings go below the details, others sit beside them
+    if (pic) { const { w, h } = imgSize(Buffer.from(pic, 'base64')); below = w / h >= 2.2 || /^(SDB|MC|RMC)-/.test(it.code); picH = Math.round(h * Math.min(PIC_W / w, 170 / h, 1)); }
+    const BLOCK = pic ? (below ? 14 + Math.ceil(picH / 18) : 11) : (drw ? 22 : 11); // with a drawing: photo + details on top, drawing below across the left of the table
     if (pic) { // keep a block (details + picture) whole on a printed page
       if (pageUsed + BLOCK * 15 > 770 && pageUsed > 0) { ws.getRow(r0 - 1).addPageBreak(); pageUsed = 0; pageStart = r0; }
       pageUsed += BLOCK * 15; hasPic = true;
@@ -123,7 +123,7 @@ export async function buildQuoteXlsx(csv) {
       ws.getRow(r).height = 15;
       for (const col of 'BCDEFGHIJ') { const b = {}; if (col === 'B') b.left = thin; if (['G', 'H', 'I', 'J'].includes(col)) b.right = thin; ws.getCell(`${col}${r}`).border = b; }
     }
-    const L = pic ? 'B' : 'D'; // with a picture below, details start at the left edge
+    const L = below ? 'B' : 'D'; // with a picture below, details start at the left edge
     { // description line, highlighted yellow, as in the Word quotations
       const capTxt = String(m.cap || it.cap || '').replace(/\s*m³/, 'm³').trim();
       const nm = it.fam && it.fam.id === 'sb' ? 'Sand & Mud Bucket' : (it.fam ? it.fam.name : it.famName);
@@ -142,10 +142,11 @@ export async function buildQuoteXlsx(csv) {
       cell(`${L}${r0 + 7 + i}`, k, T); cell(`E${r0 + 7 + i}`, ':', { font: { size: 9 }, al: { horizontal: 'center', vertical: 'top' } });
       ws.mergeCells(`F${r0 + 7 + i}:G${r0 + 7 + i}`); cell(`F${r0 + 7 + i}`, v || '', T);
     });
-    if (pr?.note) { if (!pic) ws.mergeCells(`${L}${r0 + 9}:G${r0 + 10}`); cell(`${L}${r0 + 9}`, 'Incl. ' + pr.note.replace(/^incl\.\s*/i, '').replace(/,\s*new .*? wire sling/i, ''), { font: { size: 8, italic: true, color: { argb: GREY } }, al: { vertical: 'top', wrapText: !pic } }); }
+    if (pr?.note) { if (!below) ws.mergeCells(`${L}${r0 + 9}:G${r0 + 10}`); cell(`${L}${r0 + 9}`, 'Incl. ' + pr.note.replace(/^incl\.\s*/i, '').replace(/,\s*new .*? wire sling/i, ''), { font: { size: 8, italic: true, color: { argb: GREY } }, al: { vertical: 'top', wrapText: !below } }); }
     if (photo) addImg(photo, 1.05, r0 + 1.2, 165, 105);
     if (drw) addImg('data:' + drw, 1.05, r0 + 11.4, 385, 205);
-    if (pic) addImg('data:' + pic, 1.3, r0 + 11.2, PIC_W, 170);
+    if (pic && below) addImg('data:' + pic, 1.3, r0 + 11.2, PIC_W, 170);
+    if (pic && !below) addImg('data:' + pic, 1.08, r0 + 1.6, 205, 140);
     const q = cell(`H${r0 + 1}`, it.qty, { al: { horizontal: 'center', vertical: 'top' } });
     const u = cell(`I${r0 + 1}`, pr ? pr.price : null, { al: { horizontal: 'center', vertical: 'top' }, numFmt: '"$"#,##0.00' });
     const a = cell(`J${r0 + 1}`, { formula: `IF(I${r0 + 1}="","",H${r0 + 1}*I${r0 + 1})`, result: pr ? pr.price * it.qty : '' }, { font: { bold: true }, al: { horizontal: 'center', vertical: 'top' }, numFmt: '"$"#,##0.00' });
@@ -210,7 +211,7 @@ export async function buildQuoteXlsx(csv) {
   r += 2;
   ws.getRow(r).height = 3; ws.mergeCells(`B${r}:J${r}`); ws.getCell(`B${r}`).fill = fill(MAROON); // thin maroon rule
   // Footer strip from the Word quotation: company name, address, contact and registration numbers
-  addImg('foot', 1.0, r + 0.4, 760, 100);
+  addImg('foot', 1.0, r + 0.4, 843, 100);
   for (let k = 1; k <= 6; k++) ws.getRow(r + k).height = 17;
   if (items.length === 1 || (items.length <= 2 && !hasPic)) ws.pageSetup.fitToHeight = 1; // short quotes stay on one page
   ws.pageSetup.horizontalCentered = true; // even left/right margins whatever scale Excel/PDF applies
