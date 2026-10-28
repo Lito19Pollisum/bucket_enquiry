@@ -75,3 +75,14 @@ export function splitEnquiryCsv(csv) {
     items,
   };
 }
+
+// Uploads a file to the private "quotations" Storage bucket (upsert). Returns the object path.
+export async function sbUpload(path, buf, contentType) {
+  const r = await fetch(`${URL_}/storage/v1/object/quotations/${path.split('/').map(encodeURIComponent).join('/')}`, {
+    method: 'POST',
+    headers: { apikey: KEY_, Authorization: `Bearer ${KEY_}`, 'Content-Type': contentType, 'x-upsert': 'true' },
+    body: buf,
+  });
+  if (!r.ok) throw new Error(`storage ${r.status}: ${(await r.text()).slice(0, 200)}`);
+  return path;
+}
