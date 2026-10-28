@@ -7,6 +7,7 @@ import { PRICES } from './_prices.js';
 import { IMGS } from './_assets.js';
 import { QIMGS } from './_qimgs.js';
 import { QDRAW } from './_qdraw.js';
+import { QPICS } from './_qpics.js';
 
 // Pictures from the sample quotations (they carry the W/L/H markers); other families use their catalogue photo.
 const SAMPLE_PHOTO = { spb: 'super', sb: 'sand', sdcb: 'side', rcb: 'recphoto', cdcb: 'cdcb', sdb: 'sdb', cr: 'cr', lcr: 'lcr', mc: 'mc', rmc: 'rmc' };
@@ -105,12 +106,19 @@ export async function buildQuoteXlsx(csv) {
   for (const col of 'BCDEFGHIJ') { const c = ws.getCell(`${col}12`); c.fill = fill(MIST); c.border = { top: rule, bottom: rule, left: col === 'B' ? rule : undefined, right: ['G', 'H', 'I', 'J'].includes(col) ? thin : undefined }; }
 
   // Items: one block of 11 rows each (photo left, text, qty / unit price / amount right)
-  let r0 = 13; const amtCells = [];
+  let r0 = 13; const amtCells = []; let pageUsed = 240, hasPic = false;
   for (const it of items) {
     const m = it.model || {}, pr = PRICES[it.code], sl = sling(pr?.note) || SLINGS[it.code] || null;
-    const photo = SAND_PHOTO[it.code] || (it.fam && (SAMPLE_PHOTO[it.fam.id] || FAM_IMG[it.fam.id]));
-    const drw = drawingFor(it.code);
-    const BLOCK = drw ? 22 : 11; // with a drawing: photo + details on top, drawing below across the left of the table
+    const pic = QPICS[it.code] || null; // exact crop of this model's picture from the Word reference quotation
+    const photo = pic ? null : (SAND_PHOTO[it.code] || (it.fam && (SAMPLE_PHOTO[it.fam.id] || FAM_IMG[it.fam.id])));
+    const drw = pic ? null : drawingFor(it.code);
+    const PIC_W = 640; let picH = 0;
+    if (pic) { const { w, h } = imgSize(Buffer.from(pic, 'base64')); picH = Math.round(h * Math.min(PIC_W / w, 330 / h, 1.6)); }
+    const BLOCK = pic ? 12 + Math.ceil(picH / 20) : (drw ? 22 : 11); // with a drawing: photo + details on top, drawing below across the left of the table
+    if (pic) { // keep a block (details + picture) whole on a printed page
+      if (pageUsed + BLOCK * 15 > 770 && pageUsed > 0) { ws.getRow(r0 - 1).addPageBreak(); pageUsed = 0; }
+      pageUsed += BLOCK * 15; hasPic = true;
+    } else pageUsed += BLOCK * 15;
     for (let r = r0; r < r0 + BLOCK; r++) {
       ws.getRow(r).height = 15;
       for (const col of 'BCDEFGHIJ') { const b = {}; if (col === 'B') b.left = thin; if (['G', 'H', 'I', 'J'].includes(col)) b.right = thin; ws.getCell(`${col}${r}`).border = b; }
@@ -129,6 +137,7 @@ export async function buildQuoteXlsx(csv) {
     if (pr?.note) { ws.mergeCells(`D${r0 + 9}:G${r0 + 10}`); cell(`D${r0 + 9}`, 'Incl. ' + pr.note.replace(/^incl\.\s*/i, '').replace(/,\s*new .*? wire sling/i, ''), { font: { size: 8, italic: true, color: { argb: GREY } }, al: { vertical: 'top', wrapText: true } }); }
     if (photo) addImg(photo, 1.05, r0 + 0.6, 165, 105);
     if (drw) addImg('data:' + drw, 1.05, r0 + 11.4, 385, 205);
+    if (pic) addImg('data:' + pic, 1.05, r0 + 11.3, PIC_W, 330);
     const q = cell(`H${r0 + 1}`, it.qty, { al: { horizontal: 'center', vertical: 'top' } });
     const u = cell(`I${r0 + 1}`, pr ? pr.price : null, { al: { horizontal: 'center', vertical: 'top' }, numFmt: '"$"#,##0.00' });
     const a = cell(`J${r0 + 1}`, { formula: `IF(I${r0 + 1}="","",H${r0 + 1}*I${r0 + 1})`, result: pr ? pr.price * it.qty : '' }, { font: { bold: true }, al: { horizontal: 'center', vertical: 'top' }, numFmt: '"$"#,##0.00' });
@@ -188,7 +197,7 @@ export async function buildQuoteXlsx(csv) {
   // Footer strip from the Word quotation: company name, address, contact and registration numbers
   addImg('foot', 1.0, r + 0.5, 760, 100);
   for (let k = 1; k <= 6; k++) ws.getRow(r + k).height = 17;
-  if (items.length <= 2) ws.pageSetup.fitToHeight = 1; // short quotes stay on one page
+  if (items.length <= 2 && !hasPic) ws.pageSetup.fitToHeight = 1; // short quotes stay on one page
   ws.pageSetup.printArea = `A1:K${r + 6}`;
   ws.headerFooter.oddFooter = '&C&"Roboto,Regular"&8Page &P of &N';
   return Buffer.from(await wb.xlsx.writeBuffer());
