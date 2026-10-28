@@ -9,6 +9,7 @@
 
 import { sb, sbReady, splitEnquiryCsv } from './_sb.js';
 import { buildXlsx } from './_xlsx.js';
+import { buildQuotePdf } from './_quote.js';
 
 const SALES = process.env.SALES_EMAIL || 'fabrication@pollisum.com';
 const FROM = process.env.RESEND_FROM || '';
@@ -99,6 +100,12 @@ export default async function handler(req, res) {
         toSales.attachments.unshift({ filename: `${ref}.xlsx`, content: (await buildXlsx(csv)).toString('base64') });
       } catch (e) {
         console.error('xlsx attach failed', e.message); // CSV is still attached
+      }
+      try {
+        const q = await buildQuotePdf(csv); // draft quotation for the standard catalogue items (internal; prices from api/_prices.js)
+        if (q) toSales.attachments.push({ filename: `${ref}-Quotation.pdf`, content: q.toString('base64') });
+      } catch (e) {
+        console.error('quotation pdf failed', e.message); // enquiry email still goes out
       }
     }
     await send(toSales);
