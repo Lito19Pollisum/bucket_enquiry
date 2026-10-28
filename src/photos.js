@@ -7,9 +7,6 @@ export const GAL = {
   "p_cdcb_1",
   "p_cdcb_2"
  ],
- "c_circman": [
-  "p_circman_1"
- ],
  "c_fronthandle": [
   "p_fronthandle_1"
  ],
