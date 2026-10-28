@@ -36,9 +36,13 @@ export async function buildQuoteXlsx(csv) {
     pageSetup: { paperSize: 9, orientation: 'portrait', fitToPage: true, fitToWidth: 1, fitToHeight: 0, margins: { left: 0.5, right: 0.5, top: 0.5, bottom: 0.5, header: 0.3, footer: 0.3 } },
   });
   ws.columns = [{ width: 2.7 }, { width: 8.4 }, { width: 14.9 }, { width: 12.4 }, { width: 2.8 }, { width: 12.8 }, { width: 22 }, { width: 6.5 }, { width: 12.5 }, { width: 13 }];
-  const FONT = { name: 'Calibri', size: 10 };
+  // Pollisum Style Guide: Roboto, ink body text, Pollisum Red titles, Mist/Blush panels, E4E4E4 lines, maroon rule at the end.
+  const INK = 'FF191D24', RED = 'FF990000', MAROON = 'FF6A0303', MIST = 'FFF3F3F3', LINE = 'FFE4E4E4', BLUSH = 'FFEDD4D4', GREY = 'FF6B7280';
+  const FONT = { name: 'Roboto', size: 10, color: { argb: INK } };
+  const fill = argb => ({ type: 'pattern', pattern: 'solid', fgColor: { argb } });
   const cell = (a, v, o = {}) => { const c = ws.getCell(a); c.value = v; c.font = { ...FONT, ...(o.font || {}) }; if (o.al) c.alignment = o.al; if (o.numFmt) c.numFmt = o.numFmt; return c; };
-  const thin = { style: 'thin' };
+  const thin = { style: 'thin', color: { argb: LINE } };
+  const rule = { style: 'thin', color: { argb: 'FFBFBFBF' } };
   const addImg = (key, col0, row0, maxW, maxH) => {
     if (!QIMGS[key] && !IMGS[key]) return;
     const src = QIMGS[key] || IMGS[key];
@@ -47,14 +51,17 @@ export async function buildQuoteXlsx(csv) {
     ws.addImage(wb.addImage({ base64: src, extension: 'jpeg' }), { tl: { col: col0, row: row0 }, ext: { width: Math.round(w * k), height: Math.round(h * k) } });
   };
 
-  // Logo (top left)
-  addImg('logo', 1.1, 1.1, 80, 66);
+  // Page frame: title top left, logo mark top right
+  addImg('logo', 8.35, 1.05, 74, 62);
   [2, 3, 4, 5].forEach(r => { ws.getRow(r).height = 16; });
+  ws.mergeCells('B2:G2'); cell('B2', 'POLLISUM FABRICATION PTE. LTD.', { font: { bold: true, size: 9, color: { argb: GREY } }, al: { vertical: 'middle' } });
+  ws.mergeCells('B3:G4'); cell('B3', 'QUOTATION', { font: { bold: true, size: 26, color: { argb: RED } }, al: { vertical: 'middle' } });
+  ws.mergeCells('B5:G5'); cell('B5', '41 Senoko Way, Singapore 758053  ·  (65) 6755 7600  ·  fabrication@pollisum.com', { font: { size: 8, color: { argb: GREY } }, al: { vertical: 'middle' } });
 
   // Header block
   const date = new Date().toLocaleDateString('en-GB').replace(/\//g, '.');
   ws.mergeCells('B6:F6'); ws.mergeCells('B7:F8'); ws.mergeCells('C9:E9');
-  cell('B6', meta.Company || 'COMPANY NAME', { font: { bold: true }, al: { vertical: 'middle', horizontal: 'left' } });
+  cell('B6', meta.Company || 'COMPANY NAME', { font: { bold: true, size: 11 }, al: { vertical: 'middle', horizontal: 'left' } });
   cell('B7', (meta['Delivery location'] || 'ADDRESS').toString(), { font: { bold: true }, al: { vertical: 'top', horizontal: 'left', wrapText: true } });
   cell('B9', 'ATTN', { font: { bold: true } }); cell('C9', meta['Contact person'] || '', { font: { bold: true } });
   [['G6', 'DATE', 'I6', date], ['G7', 'TEL', 'I7', meta.Phone || ''], ['G8', 'HP', 'I8', ''], ['G9', 'EMAIL', 'I9', meta.Email || '']].forEach(([lk, l, vk, v]) => {
@@ -67,15 +74,17 @@ export async function buildQuoteXlsx(csv) {
   const fams = [...new Set(items.map(i => (i.fam ? i.fam.name : i.famName)))];
   const title = fams.length === 1 ? `Quotation for ${fams[0]}` : 'Quotation for Standard Buckets';
   ws.mergeCells('B11:J11');
-  cell('B11', title, { font: { bold: true, underline: true }, al: { horizontal: 'left', vertical: 'top' } });
-  cell('B10', `Enquiry ref: ${meta['Enquiry reference'] || ''}`, { font: { size: 8, color: { argb: 'FF888888' } } });
+  cell('B11', title.toUpperCase(), { font: { bold: true, size: 12, color: { argb: RED } }, al: { horizontal: 'left', vertical: 'middle' } });
+  ws.getRow(11).height = 22;
+  cell('B10', `Enquiry ref: ${meta['Enquiry reference'] || ''}`, { font: { size: 8, color: { argb: GREY } } });
 
   // Table header
   ws.mergeCells('B12:G12');
-  [['B12', 'Description'], ['H12', 'Qty'], ['I12', 'Unit Price'], ['J12', 'Amount']].forEach(([a, v]) => {
-    cell(a, v, { font: { bold: true }, al: { horizontal: 'center', vertical: 'top' } });
+  [['B12', 'DESCRIPTION'], ['H12', 'QTY'], ['I12', 'UNIT PRICE'], ['J12', 'AMOUNT']].forEach(([a, v]) => {
+    cell(a, v, { font: { bold: true, size: 9 }, al: { horizontal: 'center', vertical: 'middle' } });
   });
-  for (const col of 'BCDEFGHIJ') { const c = ws.getCell(`${col}12`); c.border = { top: thin, bottom: thin, left: col === 'B' ? thin : undefined, right: ['G', 'H', 'I', 'J'].includes(col) ? thin : undefined }; }
+  ws.getRow(12).height = 20;
+  for (const col of 'BCDEFGHIJ') { const c = ws.getCell(`${col}12`); c.fill = fill(MIST); c.border = { top: rule, bottom: rule, left: col === 'B' ? rule : undefined, right: ['G', 'H', 'I', 'J'].includes(col) ? thin : undefined }; }
 
   // Items: one block of 11 rows each (photo left, text, qty / unit price / amount right)
   let r0 = 13; const amtCells = [];
@@ -88,17 +97,17 @@ export async function buildQuoteXlsx(csv) {
       for (const col of 'BCDEFGHIJ') { const b = {}; if (col === 'B') b.left = thin; if (['G', 'H', 'I', 'J'].includes(col)) b.right = thin; ws.getCell(`${col}${r}`).border = b; }
     }
     const T = { font: { size: 9 }, al: { vertical: 'top' } };
-    cell(`D${r0 + 1}`, `${it.fam ? it.fam.name : it.famName} - ${it.code}`, { font: { size: 9, bold: true, underline: true }, al: { vertical: 'top' } });
+    cell(`D${r0 + 1}`, `${it.fam ? it.fam.name : it.famName} - ${it.code}`, { font: { size: 10, bold: true, color: { argb: RED } }, al: { vertical: 'top' } });
     [['Size', m.dims || it.dims], ['Empty Weight', m.self], ['SWL', m.swl || it.swl]].forEach(([k, v], i) => {
       cell(`D${r0 + 2 + i}`, k, T); cell(`E${r0 + 2 + i}`, ':', { font: { size: 9 }, al: { horizontal: 'center', vertical: 'top' } });
       ws.mergeCells(`F${r0 + 2 + i}:G${r0 + 2 + i}`); cell(`F${r0 + 2 + i}`, v || '', T);
     });
-    cell(`D${r0 + 6}`, 'Wire Sling', { font: { size: 9, bold: true, underline: true }, al: { vertical: 'top' } });
+    cell(`D${r0 + 6}`, 'Wire Sling', { font: { size: 10, bold: true, color: { argb: RED } }, al: { vertical: 'top' } });
     [['Size', sl?.size], ['SWL', sl?.swl]].forEach(([k, v], i) => {
       cell(`D${r0 + 7 + i}`, k, T); cell(`E${r0 + 7 + i}`, ':', { font: { size: 9 }, al: { horizontal: 'center', vertical: 'top' } });
       ws.mergeCells(`F${r0 + 7 + i}:G${r0 + 7 + i}`); cell(`F${r0 + 7 + i}`, v || '', T);
     });
-    if (pr?.note) { ws.mergeCells(`D${r0 + 9}:G${r0 + 10}`); cell(`D${r0 + 9}`, 'Incl. ' + pr.note.replace(/^incl\.\s*/i, '').replace(/,\s*new .*? wire sling/i, ''), { font: { size: 8, italic: true }, al: { vertical: 'top', wrapText: true } }); }
+    if (pr?.note) { ws.mergeCells(`D${r0 + 9}:G${r0 + 10}`); cell(`D${r0 + 9}`, 'Incl. ' + pr.note.replace(/^incl\.\s*/i, '').replace(/,\s*new .*? wire sling/i, ''), { font: { size: 8, italic: true, color: { argb: GREY } }, al: { vertical: 'top', wrapText: true } }); }
     pics.forEach((key, i) => addImg(key, 1.05, r0 + 0.6 + i * 7, 165, 105));
     const q = cell(`H${r0 + 1}`, it.qty, { al: { horizontal: 'center', vertical: 'top' } });
     const u = cell(`I${r0 + 1}`, pr ? pr.price : null, { al: { horizontal: 'center', vertical: 'top' }, numFmt: '"$"#,##0.00' });
@@ -117,12 +126,16 @@ export async function buildQuoteXlsx(csv) {
   ws.mergeCells(`B${r0}:G${r0}`); ws.mergeCells(`H${r0}:J${r0}`);
   cell(`B${r0}`, 'Total Amount', { font: { bold: true }, al: { horizontal: 'right', vertical: 'top' } });
   cell(`H${r0}`, { formula: `SUM(${amtCells.join(',')})`, result: items.reduce((s, it) => s + (PRICES[it.code]?.price || 0) * it.qty, 0) }, { font: { bold: true }, al: { horizontal: 'right', vertical: 'top' }, numFmt: '"$"#,##0.00_);[Red]\\("$"#,##0.00\\)' });
-  for (const col of 'BCDEFGHIJ') ws.getCell(`${col}${r0}`).border = { top: thin, bottom: thin, left: col === 'B' ? thin : undefined, right: ['G', 'H', 'I', 'J'].includes(col) ? thin : undefined };
+  ws.getRow(r0).height = 22;
+  for (const col of 'BCDEFGHIJ') { const c = ws.getCell(`${col}${r0}`); c.fill = fill(BLUSH); c.border = { top: rule, bottom: rule, left: col === 'B' ? rule : undefined, right: ['G', 'H', 'I', 'J'].includes(col) ? rule : undefined }; }
+  ws.getCell(`B${r0}`).alignment = { horizontal: 'right', vertical: 'middle' }; ws.getCell(`H${r0}`).alignment = { horizontal: 'right', vertical: 'middle' };
+  ws.getCell(`B${r0}`).font = { ...FONT, bold: true, size: 11 }; ws.getCell(`H${r0}`).font = { ...FONT, bold: true, size: 12 };
+  cell(`B${r0 + 1}`, 'All prices are in SGD and exclusive of 9% GST.', { font: { size: 8, color: { argb: GREY } } });
 
   // Terms and conditions
-  let r = r0 + 2;
+  let r = r0 + 3;
   const recumbent = items.some(it => it.fam && it.fam.id === 'rcb');
-  ws.mergeCells(`B${r}:J${r}`); cell(`B${r}`, 'Terms and Conditions', { font: { bold: true, underline: true } }); r++;
+  ws.mergeCells(`B${r}:J${r}`); cell(`B${r}`, 'TERMS AND CONDITIONS', { font: { bold: true, size: 10, color: { argb: RED } } }); r++;
   const TERMS = [
     `Delivery of goods will be effected in ${recumbent ? '10-14' : '7-10'} working days upon confirmation of our quotation.`,
     'Delivery in Singapore (exclude Jurong Island) by lorry only.',
@@ -139,7 +152,7 @@ export async function buildQuoteXlsx(csv) {
   r++;
   ws.mergeCells(`B${r}:J${r}`); cell(`B${r}`, 'Remarks: Full amount will be charged accordingly if any cancellation upon confirmation of order.', { font: { bold: true } }); r++;
   ws.mergeCells(`B${r}:J${r}`); cell(`B${r}`, 'Please endorse your acceptance and return to us with your Purchase Order before commencement of work.'); r++;
-  ws.mergeCells(`B${r}:J${r}`); cell(`B${r}`, 'Should you have any queries, please do not hesitate to contact me.'); r += 4;
+  ws.mergeCells(`B${r}:J${r}`); cell(`B${r}`, 'Should you have any queries, please do not hesitate to contact me.'); r += 3;
 
   // Signature block
   ws.mergeCells(`B${r}:D${r}`); cell(`B${r}`, 'Yours faithfully,');
@@ -150,5 +163,7 @@ export async function buildQuoteXlsx(csv) {
   addImg('sign', 1.1, r + 0.2, 130, 112);
   r += 7;
   cell(`B${r}`, 'Eileen Tey'); cell(`G${r}`, 'Name:');
+  r += 2;
+  ws.getRow(r).height = 9; ws.mergeCells(`B${r}:J${r}`); ws.getCell(`B${r}`).fill = fill(MAROON); // page ends on the maroon rule
   return Buffer.from(await wb.xlsx.writeBuffer());
 }
