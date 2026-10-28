@@ -5,6 +5,10 @@ import ExcelJS from 'exceljs';
 import { standardItems, FAM_IMG } from './_quote.js';
 import { PRICES } from './_prices.js';
 import { IMGS } from './_assets.js';
+import { QIMGS } from './_qimgs.js';
+
+// Pictures from the sample quotations (they carry the W/L/H markers); other families use their catalogue photo.
+const SAMPLE_IMGS = { spb: ['super'], sb: ['sand'], sdcb: ['side'], rcb: ['recdraw', 'recphoto'] };
 
 function jpegSize(buf) {
   let i = 2;
@@ -36,10 +40,11 @@ export async function buildQuoteXlsx(csv) {
   const cell = (a, v, o = {}) => { const c = ws.getCell(a); c.value = v; c.font = { ...FONT, ...(o.font || {}) }; if (o.al) c.alignment = o.al; if (o.numFmt) c.numFmt = o.numFmt; return c; };
   const thin = { style: 'thin' };
   const addImg = (key, col0, row0, maxW, maxH) => {
-    if (!IMGS[key]) return;
-    const buf = Buffer.from(IMGS[key], 'base64'); const { w, h } = jpegSize(buf);
+    if (!QIMGS[key] && !IMGS[key]) return;
+    const src = QIMGS[key] || IMGS[key];
+    const buf = Buffer.from(src, 'base64'); const { w, h } = jpegSize(buf);
     const k = Math.min(maxW / w, maxH / h);
-    ws.addImage(wb.addImage({ base64: IMGS[key], extension: 'jpeg' }), { tl: { col: col0, row: row0 }, ext: { width: Math.round(w * k), height: Math.round(h * k) } });
+    ws.addImage(wb.addImage({ base64: src, extension: 'jpeg' }), { tl: { col: col0, row: row0 }, ext: { width: Math.round(w * k), height: Math.round(h * k) } });
   };
 
   // Logo (top left)
@@ -73,9 +78,11 @@ export async function buildQuoteXlsx(csv) {
   for (const col of 'BCDEFGHIJ') { const c = ws.getCell(`${col}12`); c.border = { top: thin, bottom: thin, left: col === 'B' ? thin : undefined, right: ['G', 'H', 'I', 'J'].includes(col) ? thin : undefined }; }
 
   // Items: one block of 11 rows each (photo left, text, qty / unit price / amount right)
-  const BLOCK = 11; let r0 = 13; const amtCells = [];
+  let r0 = 13; const amtCells = [];
   for (const it of items) {
     const m = it.model || {}, pr = PRICES[it.code], sl = sling(pr?.note);
+    const pics = (it.fam && SAMPLE_IMGS[it.fam.id]) || (it.fam && FAM_IMG[it.fam.id] ? [FAM_IMG[it.fam.id]] : []);
+    const BLOCK = Math.max(11, 1 + pics.length * 7);
     for (let r = r0; r < r0 + BLOCK; r++) {
       ws.getRow(r).height = 15;
       for (const col of 'BCDEFGHIJ') { const b = {}; if (col === 'B') b.left = thin; if (['G', 'H', 'I', 'J'].includes(col)) b.right = thin; ws.getCell(`${col}${r}`).border = b; }
@@ -92,8 +99,7 @@ export async function buildQuoteXlsx(csv) {
       ws.mergeCells(`F${r0 + 7 + i}:G${r0 + 7 + i}`); cell(`F${r0 + 7 + i}`, v || '', T);
     });
     if (pr?.note) { ws.mergeCells(`D${r0 + 9}:G${r0 + 10}`); cell(`D${r0 + 9}`, 'Incl. ' + pr.note.replace(/^incl\.\s*/i, '').replace(/,\s*new .*? wire sling/i, ''), { font: { size: 8, italic: true }, al: { vertical: 'top', wrapText: true } }); }
-    const key = it.fam ? FAM_IMG[it.fam.id] : null;
-    if (key) addImg(key, 1.15, r0 + 0.6, 150, 108);
+    pics.forEach((key, i) => addImg(key, 1.05, r0 + 0.6 + i * 7, 165, 105));
     const q = cell(`H${r0 + 1}`, it.qty, { al: { horizontal: 'center', vertical: 'top' } });
     const u = cell(`I${r0 + 1}`, pr ? pr.price : null, { al: { horizontal: 'center', vertical: 'top' }, numFmt: '"$"#,##0.00' });
     const a = cell(`J${r0 + 1}`, { formula: `IF(I${r0 + 1}="","",H${r0 + 1}*I${r0 + 1})`, result: pr ? pr.price * it.qty : '' }, { font: { bold: true }, al: { horizontal: 'center', vertical: 'top' }, numFmt: '"$"#,##0.00' });
