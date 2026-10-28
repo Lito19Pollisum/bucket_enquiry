@@ -126,11 +126,10 @@ export async function buildQuoteXlsx(csv) {
     const L = pic ? 'B' : 'D'; // with a picture below, details start at the left edge
     { // description line, highlighted yellow, as in the Word quotations
       const capTxt = String(m.cap || it.cap || '').replace(/\s*m³/, 'm³').trim();
-      const nm = it.fam && it.fam.id === 'sb' ? 'Sand & mud bucket' : (it.fam ? it.fam.name : it.famName);
+      const nm = it.fam && it.fam.id === 'sb' ? 'Sand & Mud Bucket' : (it.fam ? it.fam.name : it.famName);
       const text = capTxt ? `Supply ${capTxt} ${nm} with Tested Wire Sling and Load Test Certificate` : `Supply ${nm} (${it.code}) with Tested Wire Sling and Load Test Certificate`;
       ws.mergeCells(`B${r0}:G${r0}`); ws.getRow(r0).height = 20;
       cell(`B${r0}`, text, { font: { size: 9.5, bold: true }, al: { vertical: 'middle', horizontal: 'left', shrinkToFit: true } });
-      for (const col of 'BCDEFG') ws.getCell(`${col}${r0}`).fill = fill('FFFFFF00');
     }
     const T = { font: { size: 9 }, al: { vertical: 'top' } };
     cell(`${L}${r0 + 1}`, `${it.fam ? it.fam.name : it.famName} - ${it.code}`, { font: { size: 10, bold: true, color: { argb: RED } }, al: { vertical: 'top' } });
