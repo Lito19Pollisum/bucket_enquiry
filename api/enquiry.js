@@ -9,7 +9,6 @@
 
 import { sb, sbReady, sbUpload, splitEnquiryCsv } from './_sb.js';
 import { buildXlsx } from './_xlsx.js';
-import { buildQuotePdf } from './_quote.js';
 import { buildQuoteXlsx } from './_quotexlsx.js';
 
 const SALES = process.env.SALES_EMAIL || 'fabrication@pollisum.com';
@@ -86,11 +85,10 @@ export default async function handler(req, res) {
   // Save to Supabase first (best-effort: a database failure must never block the email).
   const saved = await save({ kind, ref, company, contact, email, body: text, csv: kind === 'enquiry' ? csv : null });
 
-  // Draft quotation (PDF + Excel) filed in Storage for staff to review, amend and send manually. Never blocks the enquiry.
+  // Draft quotation (Excel only; staff amend the terms and convert to PDF manually) filed in Storage for staff to review, amend and send manually. Never blocks the enquiry.
   if (kind === 'enquiry' && csv && sbReady()) {
     try {
-      const [pdf, xl] = [await buildQuotePdf(csv), await buildQuoteXlsx(csv)];
-      if (pdf) await sbUpload(`${ref}/${ref}-Quotation.pdf`, pdf, 'application/pdf');
+      const xl = await buildQuoteXlsx(csv);
       if (xl) await sbUpload(`${ref}/${ref}-Quotation.xlsx`, xl, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     } catch (e) { console.error('quotation filing failed', e.message); }
   }
