@@ -1,10 +1,11 @@
-// Editable Excel version of the draft quotation, with the logo and each bucket's photo, so staff can amend terms and convert to PDF.
+// Draft quotation workbook that follows Pollisum's sample quotation format (see the four "Sample - Quotation" files):
+// logo, company/contact header, Description | Qty | Unit Price | Amount table with bucket photo,
+// Total Amount (price exclusive of 9% GST), standard terms, signature block. Staff amend it per customer, then convert to PDF.
 import ExcelJS from 'exceljs';
 import { standardItems, FAM_IMG } from './_quote.js';
 import { PRICES } from './_prices.js';
 import { IMGS } from './_assets.js';
 
-// Reads width/height from a JPEG's SOF marker.
 function jpegSize(buf) {
   let i = 2;
   while (i < buf.length) {
@@ -15,58 +16,133 @@ function jpegSize(buf) {
   }
   return { w: 4, h: 3 };
 }
+// "new 20mm x 2m x 4 legged (SWL 10T) wire sling" / "new 16mm x 2m 4-legged wire sling (SWL 6T)"
+function sling(note) {
+  if (!note) return null;
+  const a = note.match(/new (.+?) wire sling \(SWL ([^)]+)\)/i) || note.match(/new (.+?)\s*\(SWL ([^)]+)\)\s*wire sling/i);
+  return a ? { size: a[1], swl: a[2] } : null;
+}
 
 export async function buildQuoteXlsx(csv) {
   const { meta, items } = standardItems(csv);
   if (!items.length) return null;
   const wb = new ExcelJS.Workbook();
-  const ws = wb.addWorksheet('Quotation', { pageSetup: { paperSize: 9, orientation: 'portrait', fitToPage: true, fitToWidth: 1, fitToHeight: 0 } });
-  ws.columns = [{ width: 24 }, { width: 50 }, { width: 8 }, { width: 15 }, { width: 16 }];
-  const bold = r => { r.font = { bold: true }; };
-  const addImg = (key, row0, col0, maxW, maxH) => {
+  const ws = wb.addWorksheet('Quotation', {
+    views: [{ showGridLines: false }],
+    pageSetup: { paperSize: 9, orientation: 'portrait', fitToPage: true, fitToWidth: 1, fitToHeight: 0, margins: { left: 0.5, right: 0.5, top: 0.5, bottom: 0.5, header: 0.3, footer: 0.3 } },
+  });
+  ws.columns = [{ width: 2.7 }, { width: 8.4 }, { width: 14.9 }, { width: 12.4 }, { width: 2.8 }, { width: 12.8 }, { width: 22 }, { width: 6.5 }, { width: 12.5 }, { width: 13 }];
+  const FONT = { name: 'Calibri', size: 10 };
+  const cell = (a, v, o = {}) => { const c = ws.getCell(a); c.value = v; c.font = { ...FONT, ...(o.font || {}) }; if (o.al) c.alignment = o.al; if (o.numFmt) c.numFmt = o.numFmt; return c; };
+  const thin = { style: 'thin' };
+  const addImg = (key, col0, row0, maxW, maxH) => {
     if (!IMGS[key]) return;
     const buf = Buffer.from(IMGS[key], 'base64'); const { w, h } = jpegSize(buf);
     const k = Math.min(maxW / w, maxH / h);
-    const id = wb.addImage({ base64: IMGS[key], extension: 'jpeg' });
-    ws.addImage(id, { tl: { col: col0 + 0.1, row: row0 + 0.1 }, ext: { width: Math.round(w * k), height: Math.round(h * k) } });
+    ws.addImage(wb.addImage({ base64: IMGS[key], extension: 'jpeg' }), { tl: { col: col0, row: row0 }, ext: { width: Math.round(w * k), height: Math.round(h * k) } });
   };
 
-  // Header: logo, company line, customer details
-  ws.getRow(1).height = 62; ws.getRow(2).height = 4;
-  addImg('logo', 0, 0, 70, 58);
-  ws.getCell('B1').value = 'POLLISUM FABRICATION PTE. LTD.'; ws.getCell('B1').font = { bold: true, size: 14 }; ws.getCell('B1').alignment = { vertical: 'middle' };
-  const date = new Date().toLocaleDateString('en-GB').replace(/\//g, '.');
-  [['COMPANY NAME', meta.Company], ['ADDRESS', meta['Delivery location']], ['ATTN', meta['Contact person']], ['TEL', meta.Phone], ['EMAIL', meta.Email], ['DATE', date], ['ENQUIRY REF', meta['Enquiry reference']]]
-    .forEach(([k, v]) => { const r = ws.addRow([k, v || '']); r.getCell(1).font = { bold: true }; });
-  ws.addRow([]);
-  ws.addRow(['Quotation for Standard Buckets']).font = { bold: true, size: 12 };
-  const head = ws.addRow(['Photo', 'Description', 'Qty', 'Unit Price (S$)', 'Amount (S$)']); bold(head);
-  head.eachCell(c => { c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFEFEFEF' } }; c.border = { bottom: { style: 'thin' } }; });
+  // Logo (top left)
+  addImg('logo', 1.1, 1.1, 80, 66);
+  [2, 3, 4, 5].forEach(r => { ws.getRow(r).height = 16; });
 
-  const first = ws.rowCount + 1;
+  // Header block
+  const date = new Date().toLocaleDateString('en-GB').replace(/\//g, '.');
+  ws.mergeCells('B6:F6'); ws.mergeCells('B7:F8'); ws.mergeCells('C9:E9');
+  cell('B6', meta.Company || 'COMPANY NAME', { font: { bold: true }, al: { vertical: 'middle', horizontal: 'left' } });
+  cell('B7', (meta['Delivery location'] || 'ADDRESS').toString(), { font: { bold: true }, al: { vertical: 'top', horizontal: 'left', wrapText: true } });
+  cell('B9', 'ATTN', { font: { bold: true } }); cell('C9', meta['Contact person'] || '', { font: { bold: true } });
+  [['G6', 'DATE', 'I6', date], ['G7', 'TEL', 'I7', meta.Phone || ''], ['G8', 'HP', 'I8', ''], ['G9', 'EMAIL', 'I9', meta.Email || '']].forEach(([lk, l, vk, v]) => {
+    const r = +lk.slice(1); ws.mergeCells(`I${r}:J${r}`);
+    cell(lk, l, { font: { bold: true } }); cell(`H${r}`, ':', { font: { bold: true }, al: { horizontal: 'center' } }); cell(vk, v);
+  });
+  ws.getRow(6).height = 17.5; ws.getRow(7).height = 15.5; ws.getRow(8).height = 15.5;
+
+  // Title
+  const fams = [...new Set(items.map(i => (i.fam ? i.fam.name : i.famName)))];
+  const title = fams.length === 1 ? `Quotation for ${fams[0]}` : 'Quotation for Standard Buckets';
+  ws.mergeCells('B11:J11');
+  cell('B11', title, { font: { bold: true, underline: true }, al: { horizontal: 'left', vertical: 'top' } });
+  cell('B10', `Enquiry ref: ${meta['Enquiry reference'] || ''}`, { font: { size: 8, color: { argb: 'FF888888' } } });
+
+  // Table header
+  ws.mergeCells('B12:G12');
+  [['B12', 'Description'], ['H12', 'Qty'], ['I12', 'Unit Price'], ['J12', 'Amount']].forEach(([a, v]) => {
+    cell(a, v, { font: { bold: true }, al: { horizontal: 'center', vertical: 'top' } });
+  });
+  for (const col of 'BCDEFGHIJ') { const c = ws.getCell(`${col}12`); c.border = { top: thin, bottom: thin, left: col === 'B' ? thin : undefined, right: ['G', 'H', 'I', 'J'].includes(col) ? thin : undefined }; }
+
+  // Items: one block of 11 rows each (photo left, text, qty / unit price / amount right)
+  const BLOCK = 11; let r0 = 13; const amtCells = [];
   for (const it of items) {
-    const m = it.model || {}, pr = PRICES[it.code];
-    const d = [`${it.fam ? it.fam.name : it.famName} - ${it.code}`, `Capacity: ${m.cap || it.cap || ''}`, `Size: ${m.dims || it.dims || ''}`, m.self ? `Empty Weight: ${m.self}` : '', `SWL: ${m.swl || it.swl || ''}`, m.outlet ? `Outlet: ${m.outlet}` : '', pr?.note ? `Includes: ${pr.note.replace(/^incl\.\s*/, '')}` : ''].filter(Boolean).join('\n');
-    const r = ws.addRow([null, d, it.qty, pr ? pr.price : 'TBC', null]);
-    r.getCell(5).value = pr ? { formula: `C${r.number}*D${r.number}`, result: pr.price * it.qty } : 'TBC';
-    r.height = Math.max(100, d.split('\n').length * 15 + 12);
-    r.getCell(2).alignment = { wrapText: true, vertical: 'top' };
-    [3, 4, 5].forEach(n => { r.getCell(n).alignment = { vertical: 'top', horizontal: 'right' }; });
-    [4, 5].forEach(n => { r.getCell(n).numFmt = '#,##0.00'; });
-    r.eachCell({ includeEmpty: true }, c => { c.border = { bottom: { style: 'hair' } }; });
+    const m = it.model || {}, pr = PRICES[it.code], sl = sling(pr?.note);
+    for (let r = r0; r < r0 + BLOCK; r++) {
+      ws.getRow(r).height = 15;
+      for (const col of 'BCDEFGHIJ') { const b = {}; if (col === 'B') b.left = thin; if (['G', 'H', 'I', 'J'].includes(col)) b.right = thin; ws.getCell(`${col}${r}`).border = b; }
+    }
+    const T = { font: { size: 9 }, al: { vertical: 'top' } };
+    cell(`D${r0 + 1}`, `${it.fam ? it.fam.name : it.famName} - ${it.code}`, { font: { size: 9, bold: true, underline: true }, al: { vertical: 'top' } });
+    [['Size', m.dims || it.dims], ['Empty Weight', m.self], ['SWL', m.swl || it.swl]].forEach(([k, v], i) => {
+      cell(`D${r0 + 2 + i}`, k, T); cell(`E${r0 + 2 + i}`, ':', { font: { size: 9 }, al: { horizontal: 'center', vertical: 'top' } });
+      ws.mergeCells(`F${r0 + 2 + i}:G${r0 + 2 + i}`); cell(`F${r0 + 2 + i}`, v || '', T);
+    });
+    cell(`D${r0 + 6}`, 'Wire Sling', { font: { size: 9, bold: true, underline: true }, al: { vertical: 'top' } });
+    [['Size', sl?.size], ['SWL', sl?.swl]].forEach(([k, v], i) => {
+      cell(`D${r0 + 7 + i}`, k, T); cell(`E${r0 + 7 + i}`, ':', { font: { size: 9 }, al: { horizontal: 'center', vertical: 'top' } });
+      ws.mergeCells(`F${r0 + 7 + i}:G${r0 + 7 + i}`); cell(`F${r0 + 7 + i}`, v || '', T);
+    });
+    if (pr?.note) { ws.mergeCells(`D${r0 + 9}:G${r0 + 10}`); cell(`D${r0 + 9}`, 'Incl. ' + pr.note.replace(/^incl\.\s*/i, '').replace(/,\s*new .*? wire sling/i, ''), { font: { size: 8, italic: true }, al: { vertical: 'top', wrapText: true } }); }
     const key = it.fam ? FAM_IMG[it.fam.id] : null;
-    if (key) addImg(key, r.number - 1, 0, 150, 90);
+    if (key) addImg(key, 1.15, r0 + 0.6, 150, 108);
+    const q = cell(`H${r0 + 1}`, it.qty, { al: { horizontal: 'center', vertical: 'top' } });
+    const u = cell(`I${r0 + 1}`, pr ? pr.price : null, { al: { horizontal: 'center', vertical: 'top' }, numFmt: '"$"#,##0.00' });
+    const a = cell(`J${r0 + 1}`, { formula: `IF(I${r0 + 1}="","",H${r0 + 1}*I${r0 + 1})`, result: pr ? pr.price * it.qty : '' }, { font: { bold: true }, al: { horizontal: 'center', vertical: 'top' }, numFmt: '"$"#,##0.00' });
+    amtCells.push(`J${r0 + 1}`);
+    r0 += BLOCK;
   }
-  const last = ws.rowCount;
-  const priced = items.every(it => PRICES[it.code]);
-  ws.addRow([]);
-  if (priced) {
-    const s = ws.addRow([null, 'Sub-total', null, null, { formula: `SUM(E${first}:E${last})` }]);
-    const g = ws.addRow([null, 'GST 9%', null, null, { formula: `E${s.number}*0.09` }]);
-    const t = ws.addRow([null, 'TOTAL AMOUNT (SGD)', null, null, { formula: `E${s.number}+E${g.number}` }]); bold(t);
-    [s, g, t].forEach(r => { r.getCell(5).numFmt = '#,##0.00'; r.getCell(2).alignment = { horizontal: 'right' }; });
-  } else bold(ws.addRow([null, 'TOTAL AMOUNT TBC']));
-  ws.addRow([]);
-  ws.addRow(['Draft generated automatically from the online enquiry. Add terms and conditions and check prices and delivery before sending.']).font = { italic: true, color: { argb: 'FF888888' } };
+
+  // Re-apply the table's vertical rules after merging (merged cells otherwise lose the right edge)
+  for (let rr = 13; rr < r0; rr++) for (const col of 'BCDEFGHIJ') {
+    const c = ws.getCell(`${col}${rr}`);
+    c.border = { ...(col === 'B' ? { left: thin } : {}), ...(['G', 'H', 'I', 'J'].includes(col) ? { right: thin } : {}) };
+  }
+
+  // Total
+  ws.mergeCells(`B${r0}:G${r0}`); ws.mergeCells(`H${r0}:J${r0}`);
+  cell(`B${r0}`, 'Total Amount', { font: { bold: true }, al: { horizontal: 'right', vertical: 'top' } });
+  cell(`H${r0}`, { formula: `SUM(${amtCells.join(',')})`, result: items.reduce((s, it) => s + (PRICES[it.code]?.price || 0) * it.qty, 0) }, { font: { bold: true }, al: { horizontal: 'right', vertical: 'top' }, numFmt: '"$"#,##0.00_);[Red]\\("$"#,##0.00\\)' });
+  for (const col of 'BCDEFGHIJ') ws.getCell(`${col}${r0}`).border = { top: thin, bottom: thin, left: col === 'B' ? thin : undefined, right: ['G', 'H', 'I', 'J'].includes(col) ? thin : undefined };
+
+  // Terms and conditions
+  let r = r0 + 2;
+  const recumbent = items.some(it => it.fam && it.fam.id === 'rcb');
+  ws.mergeCells(`B${r}:J${r}`); cell(`B${r}`, 'Terms and Conditions', { font: { bold: true, underline: true } }); r++;
+  const TERMS = [
+    `Delivery of goods will be effected in ${recumbent ? '10-14' : '7-10'} working days upon confirmation of our quotation.`,
+    'Delivery in Singapore (exclude Jurong Island) by lorry only.',
+    'Validity period: 3 days from date of our quotation.',
+    'Terms of Payment: COD and price exclusive of 9% GST',
+    'The above information is confidential and is given upon your request and solely for the intended purpose only. You should not copy distribute or use to for any propose nor disclose its contents to another person.',
+  ];
+  TERMS.forEach((t, i) => {
+    cell(`B${r}`, `${i + 1}.`, { al: { horizontal: 'center', vertical: 'top' } });
+    ws.mergeCells(`C${r}:J${r}`); cell(`C${r}`, t, { al: { wrapText: true, vertical: 'top', horizontal: 'left' } });
+    if (t.length > 95) ws.getRow(r).height = 28;
+    r++;
+  });
+  r++;
+  ws.mergeCells(`B${r}:J${r}`); cell(`B${r}`, 'Remarks: Full amount will be charged accordingly if any cancellation upon confirmation of order.', { font: { bold: true } }); r++;
+  ws.mergeCells(`B${r}:J${r}`); cell(`B${r}`, 'Please endorse your acceptance and return to us with your Purchase Order before commencement of work.'); r++;
+  ws.mergeCells(`B${r}:J${r}`); cell(`B${r}`, 'Should you have any queries, please do not hesitate to contact me.'); r += 4;
+
+  // Signature block
+  ws.mergeCells(`B${r}:D${r}`); cell(`B${r}`, 'Yours faithfully,');
+  ws.mergeCells(`G${r}:J${r}`); cell(`G${r}`, 'Agreed and accepted the above,');
+  r++;
+  ws.mergeCells(`B${r}:D${r}`); cell(`B${r}`, 'POLLISUM FABRICATION PTE. LTD.', { font: { bold: true } });
+  ws.mergeCells(`G${r}:J${r}`); cell(`G${r}`, meta.Company || 'COMPANY NAME', { font: { bold: true } });
+  addImg('sign', 1.1, r + 0.2, 130, 112);
+  r += 7;
+  cell(`B${r}`, 'Eileen Tey'); cell(`G${r}`, 'Name:');
   return Buffer.from(await wb.xlsx.writeBuffer());
 }
