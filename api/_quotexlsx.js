@@ -10,6 +10,9 @@ import { QDRAW } from './_qdraw.js';
 
 // Pictures from the sample quotations (they carry the W/L/H markers); other families use their catalogue photo.
 const SAMPLE_PHOTO = { spb: 'super', sb: 'sand', sdcb: 'side', rcb: 'recphoto', cdcb: 'cdcb', sdb: 'sdb', cr: 'cr', lcr: 'lcr', mc: 'mc', rmc: 'rmc' };
+// Sand buckets: the sample quotation (AS-IS Builders, 10/4/2023) uses a different picture per size, and gives the wire sling per size.
+const SAND_PHOTO = { 'SB-072': 'sand', 'SB-100': 'sand100', 'SB-120': 'sand100', 'SB-150': 'sand150', 'SB-200': 'sand150', 'SB-250': 'sand250', 'SB-300': 'sand250' };
+const SLINGS = { 'SB-072': { size: '14mm x 1.5m 4-legged', swl: '4T' }, 'SB-100': { size: '14mm x 1.5m 4-legged', swl: '4T' }, 'SB-150': { size: '16mm x 2m 4-legged', swl: '6T' }, 'SB-200': { size: '16mm x 2m 4-legged', swl: '6T' }, 'SB-250': { size: '18mm x 2m 4-legged', swl: '8T' }, 'SB-300': { size: '18mm x 2m 4-legged', swl: '8T' } };
 // Dimension drawing matched to the model's size (from the sample quotations); SB-072 uses the sand bucket sample drawing.
 const drawingFor = code => (code === 'SB-072' ? QIMGS.sanddraw : QDRAW[code]) || null;
 
@@ -95,8 +98,8 @@ export async function buildQuoteXlsx(csv) {
   // Items: one block of 11 rows each (photo left, text, qty / unit price / amount right)
   let r0 = 13; const amtCells = [];
   for (const it of items) {
-    const m = it.model || {}, pr = PRICES[it.code], sl = sling(pr?.note);
-    const photo = it.fam && (SAMPLE_PHOTO[it.fam.id] || FAM_IMG[it.fam.id]);
+    const m = it.model || {}, pr = PRICES[it.code], sl = sling(pr?.note) || SLINGS[it.code] || null;
+    const photo = SAND_PHOTO[it.code] || (it.fam && (SAMPLE_PHOTO[it.fam.id] || FAM_IMG[it.fam.id]));
     const drw = drawingFor(it.code);
     const BLOCK = drw ? 22 : 11; // with a drawing: photo + details on top, drawing below across the left of the table
     for (let r = r0; r < r0 + BLOCK; r++) {
