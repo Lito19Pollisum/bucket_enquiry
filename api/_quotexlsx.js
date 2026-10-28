@@ -106,17 +106,17 @@ export async function buildQuoteXlsx(csv) {
   for (const col of 'BCDEFGHIJ') { const c = ws.getCell(`${col}12`); c.fill = fill(MIST); c.border = { top: rule, bottom: rule, left: col === 'B' ? rule : undefined, right: ['G', 'H', 'I', 'J'].includes(col) ? thin : undefined }; }
 
   // Items: one block of 11 rows each (photo left, text, qty / unit price / amount right)
-  let r0 = 13; const amtCells = []; let pageUsed = 240, hasPic = false;
+  let r0 = 13; const amtCells = []; let pageUsed = 240, hasPic = false, pageStart = 1;
   for (const it of items) {
     const m = it.model || {}, pr = PRICES[it.code], sl = sling(pr?.note) || SLINGS[it.code] || null;
     const pic = QPICS[it.code] || null; // exact crop of this model's picture from the Word reference quotation
     const photo = pic ? null : (SAND_PHOTO[it.code] || (it.fam && (SAMPLE_PHOTO[it.fam.id] || FAM_IMG[it.fam.id])));
     const drw = pic ? null : drawingFor(it.code);
-    const PIC_W = 640; let picH = 0;
-    if (pic) { const { w, h } = imgSize(Buffer.from(pic, 'base64')); picH = Math.round(h * Math.min(PIC_W / w, 330 / h, 1.6)); }
+    const PIC_W = 430; let picH = 0;
+    if (pic) { const { w, h } = imgSize(Buffer.from(pic, 'base64')); picH = Math.round(h * Math.min(PIC_W / w, 225 / h, 1)); }
     const BLOCK = pic ? 12 + Math.ceil(picH / 20) : (drw ? 22 : 11); // with a drawing: photo + details on top, drawing below across the left of the table
     if (pic) { // keep a block (details + picture) whole on a printed page
-      if (pageUsed + BLOCK * 15 > 770 && pageUsed > 0) { ws.getRow(r0 - 1).addPageBreak(); pageUsed = 0; }
+      if (pageUsed + BLOCK * 15 > 770 && pageUsed > 0) { ws.getRow(r0 - 1).addPageBreak(); pageUsed = 0; pageStart = r0; }
       pageUsed += BLOCK * 15; hasPic = true;
     } else pageUsed += BLOCK * 15;
     for (let r = r0; r < r0 + BLOCK; r++) {
@@ -137,7 +137,7 @@ export async function buildQuoteXlsx(csv) {
     if (pr?.note) { ws.mergeCells(`D${r0 + 9}:G${r0 + 10}`); cell(`D${r0 + 9}`, 'Incl. ' + pr.note.replace(/^incl\.\s*/i, '').replace(/,\s*new .*? wire sling/i, ''), { font: { size: 8, italic: true, color: { argb: GREY } }, al: { vertical: 'top', wrapText: true } }); }
     if (photo) addImg(photo, 1.05, r0 + 0.6, 165, 105);
     if (drw) addImg('data:' + drw, 1.05, r0 + 11.4, 385, 205);
-    if (pic) addImg('data:' + pic, 1.05, r0 + 11.3, PIC_W, 330);
+    if (pic) addImg('data:' + pic, 1.05, r0 + 11.3, PIC_W, 225);
     const q = cell(`H${r0 + 1}`, it.qty, { al: { horizontal: 'center', vertical: 'top' } });
     const u = cell(`I${r0 + 1}`, pr ? pr.price : null, { al: { horizontal: 'center', vertical: 'top' }, numFmt: '"$"#,##0.00' });
     const a = cell(`J${r0 + 1}`, { formula: `IF(I${r0 + 1}="","",H${r0 + 1}*I${r0 + 1})`, result: pr ? pr.price * it.qty : '' }, { font: { bold: true }, al: { horizontal: 'center', vertical: 'top' }, numFmt: '"$"#,##0.00' });
@@ -183,6 +183,10 @@ export async function buildQuoteXlsx(csv) {
   ws.mergeCells(`B${r}:J${r}`); cell(`B${r}`, 'Please endorse your acceptance and return to us with your Purchase Order before commencement of work.'); r++;
   ws.mergeCells(`B${r}:J${r}`); cell(`B${r}`, 'Should you have any queries, please do not hesitate to contact me.'); r += 3;
 
+  { // keep signature + footer strip together: start a new page when they would not fit under the terms
+    let used = 0; for (let k = pageStart; k < r; k++) used += ws.getRow(k).height || 15;
+    if (used + 270 > 760 && used > 0) ws.getRow(r - 1).addPageBreak();
+  }
   // Signature block
   ws.mergeCells(`B${r}:D${r}`); cell(`B${r}`, 'Yours faithfully,');
   ws.mergeCells(`G${r}:J${r}`); cell(`G${r}`, 'Agreed and accepted the above,');
@@ -193,11 +197,11 @@ export async function buildQuoteXlsx(csv) {
   r += 7;
   cell(`B${r}`, 'Eileen Tey'); cell(`G${r}`, 'Name:');
   r += 2;
-  ws.getRow(r).height = 9; ws.mergeCells(`B${r}:J${r}`); ws.getCell(`B${r}`).fill = fill(MAROON); // maroon rule
+  ws.getRow(r).height = 3; ws.mergeCells(`B${r}:J${r}`); ws.getCell(`B${r}`).fill = fill(MAROON); // thin maroon rule
   // Footer strip from the Word quotation: company name, address, contact and registration numbers
-  addImg('foot', 1.0, r + 0.5, 760, 100);
+  addImg('foot', 1.0, r + 0.4, 760, 100);
   for (let k = 1; k <= 6; k++) ws.getRow(r + k).height = 17;
-  if (items.length <= 2 && !hasPic) ws.pageSetup.fitToHeight = 1; // short quotes stay on one page
+  if (items.length === 1 || (items.length <= 2 && !hasPic)) ws.pageSetup.fitToHeight = 1; // short quotes stay on one page
   ws.pageSetup.printArea = `A1:K${r + 6}`;
   ws.headerFooter.oddFooter = '&C&"Roboto,Regular"&8Page &P of &N';
   return Buffer.from(await wb.xlsx.writeBuffer());
