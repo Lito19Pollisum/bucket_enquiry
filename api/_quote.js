@@ -93,5 +93,7 @@ export async function buildQuotePdf(csv) {
   const sg = await get('sign'); const d = sg.scaleToFit(95, 70); page.drawImage(sg, { x: M, y: y - 14 - d.height, width: d.width, height: d.height });
   text('POLLISUM FABRICATION PTE. LTD.', M, y - 14, { bold: true, size: 9 }); text(String(meta.Company || 'COMPANY NAME').slice(0, 40).toUpperCase(), 330, y - 14, { bold: true, size: 9 });
   text('Eileen Tey', M, y - 28 - d.height, { size: 9 }); text('Name:', 330, y - 28 - d.height, { size: 9 });
-  return Buffer.from(await pdf.save());
+  const out = Buffer.from(await pdf.save());
+  out.priced = allPriced; // true when every line has a unit price (safe to send to the customer)
+  return out;
 }
