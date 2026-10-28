@@ -124,6 +124,14 @@ export async function buildQuoteXlsx(csv) {
       for (const col of 'BCDEFGHIJ') { const b = {}; if (col === 'B') b.left = thin; if (['G', 'H', 'I', 'J'].includes(col)) b.right = thin; ws.getCell(`${col}${r}`).border = b; }
     }
     const L = pic ? 'B' : 'D'; // with a picture below, details start at the left edge
+    { // description line, highlighted yellow, as in the Word quotations
+      const capTxt = String(m.cap || it.cap || '').replace(/\s*m³/, 'm³').trim();
+      const nm = it.fam && it.fam.id === 'sb' ? 'Sand & mud bucket' : (it.fam ? it.fam.name : it.famName);
+      const text = capTxt ? `Supply ${capTxt} ${nm} with Tested Wire Sling and Load Test Certificate` : `Supply ${nm} (${it.code}) with Tested Wire Sling and Load Test Certificate`;
+      ws.mergeCells(`B${r0}:G${r0}`); ws.getRow(r0).height = 20;
+      cell(`B${r0}`, text, { font: { size: 9.5, bold: true }, al: { vertical: 'middle', horizontal: 'left', shrinkToFit: true } });
+      for (const col of 'BCDEFG') ws.getCell(`${col}${r0}`).fill = fill('FFFFFF00');
+    }
     const T = { font: { size: 9 }, al: { vertical: 'top' } };
     cell(`${L}${r0 + 1}`, `${it.fam ? it.fam.name : it.famName} - ${it.code}`, { font: { size: 10, bold: true, color: { argb: RED } }, al: { vertical: 'top' } });
     [['Size', m.dims || it.dims], ['Empty Weight', m.self], ['SWL', m.swl || it.swl]].forEach(([k, v], i) => {
@@ -136,7 +144,7 @@ export async function buildQuoteXlsx(csv) {
       ws.mergeCells(`F${r0 + 7 + i}:G${r0 + 7 + i}`); cell(`F${r0 + 7 + i}`, v || '', T);
     });
     if (pr?.note) { if (!pic) ws.mergeCells(`${L}${r0 + 9}:G${r0 + 10}`); cell(`${L}${r0 + 9}`, 'Incl. ' + pr.note.replace(/^incl\.\s*/i, '').replace(/,\s*new .*? wire sling/i, ''), { font: { size: 8, italic: true, color: { argb: GREY } }, al: { vertical: 'top', wrapText: !pic } }); }
-    if (photo) addImg(photo, 1.05, r0 + 0.6, 165, 105);
+    if (photo) addImg(photo, 1.05, r0 + 1.2, 165, 105);
     if (drw) addImg('data:' + drw, 1.05, r0 + 11.4, 385, 205);
     if (pic) addImg('data:' + pic, 1.12, r0 + 10.6, PIC_W, 190);
     const q = cell(`H${r0 + 1}`, it.qty, { al: { horizontal: 'center', vertical: 'top' } });
