@@ -29,7 +29,7 @@ export async function buildQuotePdf(csv) {
   if (!items.length) return null;
   const pdf = await PDFDocument.create();
   const F = await pdf.embedFont(StandardFonts.Helvetica), B = await pdf.embedFont(StandardFonts.HelveticaBold);
-  const img = {}; const get = async k => (img[k] ||= await pdf.embedJpg(Buffer.from(IMGS[k], 'base64')));
+  const img = {}; const get = async k => (img[k] ||= await pdf.embedJpg(new Uint8Array(Buffer.from(IMGS[k], 'base64'))));
   const W = 595, H = 842, M = 40, INK = rgb(0.1, 0.11, 0.14), RED = rgb(0.6, 0, 0);
   let page, y;
   const text = (t, x, yy, o = {}) => page.drawText(clean(t), { x, y: yy, size: o.size || 9, font: o.bold ? B : F, color: o.color || INK });
