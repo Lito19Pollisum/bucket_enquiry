@@ -207,6 +207,7 @@ function vReview(){
 <div class="nav"><button class="btn" data-go="2">Back</button><button class="btn pri" id="submit">Submit enquiry / Request quotation</button></div>`}
 
 /* ---------- Done ---------- */
+async function serverRef(){try{const r=await fetch('/api/ref',{method:'POST'});const j=await r.json();return r.ok&&j.ok&&j.ref?j.ref:null}catch(e){return null}}
 function makeRef(){
  const d=new Date(),p=n=>String(n).padStart(2,'0'),day=`${d.getFullYear()}${p(d.getMonth()+1)}${p(d.getDate())}`;
  let n=1;try{const k='bkt_enq_'+day;n=(parseInt(localStorage.getItem(k))||0)+1;localStorage.setItem(k,n)}catch(e){n=Math.floor(Math.random()*900)+100}
@@ -286,7 +287,7 @@ function bind(){
  const tr=$('#toReview');if(tr)tr.onclick=()=>{if(validateDetails()){go(3)}else{render();toast('Please complete the required fields');const e=document.querySelector('.f.bad');e&&e.scrollIntoView({block:'center'})}};
  const sb=$('#submit');if(sb)sb.onclick=async()=>{
   if(sb.disabled)return;sb.disabled=true;sb.textContent='Sending…';
-  S.ref=makeRef();
+  if(!S.ref||S.sent)S.ref=await serverRef()||makeRef();
   const hp=document.getElementById('hp');
   S.sent=await postSales({kind:'enquiry',ref:S.ref,company:S.cust.company,contact:S.cust.contact,email:S.cust.email,text:plainText(),csv:csvText(),website:hp?hp.value:''});
   if(!S.sent)toast('Could not send your enquiry. Please try again.');

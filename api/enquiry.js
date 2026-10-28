@@ -35,7 +35,13 @@ async function save(row) {
   if (!sbReady()) return false;
   try {
     const { fields, items } = row.kind === 'enquiry' && row.csv ? splitEnquiryCsv(row.csv) : { fields: {}, items: [] };
-    const [saved] = await sb('enquiries', { method: 'POST', prefer: 'return=representation', body: { ...row, ...fields } });
+    let saved;
+    try {
+      [saved] = await sb('enquiries', { method: 'POST', prefer: 'return=representation', body: { ...row, ...fields } });
+    } catch (e) {
+      if (/\b409\b|23505|duplicate key/i.test(e.message)) return true; // same reference already stored (retry of the same enquiry)
+      throw e;
+    }
     if (items.length) {
       try {
         await sb('enquiry_items', { method: 'POST', prefer: 'return=minimal', body: items.map(x => ({ ...x, enquiry_id: saved.id })) });
