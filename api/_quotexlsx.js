@@ -10,6 +10,10 @@ import { QIMGS } from './_qimgs.js';
 // Pictures from the sample quotations (they carry the W/L/H markers); other families use their catalogue photo.
 const SAMPLE_IMGS = { spb: ['super'], sb: ['sand'], sdcb: ['side'], rcb: ['recdraw', 'recphoto'] };
 
+function imgSize(buf) {
+  if (buf[0] === 0x89 && buf[1] === 0x50) return { w: buf.readUInt32BE(16), h: buf.readUInt32BE(20) }; // PNG
+  return jpegSize(buf);
+}
 function jpegSize(buf) {
   let i = 2;
   while (i < buf.length) {
@@ -46,17 +50,16 @@ export async function buildQuoteXlsx(csv) {
   const addImg = (key, col0, row0, maxW, maxH) => {
     if (!QIMGS[key] && !IMGS[key]) return;
     const src = QIMGS[key] || IMGS[key];
-    const buf = Buffer.from(src, 'base64'); const { w, h } = jpegSize(buf);
+    const buf = Buffer.from(src, 'base64'); const { w, h } = imgSize(buf);
     const k = Math.min(maxW / w, maxH / h);
-    ws.addImage(wb.addImage({ base64: src, extension: 'jpeg' }), { tl: { col: col0, row: row0 }, ext: { width: Math.round(w * k), height: Math.round(h * k) } });
+    ws.addImage(wb.addImage({ base64: src, extension: buf[0] === 0x89 ? 'png' : 'jpeg' }), { tl: { col: col0, row: row0 }, ext: { width: Math.round(w * k), height: Math.round(h * k) } });
   };
 
   // Page frame: title top left, logo mark top right
-  addImg('logo', 8.35, 1.05, 74, 62);
+  addImg('hdr', 8.5, 1.05, 70, 70); // header logo from the Word quotation
   [2, 3, 4, 5].forEach(r => { ws.getRow(r).height = 16; });
   ws.mergeCells('B2:G2'); cell('B2', 'POLLISUM FABRICATION PTE. LTD.', { font: { bold: true, size: 9, color: { argb: GREY } }, al: { vertical: 'middle' } });
   ws.mergeCells('B3:G4'); cell('B3', 'QUOTATION', { font: { bold: true, size: 26, color: { argb: RED } }, al: { vertical: 'middle' } });
-  ws.mergeCells('B5:G5'); cell('B5', '41 Senoko Way, Singapore 758053  ·  (65) 6755 7600  ·  fabrication@pollisum.com', { font: { size: 8, color: { argb: GREY } }, al: { vertical: 'middle' } });
 
   // Header block
   const date = new Date().toLocaleDateString('en-GB').replace(/\//g, '.');
@@ -164,6 +167,12 @@ export async function buildQuoteXlsx(csv) {
   r += 7;
   cell(`B${r}`, 'Eileen Tey'); cell(`G${r}`, 'Name:');
   r += 2;
-  ws.getRow(r).height = 9; ws.mergeCells(`B${r}:J${r}`); ws.getCell(`B${r}`).fill = fill(MAROON); // page ends on the maroon rule
+  ws.getRow(r).height = 9; ws.mergeCells(`B${r}:J${r}`); ws.getCell(`B${r}`).fill = fill(MAROON); // maroon rule
+  // Footer strip from the Word quotation: company name, address, contact and registration numbers
+  addImg('foot', 1.0, r + 0.5, 760, 100);
+  for (let k = 1; k <= 6; k++) ws.getRow(r + k).height = 17;
+  if (items.length <= 2) ws.pageSetup.fitToHeight = 1; // short quotes stay on one page
+  ws.pageSetup.printArea = `A1:K${r + 6}`;
+  ws.headerFooter.oddFooter = '&C&"Roboto,Regular"&8Page &P of &N';
   return Buffer.from(await wb.xlsx.writeBuffer());
 }
