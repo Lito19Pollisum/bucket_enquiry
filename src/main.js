@@ -1,9 +1,25 @@
 import './styles.css';
 import { DATA } from './data.js';
+import { GAL, EXTRA_QUICK } from './photos.js';
 
 // Product photos live in src/assets/images; keys are the file names without extension.
 const urls = import.meta.glob('./assets/images/*.{jpg,png}', { eager: true, query: '?url', import: 'default' });
 const IMG = Object.fromEntries(Object.entries(urls).map(([p, u]) => [p.split('/').pop().replace(/\.\w+$/, ''), u]));
+DATA.custom.push(...EXTRA_QUICK);
+// Photo helpers: card/quick-pick thumbnail = first real photo; gallery = real photos + catalogue picture.
+const thumb=(id,fb)=>{const g=GAL[id];return g&&IMG[g[0]+'_t']?IMG[g[0]+'_t']:IMG[fb]};
+const gallery=(id,fb)=>{const g=GAL[id]||[];const a=g.map(k=>IMG[k]).filter(Boolean);const e=fb&&!id.startsWith('n_')?IMG[fb]:null;if(e&&!(a.length===0))a.push(e);if(!a.length&&e)a.push(e);return a};
+const photoCount=(id,fb)=>gallery(id,fb).length;
+function openGal(list,title,i=0){
+ if(!list.length)return;closeGal();
+ const o=document.createElement('div');o.id='lb';o.className='lb';o.setAttribute('role','dialog');o.setAttribute('aria-label',title);
+ const show=()=>{o.innerHTML=`<button class="x" aria-label="Close">×</button>${list.length>1?'<button class="nv pv" aria-label="Previous">‹</button><button class="nv nx" aria-label="Next">›</button>':''}<figure><img src="${list[i]}" alt="${esc(title)}"><figcaption>${esc(title)}${list.length>1?` · ${i+1} / ${list.length}`:''}</figcaption></figure>`;
+  o.querySelector('.x').onclick=closeGal;const pv=o.querySelector('.pv'),nx=o.querySelector('.nx');if(pv)pv.onclick=e=>{e.stopPropagation();i=(i-1+list.length)%list.length;show()};if(nx)nx.onclick=e=>{e.stopPropagation();i=(i+1)%list.length;show()}};
+ o.onclick=e=>{if(e.target===o||e.target.tagName==='FIGURE')closeGal()};
+ o._k=e=>{if(e.key==='Escape')closeGal();else if(list.length>1&&e.key==='ArrowRight'){i=(i+1)%list.length;show()}else if(list.length>1&&e.key==='ArrowLeft'){i=(i-1+list.length)%list.length;show()}};
+ document.addEventListener('keydown',o._k);show();document.body.appendChild(o);document.body.style.overflow='hidden';o.querySelector('.x').focus();
+}
+function closeGal(){const o=document.getElementById('lb');if(!o)return;document.removeEventListener('keydown',o._k);o.remove();document.body.style.overflow=''}
 /* ===== Configuration ===== */
 // Set VITE_SALES_EMAIL in Vercel (Project Settings > Environment Variables) or in .env
 const SALES_EMAIL = import.meta.env.VITE_SALES_EMAIL || "fabrication@pollisum.com";
@@ -95,7 +111,7 @@ function card(f,m){
  rows.push(['Own weight',m.self]);
  return `<div class="card ${on?'sel':''}" tabindex="0" role="button" aria-pressed="${on}" data-code="${m.code}">
  <div class="tick">${on?'✓':''}</div>
- <div class="ph"><img src="${IMG[f.img]}" alt="${esc(f.name)}" loading="lazy"></div>
+ <div class="ph"><img src="${thumb(f.id,f.img)}" alt="${esc(f.name)}" loading="lazy">${photoCount(f.id,f.img)>1?`<button type="button" class="pbtn" data-gal="${f.id}" aria-label="View photos of ${esc(f.name)}">&#128247; ${photoCount(f.id,f.img)}</button>`:''}</div>
  <div class="body">
   <div><div class="code">${m.code}${/^(Round|Square)$/.test(m.extra||'')?` <span class="tag">${m.extra}</span>`:''}</div>
   <div class="capline"><span class="cap">${esc(m.cap)}</span><span style="color:var(--mute);font-size:13px">capacity</span></div></div>
@@ -121,7 +137,7 @@ ${mine.length?`<h2>${M.list}</h2><div class="list">${mine.map(([c,i])=>`<div cla
 <div class="panel">
  <h2>${S.editing!==null?M.edit:M.add}</h2>
 ${M.quick?` <p style="margin:0;color:var(--mute);font-size:14px">Start from something similar in our past work (optional):</p>
- <div class="quick">${DATA.custom.filter(M.quick).map(c=>`<button data-quick="${c.img}" class="${d.img===c.img?'on':''}"><img src="${IMG[c.img]}" alt=""><span>${c.name}</span></button>`).join('')}</div>`:''}
+ <div class="quick">${DATA.custom.filter(M.quick).map(c=>`<button data-quick="${c.img}" class="${d.img===c.img?'on':''}"><img src="${thumb(c.gal||c.img,c.img)}" alt="" loading="lazy">${photoCount(c.gal||c.img,c.img)>0?`<span class="zoom" data-zoom="${c.gal||c.img}" role="button" aria-label="Enlarge photos of ${esc(c.name)}">&#128269;</span>`:''}<span>${c.name}</span></button>`).join('')}</div>`:''}
  <div class="form">
   <div class="f ${d.bad?.type?'bad':''}"><label>What type of item? <small>(required)</small></label><select id="c_type"><option value="">Select…</option>${TYPES.map(t=>`<option ${d.type===t?'selected':''}>${t}</option>`).concat(d.type&&!TYPES.includes(d.type)?[`<option selected>${esc(d.type)}</option>`]:[]).join('')}</select><div class="err">Please choose or select a starting point above.</div></div>
   <div class="f"><label>Quantity</label><div class="qty"><button data-cq="-1" type="button" aria-label="Decrease">−</button><input type="number" id="c_qty" min="1" max="999" value="${d.qty}"><button data-cq="1" type="button" aria-label="Increase">+</button></div></div>
@@ -260,7 +276,7 @@ function bind(){
   const code=c.dataset.code;
   const toggle=()=>{if(S.sel[code])delete S.sel[code];else S.sel[code]=1;const y=window.scrollY;render();window.scrollTo({top:y})};
   const keep=()=>{const y=window.scrollY;render();window.scrollTo({top:y})};
-  c.onclick=e=>{if(e.target.closest('.qty'))return;toggle()};
+  c.onclick=e=>{if(e.target.closest('.qty'))return;const pb=e.target.closest('.pbtn');if(pb){e.stopPropagation();const f=DATA.fam.find(x=>x.id===pb.dataset.gal);openGal(gallery(f.id,f.img),f.name);return}toggle()};
   c.onkeydown=e=>{if((e.key==='Enter'||e.key===' ')&&e.target===c){e.preventDefault();toggle()}};
   c.querySelectorAll('[data-q]').forEach(b=>b.onclick=e=>{e.stopPropagation();S.sel[code]=Math.max(1,Math.min(999,S.sel[code]+(+b.dataset.q)));keep()});
   const inp=c.querySelector('.qty input');
@@ -268,7 +284,7 @@ function bind(){
  });
  const td=$('#toDetails');if(td)td.onclick=()=>{readDraft();if(!itemCount()){toast('Please select at least one item');return}go(2)};
  // custom
- A.querySelectorAll('[data-quick]').forEach(b=>b.onclick=()=>{readDraft();const c=DATA.custom.find(x=>x.img===b.dataset.quick);S.draft.img=c.img;S.draft.type=guessType(c.name);S.draft.rem=S.draft.rem||'Similar to: '+c.name;render()});
+ A.querySelectorAll('[data-quick]').forEach(b=>b.onclick=e=>{const z=e.target.closest('.zoom');if(z){const c=DATA.custom.find(x=>(x.gal||x.img)===z.dataset.zoom);openGal(gallery(z.dataset.zoom,c.img),c.name);return}readDraft();const c=DATA.custom.find(x=>x.img===b.dataset.quick);S.draft.img=c.img;S.draft.type=guessType(c.name);S.draft.rem=S.draft.rem||'Similar to: '+c.name;render()});
  A.querySelectorAll('[data-cq]').forEach(b=>b.onclick=()=>{const i=$('#c_qty');i.value=Math.max(1,Math.min(999,(parseInt(i.value)||1)+(+b.dataset.cq)))});
  const un=$('#c_unsure');if(un)un.onchange=()=>{readDraft();render()};
  const fi=$('#c_files');if(fi)fi.onchange=()=>{readDraft();S.draft.files=[...S.draft.files,...[...fi.files].map(f=>f.name)];render()};
@@ -304,7 +320,7 @@ function bind(){
 }
 function guessType(n){n=n.toLowerCase();
  if(/man|basket/.test(n))return'Man cage / basket';if(/cage/.test(n))return'Storage / transfer cage';if(/hopper/.test(n)&&!/self/.test(n))return'Hopper';
- if(/spreader/.test(n))return'Spreader beam';if(/frame/.test(n))return'Lifting frame';if(/tank|trolley/.test(n))return'Tank / other fabrication';return'Concrete bucket'}
+ if(/spreader/.test(n))return'Spreader beam';if(/frame/.test(n))return'Lifting frame';if(/skip|scrap|sand/.test(n))return'Sand / skip bucket';if(/tank|trolley|platform|shelter|tower|corbel|diesel|drum/.test(n))return'Tank / other fabrication';return'Concrete bucket'}
 
 /* ---------- Follow-up chat ---------- */
 const CHAT={open:false,msgs:[{who:'bot',text:'Hi. Following up on an enquiry? Pick an option or type your message.'}],ref:'',email:''};
