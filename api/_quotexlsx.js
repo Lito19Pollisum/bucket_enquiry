@@ -213,6 +213,7 @@ export async function buildQuoteXlsx(csv) {
   addImg('foot', 1.0, r + 0.4, 760, 100);
   for (let k = 1; k <= 6; k++) ws.getRow(r + k).height = 17;
   if (items.length === 1 || (items.length <= 2 && !hasPic)) ws.pageSetup.fitToHeight = 1; // short quotes stay on one page
+  ws.pageSetup.horizontalCentered = true; // even left/right margins whatever scale Excel/PDF applies
   ws.pageSetup.printArea = `A1:K${r + 6}`;
   ws.headerFooter.oddFooter = '&C&"Roboto,Regular"&8Page &P of &N';
   return Buffer.from(await wb.xlsx.writeBuffer());
