@@ -56,10 +56,10 @@ export async function buildQuoteXlsx(csv) {
   };
 
   // Page frame: title top left, logo mark top right
-  addImg('hdr', 8.5, 1.05, 70, 70); // header logo from the Word quotation
+  addImg('hdr', 0.1, 1.1, 64, 64); // header logo from the Word quotation
   [2, 3, 4, 5].forEach(r => { ws.getRow(r).height = 16; });
-  ws.mergeCells('B2:G2'); cell('B2', 'POLLISUM FABRICATION PTE. LTD.', { font: { bold: true, size: 9, color: { argb: GREY } }, al: { vertical: 'middle' } });
-  ws.mergeCells('B3:G4'); cell('B3', 'QUOTATION', { font: { bold: true, size: 26, color: { argb: RED } }, al: { vertical: 'middle' } });
+  ws.mergeCells('C2:J2'); cell('C2', 'POLLISUM FABRICATION PTE. LTD.', { font: { bold: true, size: 9, color: { argb: GREY } }, al: { vertical: 'middle' } });
+  ws.mergeCells('C3:J4'); cell('C3', 'QUOTATION', { font: { bold: true, size: 26, color: { argb: RED } }, al: { vertical: 'middle' } });
 
   // Header block
   const date = new Date().toLocaleDateString('en-GB').replace(/\//g, '.');
