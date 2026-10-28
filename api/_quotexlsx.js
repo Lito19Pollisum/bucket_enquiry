@@ -114,7 +114,7 @@ export async function buildQuoteXlsx(csv) {
     const drw = pic ? null : drawingFor(it.code);
     const PIC_W = 430; let picH = 0;
     if (pic) { const { w, h } = imgSize(Buffer.from(pic, 'base64')); picH = Math.round(h * Math.min(PIC_W / w, 225 / h, 1)); }
-    const BLOCK = pic ? 12 + Math.ceil(picH / 20) : (drw ? 22 : 11); // with a drawing: photo + details on top, drawing below across the left of the table
+    const BLOCK = pic ? 11 + Math.ceil(picH / 20) : (drw ? 22 : 11); // with a drawing: photo + details on top, drawing below across the left of the table
     if (pic) { // keep a block (details + picture) whole on a printed page
       if (pageUsed + BLOCK * 15 > 770 && pageUsed > 0) { ws.getRow(r0 - 1).addPageBreak(); pageUsed = 0; pageStart = r0; }
       pageUsed += BLOCK * 15; hasPic = true;
@@ -123,21 +123,22 @@ export async function buildQuoteXlsx(csv) {
       ws.getRow(r).height = 15;
       for (const col of 'BCDEFGHIJ') { const b = {}; if (col === 'B') b.left = thin; if (['G', 'H', 'I', 'J'].includes(col)) b.right = thin; ws.getCell(`${col}${r}`).border = b; }
     }
+    const L = pic ? 'B' : 'D'; // with a picture below, details start at the left edge
     const T = { font: { size: 9 }, al: { vertical: 'top' } };
-    cell(`D${r0 + 1}`, `${it.fam ? it.fam.name : it.famName} - ${it.code}`, { font: { size: 10, bold: true, color: { argb: RED } }, al: { vertical: 'top' } });
+    cell(`${L}${r0 + 1}`, `${it.fam ? it.fam.name : it.famName} - ${it.code}`, { font: { size: 10, bold: true, color: { argb: RED } }, al: { vertical: 'top' } });
     [['Size', m.dims || it.dims], ['Empty Weight', m.self], ['SWL', m.swl || it.swl]].forEach(([k, v], i) => {
-      cell(`D${r0 + 2 + i}`, k, T); cell(`E${r0 + 2 + i}`, ':', { font: { size: 9 }, al: { horizontal: 'center', vertical: 'top' } });
+      if (pic) ws.mergeCells(`B${r0 + 2 + i}:D${r0 + 2 + i}`); cell(`${L}${r0 + 2 + i}`, k, T); cell(`E${r0 + 2 + i}`, ':', { font: { size: 9 }, al: { horizontal: 'center', vertical: 'top' } });
       ws.mergeCells(`F${r0 + 2 + i}:G${r0 + 2 + i}`); cell(`F${r0 + 2 + i}`, v || '', T);
     });
-    cell(`D${r0 + 6}`, 'Wire Sling', { font: { size: 10, bold: true, color: { argb: RED } }, al: { vertical: 'top' } });
+    cell(`${L}${r0 + 6}`, 'Wire Sling', { font: { size: 10, bold: true, color: { argb: RED } }, al: { vertical: 'top' } });
     [['Size', sl?.size], ['SWL', sl?.swl]].forEach(([k, v], i) => {
-      cell(`D${r0 + 7 + i}`, k, T); cell(`E${r0 + 7 + i}`, ':', { font: { size: 9 }, al: { horizontal: 'center', vertical: 'top' } });
+      if (pic) ws.mergeCells(`B${r0 + 7 + i}:D${r0 + 7 + i}`); cell(`${L}${r0 + 7 + i}`, k, T); cell(`E${r0 + 7 + i}`, ':', { font: { size: 9 }, al: { horizontal: 'center', vertical: 'top' } });
       ws.mergeCells(`F${r0 + 7 + i}:G${r0 + 7 + i}`); cell(`F${r0 + 7 + i}`, v || '', T);
     });
-    if (pr?.note) { ws.mergeCells(`D${r0 + 9}:G${r0 + 10}`); cell(`D${r0 + 9}`, 'Incl. ' + pr.note.replace(/^incl\.\s*/i, '').replace(/,\s*new .*? wire sling/i, ''), { font: { size: 8, italic: true, color: { argb: GREY } }, al: { vertical: 'top', wrapText: true } }); }
+    if (pr?.note) { ws.mergeCells(`${L}${r0 + 9}:G${r0 + 10}`); cell(`${L}${r0 + 9}`, 'Incl. ' + pr.note.replace(/^incl\.\s*/i, '').replace(/,\s*new .*? wire sling/i, ''), { font: { size: 8, italic: true, color: { argb: GREY } }, al: { vertical: 'top', wrapText: true } }); }
     if (photo) addImg(photo, 1.05, r0 + 0.6, 165, 105);
     if (drw) addImg('data:' + drw, 1.05, r0 + 11.4, 385, 205);
-    if (pic) addImg('data:' + pic, 1.05, r0 + 11.3, PIC_W, 225);
+    if (pic) addImg('data:' + pic, 1.05, r0 + 10.6, PIC_W, 225);
     const q = cell(`H${r0 + 1}`, it.qty, { al: { horizontal: 'center', vertical: 'top' } });
     const u = cell(`I${r0 + 1}`, pr ? pr.price : null, { al: { horizontal: 'center', vertical: 'top' }, numFmt: '"$"#,##0.00' });
     const a = cell(`J${r0 + 1}`, { formula: `IF(I${r0 + 1}="","",H${r0 + 1}*I${r0 + 1})`, result: pr ? pr.price * it.qty : '' }, { font: { bold: true }, al: { horizontal: 'center', vertical: 'top' }, numFmt: '"$"#,##0.00' });
