@@ -112,8 +112,8 @@ export async function buildQuoteXlsx(csv) {
     const pic = QPICS[it.code] || null; // exact crop of this model's picture from the Word reference quotation
     const photo = pic ? null : (SAND_PHOTO[it.code] || (it.fam && (SAMPLE_PHOTO[it.fam.id] || FAM_IMG[it.fam.id])));
     const drw = pic ? null : drawingFor(it.code);
-    const PIC_W = 640; let picH = 0;
-    if (pic) { const { w, h } = imgSize(Buffer.from(pic, 'base64')); picH = Math.round(h * Math.min(PIC_W / w, 330 / h, 1.6)); }
+    const PIC_W = 430; let picH = 0;
+    if (pic) { const { w, h } = imgSize(Buffer.from(pic, 'base64')); picH = Math.round(h * Math.min(PIC_W / w, 225 / h, 1)); }
     const BLOCK = pic ? 12 + Math.ceil(picH / 20) : (drw ? 22 : 11); // with a drawing: photo + details on top, drawing below across the left of the table
     if (pic) { // keep a block (details + picture) whole on a printed page
       if (pageUsed + BLOCK * 15 > 770 && pageUsed > 0) { ws.getRow(r0 - 1).addPageBreak(); pageUsed = 0; }
@@ -137,7 +137,7 @@ export async function buildQuoteXlsx(csv) {
     if (pr?.note) { ws.mergeCells(`D${r0 + 9}:G${r0 + 10}`); cell(`D${r0 + 9}`, 'Incl. ' + pr.note.replace(/^incl\.\s*/i, '').replace(/,\s*new .*? wire sling/i, ''), { font: { size: 8, italic: true, color: { argb: GREY } }, al: { vertical: 'top', wrapText: true } }); }
     if (photo) addImg(photo, 1.05, r0 + 0.6, 165, 105);
     if (drw) addImg('data:' + drw, 1.05, r0 + 11.4, 385, 205);
-    if (pic) addImg('data:' + pic, 1.05, r0 + 11.3, PIC_W, 330);
+    if (pic) addImg('data:' + pic, 1.05, r0 + 11.3, PIC_W, 225);
     const q = cell(`H${r0 + 1}`, it.qty, { al: { horizontal: 'center', vertical: 'top' } });
     const u = cell(`I${r0 + 1}`, pr ? pr.price : null, { al: { horizontal: 'center', vertical: 'top' }, numFmt: '"$"#,##0.00' });
     const a = cell(`J${r0 + 1}`, { formula: `IF(I${r0 + 1}="","",H${r0 + 1}*I${r0 + 1})`, result: pr ? pr.price * it.qty : '' }, { font: { bold: true }, al: { horizontal: 'center', vertical: 'top' }, numFmt: '"$"#,##0.00' });
