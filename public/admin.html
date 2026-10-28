@@ -62,9 +62,9 @@ async function qsync(){if(!DIR||BUSY)return;BUSY=true;try{
  if(await DIR.queryPermission({mode:'readwrite'})!=='granted'){$('#qs').textContent='Resume auto-save (click)';$('#qmsg').textContent='Auto-save paused: click the button to allow folder access again.';return}
  const r=await fetch('/api/quotes',{headers:{'x-admin-password':PW}});if(!r.ok)throw new Error('list '+r.status);const {files}=await r.json();let n=0;
  for(const f of files){const [ref,name]=f.split('/');const d=await DIR.getDirectoryHandle(ref,{create:true});
-  let have=true;try{await d.getFileHandle(name)}catch{have=false}
+  let have=true;try{have=(await(await d.getFileHandle(name)).getFile()).size>0}catch{have=false}
   if(have)continue;const x=await fetch('/api/quotes?file='+encodeURIComponent(f),{headers:{'x-admin-password':PW}});if(!x.ok)continue;
-  const w=await(await d.getFileHandle(name,{create:true})).createWritable();await w.write(await x.blob());await w.close();n++}
+  const bl=await x.blob();if(!bl.size)continue;const w=await(await d.getFileHandle(name,{create:true})).createWritable();await w.write(bl);await w.close();n++}
  $('#qs').textContent='Auto-save ON ('+DIR.name+')';$('#qmsg').textContent='Auto-save on: checked '+new Date().toLocaleTimeString()+(n?', saved '+n+' new file(s)':', nothing new')+'. Keep this tab open.';
 }catch(e){$('#qmsg').textContent='Auto-save error: '+e.message}finally{BUSY=false}}
 async function qinit(){if(!window.showDirectoryPicker)return;$('#qs').hidden=false;try{DIR=await kv('get','dir')}catch{}if(DIR){$('#qs').textContent='Auto-save ON ('+DIR.name+')';qsync()}
