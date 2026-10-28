@@ -86,6 +86,7 @@ export default async function handler(req, res) {
   }
 
   try {
+    let quote = null;
     const toSales = {
       from: FROM,
       to: [SALES],
@@ -104,13 +105,31 @@ export default async function handler(req, res) {
       try {
         const q = await buildQuotePdf(csv); // draft quotation for the standard catalogue items (internal; prices from api/_prices.js)
         if (q) toSales.attachments.push({ filename: `${ref}-Quotation.pdf`, content: q.toString('base64') });
+        quote = q;
       } catch (e) {
         console.error('quotation pdf failed', e.message); // enquiry email still goes out
       }
     }
     await send(toSales);
 
-    return res.status(200).json({ ok: true });
+    // Quotation PDF to the customer, only when every item is priced (otherwise sales completes it first).
+    let quoted = false;
+    if (quote && quote.priced) {
+      try {
+        const name = contact || company || 'Sir/Madam';
+        const body = `Dear ${name},\n\nThank you for your enquiry (${ref}). Please find our quotation attached for your confirmation.\n\nShould you have any queries, please reply to this email or call us on (65) 6755 7600.\n\nBest regards,\nPollisum Fabrication Pte Ltd\n41 Senoko Way, Singapore 758053\nfabrication@pollisum.com | www.pollisum.com`;
+        await send({
+          from: FROM, to: [email], reply_to: SALES, subject: `Quotation - ${ref}${company ? ' - ' + company : ''}`,
+          text: body, html: `<pre style="font:14px/1.5 Arial,sans-serif;white-space:pre-wrap">${esc(body)}</pre>`,
+          attachments: [{ filename: `${ref}-Quotation.pdf`, content: quote.toString('base64') }],
+        });
+        quoted = true;
+      } catch (e) {
+        console.error('customer quotation send failed', e.message); // sales already has the enquiry and the PDF
+      }
+    }
+
+    return res.status(200).json({ ok: true, quoted });
   } catch (e) {
     console.error('send failed', e.message);
     return res.status(502).json({ ok: false, error: 'send_failed' });
