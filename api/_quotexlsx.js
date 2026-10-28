@@ -53,9 +53,9 @@ export async function buildQuoteXlsx(csv) {
   const wb = new ExcelJS.Workbook();
   const ws = wb.addWorksheet('Quotation', {
     views: [{ showGridLines: false }],
-    pageSetup: { paperSize: 9, orientation: 'portrait', fitToPage: true, fitToWidth: 1, fitToHeight: 0, margins: { left: 0.5, right: 0.5, top: 0.5, bottom: 0.5, header: 0.3, footer: 0.3 } },
+    pageSetup: { paperSize: 9, orientation: 'portrait', fitToPage: true, fitToWidth: 1, fitToHeight: 0, margins: { left: 0.4, right: 0.4, top: 0.5, bottom: 0.5, header: 0.3, footer: 0.3 } },
   });
-  ws.columns = [{ width: 2.7 }, { width: 8.4 }, { width: 14.9 }, { width: 12.4 }, { width: 2.8 }, { width: 12.8 }, { width: 22 }, { width: 6.5 }, { width: 12.5 }, { width: 13 }];
+  ws.columns = [{ width: 2.7 }, { width: 8.4 }, { width: 14.9 }, { width: 12.4 }, { width: 2.8 }, { width: 12.8 }, { width: 22 }, { width: 6.5 }, { width: 12.5 }, { width: 13 }, { width: 2.7 }]; // A and K equal so the page margins are even
   // Pollisum Style Guide: Roboto, ink body text, Pollisum Red titles, Mist/Blush panels, E4E4E4 lines, maroon rule at the end.
   const INK = 'FF191D24', RED = 'FF990000', MAROON = 'FF6A0303', MIST = 'FFF3F3F3', LINE = 'FFE4E4E4', BLUSH = 'FFEDD4D4', GREY = 'FF6B7280';
   const FONT = { name: 'Roboto', size: 10, color: { argb: INK } };
