@@ -7,9 +7,10 @@
 //   SUPABASE_URL                optional  e.g. https://vzcxtymvoyjzzfdoyzds.supabase.co
 //   SUPABASE_SERVICE_ROLE_KEY   optional  secret key; enquiries are saved to public.enquiries when both are set
 
-import { sb, sbReady, splitEnquiryCsv } from './_sb.js';
+import { sb, sbReady, sbUpload, splitEnquiryCsv } from './_sb.js';
 import { buildXlsx } from './_xlsx.js';
 import { buildQuotePdf } from './_quote.js';
+import { buildQuoteXlsx } from './_quotexlsx.js';
 
 const SALES = process.env.SALES_EMAIL || 'fabrication@pollisum.com';
 const FROM = process.env.RESEND_FROM || '';
@@ -79,6 +80,15 @@ export default async function handler(req, res) {
   // Save to Supabase first (best-effort: a database failure must never block the email).
   const saved = await save({ kind, ref, company, contact, email, body: text, csv: kind === 'enquiry' ? csv : null });
 
+  // Draft quotation (PDF + Excel) filed in Storage for staff to review, amend and send manually. Never blocks the enquiry.
+  if (kind === 'enquiry' && csv && sbReady()) {
+    try {
+      const [pdf, xl] = [await buildQuotePdf(csv), await buildQuoteXlsx(csv)];
+      if (pdf) await sbUpload(`${ref}/${ref}-Quotation.pdf`, pdf, 'application/pdf');
+      if (xl) await sbUpload(`${ref}/${ref}-Quotation.xlsx`, xl, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    } catch (e) { console.error('quotation filing failed', e.message); }
+  }
+
   if (!emailReady) {
     // Email not configured: succeed only if the enquiry was stored.
     if (saved) return res.status(200).json({ ok: true, saved: true, emailed: false });
@@ -86,7 +96,6 @@ export default async function handler(req, res) {
   }
 
   try {
-    let quote = null;
     const toSales = {
       from: FROM,
       to: [SALES],
@@ -102,34 +111,10 @@ export default async function handler(req, res) {
       } catch (e) {
         console.error('xlsx attach failed', e.message); // CSV is still attached
       }
-      try {
-        const q = await buildQuotePdf(csv); // draft quotation for the standard catalogue items (internal; prices from api/_prices.js)
-        if (q) toSales.attachments.push({ filename: `${ref}-Quotation.pdf`, content: q.toString('base64') });
-        quote = q;
-      } catch (e) {
-        console.error('quotation pdf failed', e.message); // enquiry email still goes out
-      }
     }
     await send(toSales);
 
-    // Quotation PDF to the customer, only when every item is priced (otherwise sales completes it first).
-    let quoted = false;
-    if (quote && quote.priced) {
-      try {
-        const name = contact || company || 'Sir/Madam';
-        const body = `Dear ${name},\n\nThank you for your enquiry (${ref}). Please find our quotation attached for your confirmation.\n\nShould you have any queries, please reply to this email or call us on (65) 6755 7600.\n\nBest regards,\nPollisum Fabrication Pte Ltd\n41 Senoko Way, Singapore 758053\nfabrication@pollisum.com | www.pollisum.com`;
-        await send({
-          from: FROM, to: [email], reply_to: SALES, subject: `Quotation - ${ref}${company ? ' - ' + company : ''}`,
-          text: body, html: `<pre style="font:14px/1.5 Arial,sans-serif;white-space:pre-wrap">${esc(body)}</pre>`,
-          attachments: [{ filename: `${ref}-Quotation.pdf`, content: quote.toString('base64') }],
-        });
-        quoted = true;
-      } catch (e) {
-        console.error('customer quotation send failed', e.message); // sales already has the enquiry and the PDF
-      }
-    }
-
-    return res.status(200).json({ ok: true, quoted });
+    return res.status(200).json({ ok: true });
   } catch (e) {
     console.error('send failed', e.message);
     return res.status(502).json({ ok: false, error: 'send_failed' });
