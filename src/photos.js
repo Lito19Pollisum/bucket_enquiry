@@ -3,19 +3,12 @@ export const GAL = {
  "c_bottomopen": [
   "p_bottomopen_1"
  ],
- "cdcb": [
-  "p_cdcb_1",
-  "p_cdcb_2"
+ "c_circman": [
+  "p_circman_1",
+  "p_circman_2"
  ],
  "c_fronthandle": [
   "p_fronthandle_1"
- ],
- "hop": [
-  "p_hop_1"
- ],
- "lcr": [
-  "p_lcr_1",
-  "p_lcr_2"
  ],
  "c_liftbucket": [
   "p_liftbucket_1",
@@ -32,6 +25,35 @@ export const GAL = {
   "p_matcage_1",
   "p_matcage_2"
  ],
+ "c_selfhopper": [
+  "p_selfhopper_1",
+  "p_selfhopper_2"
+ ],
+ "c_spreader": [
+  "p_spreader_1",
+  "p_spreader_2"
+ ],
+ "c_storage": [
+  "p_storage_1"
+ ],
+ "c_trolley": [
+  "p_trolley_1",
+  "p_trolley_2"
+ ],
+ "c_watertank": [
+  "p_watertank_1"
+ ],
+ "cdcb": [
+  "p_cdcb_1",
+  "p_cdcb_2"
+ ],
+ "hop": [
+  "p_hop_1"
+ ],
+ "lcr": [
+  "p_lcr_1",
+  "p_lcr_2"
+ ],
  "mc": [
   "p_mc_1"
  ],
@@ -40,8 +62,7 @@ export const GAL = {
   "p_n_conjoined_2"
  ],
  "n_corbel": [
-  "p_n_corbel_1",
-  "p_n_corbel_2"
+  "p_n_corbel_1"
  ],
  "n_diesel": [
   "p_n_diesel_1"
@@ -74,8 +95,7 @@ export const GAL = {
  "sb": [
   "p_sb_1",
   "p_sb_2",
-  "p_sb_3",
-  "p_sb_4"
+  "p_sb_3"
  ],
  "sdcb": [
   "p_sdcb_1",
@@ -83,33 +103,11 @@ export const GAL = {
   "p_sdcb_3",
   "p_sdcb_4"
  ],
- "c_selfhopper": [
-  "p_selfhopper_1",
-  "p_selfhopper_2"
- ],
- "c_sidedisch2": [
-  "p_sidedisch2_1"
- ],
  "spb": [
   "p_spb_1",
   "p_spb_2",
   "p_spb_3",
   "p_spb_4"
- ],
- "c_spreader": [
-  "p_spreader_1",
-  "p_spreader_2"
- ],
- "c_storage": [
-  "p_storage_1"
- ],
- "c_trolley": [
-  "p_trolley_1",
-  "p_trolley_2"
- ],
- "c_watertank": [
-  "p_watertank_1",
-  "p_watertank_2"
  ]
 };
 export const EXTRA_QUICK = [
