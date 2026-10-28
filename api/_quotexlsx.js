@@ -61,8 +61,8 @@ export async function buildQuoteXlsx(csv) {
   const FONT = { name: 'Roboto', size: 10, color: { argb: INK } };
   const fill = argb => ({ type: 'pattern', pattern: 'solid', fgColor: { argb } });
   const cell = (a, v, o = {}) => { const c = ws.getCell(a); c.value = v; c.font = { ...FONT, ...(o.font || {}) }; if (o.al) c.alignment = o.al; if (o.numFmt) c.numFmt = o.numFmt; return c; };
-  const thin = { style: 'thin', color: { argb: LINE } };
-  const rule = { style: 'thin', color: { argb: 'FFBFBFBF' } };
+  const thin = { style: 'thin', color: { argb: 'FF000000' } };
+  const rule = { style: 'thin', color: { argb: 'FF000000' } };
   const addImg = (key, col0, row0, maxW, maxH) => {
     const src = key.startsWith('data:') ? key.slice(5) : (QIMGS[key] || IMGS[key]);
     if (!src) return;
@@ -127,15 +127,15 @@ export async function buildQuoteXlsx(csv) {
     const T = { font: { size: 9 }, al: { vertical: 'top' } };
     cell(`${L}${r0 + 1}`, `${it.fam ? it.fam.name : it.famName} - ${it.code}`, { font: { size: 10, bold: true, color: { argb: RED } }, al: { vertical: 'top' } });
     [['Size', m.dims || it.dims], ['Empty Weight', m.self], ['SWL', m.swl || it.swl]].forEach(([k, v], i) => {
-      if (pic) ws.mergeCells(`B${r0 + 2 + i}:D${r0 + 2 + i}`); cell(`${L}${r0 + 2 + i}`, k, T); cell(`E${r0 + 2 + i}`, ':', { font: { size: 9 }, al: { horizontal: 'center', vertical: 'top' } });
+      cell(`${L}${r0 + 2 + i}`, k, T); cell(`E${r0 + 2 + i}`, ':', { font: { size: 9 }, al: { horizontal: 'center', vertical: 'top' } });
       ws.mergeCells(`F${r0 + 2 + i}:G${r0 + 2 + i}`); cell(`F${r0 + 2 + i}`, v || '', T);
     });
     cell(`${L}${r0 + 6}`, 'Wire Sling', { font: { size: 10, bold: true, color: { argb: RED } }, al: { vertical: 'top' } });
     [['Size', sl?.size], ['SWL', sl?.swl]].forEach(([k, v], i) => {
-      if (pic) ws.mergeCells(`B${r0 + 7 + i}:D${r0 + 7 + i}`); cell(`${L}${r0 + 7 + i}`, k, T); cell(`E${r0 + 7 + i}`, ':', { font: { size: 9 }, al: { horizontal: 'center', vertical: 'top' } });
+      cell(`${L}${r0 + 7 + i}`, k, T); cell(`E${r0 + 7 + i}`, ':', { font: { size: 9 }, al: { horizontal: 'center', vertical: 'top' } });
       ws.mergeCells(`F${r0 + 7 + i}:G${r0 + 7 + i}`); cell(`F${r0 + 7 + i}`, v || '', T);
     });
-    if (pr?.note) { ws.mergeCells(`${L}${r0 + 9}:G${r0 + 10}`); cell(`${L}${r0 + 9}`, 'Incl. ' + pr.note.replace(/^incl\.\s*/i, '').replace(/,\s*new .*? wire sling/i, ''), { font: { size: 8, italic: true, color: { argb: GREY } }, al: { vertical: 'top', wrapText: true } }); }
+    if (pr?.note) { if (!pic) ws.mergeCells(`${L}${r0 + 9}:G${r0 + 10}`); cell(`${L}${r0 + 9}`, 'Incl. ' + pr.note.replace(/^incl\.\s*/i, '').replace(/,\s*new .*? wire sling/i, ''), { font: { size: 8, italic: true, color: { argb: GREY } }, al: { vertical: 'top', wrapText: !pic } }); }
     if (photo) addImg(photo, 1.05, r0 + 0.6, 165, 105);
     if (drw) addImg('data:' + drw, 1.05, r0 + 11.4, 385, 205);
     if (pic) addImg('data:' + pic, 1.05, r0 + 10.6, PIC_W, 190);
