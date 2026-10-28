@@ -145,8 +145,8 @@ export async function buildQuoteXlsx(csv) {
     if (pr?.note) { if (!below) ws.mergeCells(`${L}${r0 + 9}:G${r0 + 10}`); cell(`${L}${r0 + 9}`, 'Incl. ' + pr.note.replace(/^incl\.\s*/i, '').replace(/,\s*new .*? wire sling/i, ''), { font: { size: 8, italic: true, color: { argb: GREY } }, al: { vertical: 'top', wrapText: !below } }); }
     if (photo) addImg(photo, 1.05, r0 + 1.2, 165, 105);
     if (drw) addImg('data:' + drw, 1.05, r0 + 11.4, 385, 205);
-    if (pic && below) addImg('data:' + pic, 1.3, r0 + 11.2, PIC_W, 170);
-    if (pic && !below) addImg('data:' + pic, 1.08, r0 + 1.6, 205, 140);
+    if (pic && below) addImg('data:' + pic, 1.4, r0 + 11.2, PIC_W, 170);
+    if (pic && !below) addImg('data:' + pic, 1.3, r0 + 1.7, 185, 130);
     const q = cell(`H${r0 + 1}`, it.qty, { al: { horizontal: 'center', vertical: 'top' } });
     const u = cell(`I${r0 + 1}`, pr ? pr.price : null, { al: { horizontal: 'center', vertical: 'top' }, numFmt: '"$"#,##0.00' });
     const a = cell(`J${r0 + 1}`, { formula: `IF(I${r0 + 1}="","",H${r0 + 1}*I${r0 + 1})`, result: pr ? pr.price * it.qty : '' }, { font: { bold: true }, al: { horizontal: 'center', vertical: 'top' }, numFmt: '"$"#,##0.00' });
