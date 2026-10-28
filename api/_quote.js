@@ -6,7 +6,7 @@ import { parseCsv } from './_sb.js';
 import { IMGS } from './_assets.js';
 import { PRICES } from './_prices.js';
 
-const FAM_IMG = { spb: 'superbucket', rcb: 'recumbent', cdcb: 'cdcb', sdcb: 'sdcb', sdb: 'selfdump', sb: 'sand', hop: 'hopper', cr: 'cylrack', lcr: 'liftcyl', mc: 'mancage', rmc: 'rescue' };
+export const FAM_IMG = { spb: 'superbucket', rcb: 'recumbent', cdcb: 'cdcb', sdcb: 'sdcb', sdb: 'selfdump', sb: 'sand', hop: 'hopper', cr: 'cylrack', lcr: 'liftcyl', mc: 'mancage', rmc: 'rescue' };
 const money = n => n.toLocaleString('en-SG', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const clean = s => String(s ?? '').replace(/[^\x20-\x7E -ÿ]/g, c => ({ '³': '3', '²': '2', '×': 'x', '–': '-', '—': '-', 'Ø': 'Dia ' }[c] ?? '')).replace(/\s+/g, ' ').trim();
 
