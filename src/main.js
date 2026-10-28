@@ -37,6 +37,7 @@ async function postSales(payload){
  try{
   const r=await fetch('/api/enquiry',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
   const j=await r.json().catch(()=>({}));
+  S.emailed=j.emailed!==false;
   return r.ok&&j.ok===true;
  }catch(e){return false}
 }
@@ -215,8 +216,8 @@ function vDone(){
  const head=S.sent
   ?`<div class="done-hero"><div class="ok">✓</div><h1 style="margin-top:0">Your enquiry has been sent</h1>
 <p class="lead" style="margin:0 auto 12px">Reference <span class="ref">${S.ref}</span></p>
-<p class="lead" style="margin:0 auto">Our sales team has received it and will reply to <b>${esc(S.cust.email)}</b> with a quotation. Please keep your reference${att?'. To send drawings or photos, email them to '+SALES_EMAIL+' and quote the reference':''}. Need to chase us later? Use the Follow up chat at the bottom right.</p></div>
-<div class="actions"><button class="btn pri" id="csv">Download Excel</button><button class="btn" id="print">Print / Save as PDF</button><button class="btn" id="newEnq">Start a new enquiry</button></div>`
+<p class="lead" style="margin:0 auto">Our sales team has received it${S.emailed===false?'. Press “Email to sales” to notify them from your own email':''} and will reply to <b>${esc(S.cust.email)}</b> with a quotation. Please keep your reference${att?'. To send drawings or photos, email them to '+SALES_EMAIL+' and quote the reference':''}. Need to chase us later? Use the Follow up chat at the bottom right.</p></div>
+<div class="actions">${S.emailed===false?'<button class="btn pri" id="mail">✉ Email to sales</button>':''}<button class="btn${S.emailed===false?'':' pri'}" id="csv">Download Excel</button><button class="btn" id="print">Print / Save as PDF</button><button class="btn" id="newEnq">Start a new enquiry</button></div>`
   :`<div class="done-hero"><div class="ok">!</div><h1 style="margin-top:0">We could not send your enquiry</h1>
 <p class="lead" style="margin:0 auto 12px">Reference <span class="ref">${S.ref}</span></p>
 <p class="lead" style="margin:0 auto">Please check your connection and press “Try sending again”. If it still fails, call us on (65) 6755 7600 and quote your reference.</p></div>
@@ -290,6 +291,7 @@ function bind(){
   S.sent=await postSales({kind:'enquiry',ref:S.ref,company:S.cust.company,contact:S.cust.contact,email:S.cust.email,text:plainText(),csv:csvText(),website:hp?hp.value:''});
   if(!S.sent)toast('Could not send your enquiry. Please try again.');
   go(4)};
+ const m=$('#mail');if(m)m.onclick=()=>{location.href=`mailto:${SALES_EMAIL}?subject=${encodeURIComponent('['+S.ref+'] Enquiry — '+S.cust.company)}&body=${encodeURIComponent(plainText())}`};
  const rt=$('#retry');if(rt)rt.onclick=async()=>{
   if(rt.disabled)return;rt.disabled=true;rt.textContent='Sending…';
   S.sent=await postSales({kind:'enquiry',ref:S.ref,company:S.cust.company,contact:S.cust.contact,email:S.cust.email,text:plainText(),csv:csvText(),website:''});
