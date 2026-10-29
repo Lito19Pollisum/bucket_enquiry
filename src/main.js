@@ -18,7 +18,7 @@ const GEAR_IMGS=["c_chainblock"];
 const SVC_IMGS=["c_watersilo","c_endplate","c_rolling","c_corbel","c_mudtank"];
 const CUSTOM_TYPES=["Concrete bucket","Sand / skip bucket","Hopper","Man cage / basket","Cylinder rack","Storage / transfer cage","Tank / other fabrication","Not sure"].concat([]);
 const MODES={
- custom:{name:'Custom-made',types:CUSTOM_TYPES,quick:c=>!LIFT_IMGS.includes(c.img)&&!SVC_IMGS.includes(c.img)&&!GEAR_IMGS.includes(c.img),hide:[],csv:'Custom',list:'Custom items in your enquiry',add:'Add a custom item',edit:'Edit custom item',empty:'No custom items yet.',toast:'Custom item added'},
+ custom:{name:'Custom-Made',types:CUSTOM_TYPES,quick:c=>!LIFT_IMGS.includes(c.img)&&!SVC_IMGS.includes(c.img)&&!GEAR_IMGS.includes(c.img),hide:[],csv:'Custom',list:'Custom items in your enquiry',add:'Add a custom item',edit:'Edit custom item',empty:'No custom items yet.',toast:'Custom item added'},
  svc:{name:'Fabrication Services',intro:'Circular water silos, waterstop end plates, steel corbels, mud tanks, rolling and bending, and customised steel fabrication, made to your drawings.',types:["Circular water silo","Waterstop end plate","Rolling / bending service","Steel corbel","Mud tank","Customised steel fabrication","Other fabrication service"],quick:c=>SVC_IMGS.includes(c.img),hide:[],csv:'Fabrication service',list:'Fabrication services in your enquiry',add:'Add a fabrication service',edit:'Edit fabrication service',empty:'No fabrication services yet.',toast:'Service added'},
  insp:{name:'Inspection',intro:'On-site inspection, re-certification and PE testing of lifting equipment such as buckets, lifting frames and spreader beams.',types:["Bucket / cage","Lifting frame / spreader beam","Lifting gear (sling, shackle, hook)","Other lifting equipment"],quick:null,hide:['dims','cap','mat'],csv:'Inspection',list:'Inspections in your enquiry',add:'Add an item for inspection',edit:'Edit inspection',empty:'No inspections yet.',toast:'Inspection added'},
  lift:{name:'Lifting Frame & Spreader Beam',types:["Lifting frame","Spreader beam"],quick:c=>LIFT_IMGS.includes(c.img),hide:[],csv:'Lifting frame / spreader beam',list:'Lifting frame / spreader beam items in your enquiry',add:'Add a lifting frame or spreader beam',edit:'Edit item',empty:'No lifting frames or spreader beams yet.',toast:'Item added'},
@@ -70,13 +70,13 @@ function vType(){return `
 <p class="lead">Pick one. We send you a quotation.</p>
 <p class="purpose">Start here. You can add the other kind later.</p>
 <div class="big2">
- <button class="choice" data-type="std"><img src="${IMG.cdcb}" alt=""><h2>Standard bucket</h2><p>Pick from our catalogue of buckets, hoppers, racks and cages.</p><span class="go">Browse the catalogue →</span></button>
- <button class="choice" data-type="custom"><img src="${IMG.c_fronthandle}" alt=""><h2>Custom-made bucket</h2><p>Need a different size? Tell us what you need and we will design it.</p><span class="go">Describe what you need →</span></button>
- <button class="choice" data-type="svc"><img src="${IMG.c_watersilo}" alt=""><h2>Fabrication services</h2><p>Water silos, end plates, rolling and bending, and customised steel fabrication.</p><span class="go">Describe what you need →</span></button>
+ <button class="choice" data-type="std"><img src="${IMG.cdcb}" alt=""><h2>Standard Bucket</h2><p>Pick from our catalogue of buckets, hoppers, racks and cages.</p><span class="go">Browse the catalogue →</span></button>
+ <button class="choice" data-type="custom"><img src="${IMG.c_fronthandle}" alt=""><h2>Custom-Made Bucket</h2><p>Need a different size? Tell us what you need and we will design it.</p><span class="go">Describe what you need →</span></button>
+ <button class="choice" data-type="svc"><img src="${IMG.c_watersilo}" alt=""><h2>Fabrication Services</h2><p>Water silos, end plates, rolling and bending, and customised steel fabrication.</p><span class="go">Describe what you need →</span></button>
  <button class="choice" data-type="insp"><span class="ico"><svg viewBox="0 0 120 120" width="120" height="120" fill="none" stroke="#990000" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="52" cy="52" r="30"/><path d="M74 74l28 28"/><path d="M40 52l9 9 16-18"/></svg></span><h2>Inspection</h2><p>On-site inspection, re-certification and PE testing of lifting equipment.</p><span class="go">Request an inspection →</span></button>
- <button class="choice" data-type="lift"><img src="${IMG.c_liftframe}" alt=""><h2>Lifting frame &amp; spreader beam</h2><p>Tell us the load, span and lifting points and we will design it.</p><span class="go">Describe what you need →</span></button>
- <button class="choice" data-type="gear"><img src="${IMG.c_chainblock}" alt=""><h2>Lifting gears</h2><p>Slings, shackles, hooks, eyebolts, clamps and other lifting gear.</p><span class="go">Describe what you need →</span></button>
- <button class="choice" data-type="test"><span class="ico"><svg viewBox="0 0 120 120" width="120" height="120" fill="none" stroke="#990000" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 84a46 46 0 1 1 92 0"/><path d="M60 84l22-26"/><circle cx="60" cy="84" r="5" fill="#990000"/><path d="M26 100h68"/><path d="M24 62l7 4M42 38l5 6M78 38l-5 6M96 62l-7 4"/></svg></span><h2>Load testing</h2><p>Proof load test and certification for your lifting gear and equipment.</p><span class="go">Request a test →</span></button>
+ <button class="choice" data-type="lift"><img src="${IMG.c_liftframe}" alt=""><h2>Lifting Frame &amp; Spreader Beam</h2><p>Tell us the load, span and lifting points and we will design it.</p><span class="go">Describe what you need →</span></button>
+ <button class="choice" data-type="gear"><img src="${IMG.c_chainblock}" alt=""><h2>Lifting Gears</h2><p>Slings, shackles, hooks, eyebolts, clamps and other lifting gear.</p><span class="go">Describe what you need →</span></button>
+ <button class="choice" data-type="test"><span class="ico"><svg viewBox="0 0 120 120" width="120" height="120" fill="none" stroke="#990000" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 84a46 46 0 1 1 92 0"/><path d="M60 84l22-26"/><circle cx="60" cy="84" r="5" fill="#990000"/><path d="M26 100h68"/><path d="M24 62l7 4M42 38l5 6M78 38l-5 6M96 62l-7 4"/></svg></span><h2>Load Testing</h2><p>Proof load test and certification for your lifting gear and equipment.</p><span class="go">Request a test →</span></button>
 </div>`}
 
 /* ---------- Step 2: items ---------- */
@@ -86,7 +86,7 @@ function vItems(){
 <h1>Choose your items</h1>
 <p class="purpose">Select the models you want and set quantities, or describe a custom-made item. Everything you pick is collected for your quotation.</p>
 <div class="tabs" role="tablist">
- <button class="tab ${S.tab==='std'?'on':''}" data-tab="std">Standard bucket${Object.keys(S.sel).length?`<span class="badge">${Object.keys(S.sel).length}</span>`:''}</button>
+ <button class="tab ${S.tab==='std'?'on':''}" data-tab="std">Standard Bucket${Object.keys(S.sel).length?`<span class="badge">${Object.keys(S.sel).length}</span>`:''}</button>
  ${['custom','svc','insp','lift','gear','test'].map(k=>`<button class="tab ${S.tab===k?'on':''}" data-tab="${k}">${MODES[k].name.replace('&','&amp;')}${inMode(k).length?`<span class="badge">${inMode(k).length}</span>`:''}</button>`).join('\n ')}
 </div>
 ${S.tab==='std'?`<details class="about"><summary>About our buckets and cages</summary><ul>
