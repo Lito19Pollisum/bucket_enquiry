@@ -858,6 +858,10 @@ export const DATA = {
   {
    "img": "c_cyltrolley",
    "name": "Cylinder Trolley"
+  },
+  {
+   "img": "c_liftframe2",
+   "name": "Lifting Frame with Pulley Sets"
   }
  ]
 };
