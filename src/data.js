@@ -870,11 +870,6 @@ export const DATA = {
    "img": "c_platform1",
    "name": "Steel Platform with Handrails",
    "desc": "Steel platform with handrails, made to your size and site requirements."
-  },
-  {
-   "img": "c_platform2",
-   "name": "Steel Platform with Handrails (Wide)",
-   "desc": "Steel platform with handrails, made to your size and site requirements."
   }
  ]
 };
