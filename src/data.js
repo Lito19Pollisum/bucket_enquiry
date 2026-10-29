@@ -787,6 +787,14 @@ export const DATA = {
   {
    "img": "c_rolling",
    "name": "Rolling and Bending Service"
+  },
+  {
+   "img": "c_corbel",
+   "name": "Steel Corbel"
+  },
+  {
+   "img": "c_mudtank",
+   "name": "Mud Tank"
   }
  ]
 };
