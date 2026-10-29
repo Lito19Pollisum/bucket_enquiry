@@ -783,6 +783,7 @@ export const DATA = {
   },
   {
    "img": "c_endplate",
+   "more": ["c_endplate2", "c_endplate3"],
    "name": "Waterstop End Plate",
    "desc": "Steel waterstop end plates, fabricated to your drawings."
   },
