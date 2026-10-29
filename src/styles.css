@@ -251,3 +251,4 @@ table.t th{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacin
 .quick.big button{display:block;overflow:visible;padding:0}
 .quick.big button img,.quick.big.top button img,.quick.big.contain button img{flex:none;width:100%;height:auto;object-fit:fill;border-radius:10px;display:block}
 .quick.big button.hd img{border-radius:10px 10px 0 0}
+.choice img[src*="loadtest"]{border-radius:10px;object-fit:cover;width:100%}
