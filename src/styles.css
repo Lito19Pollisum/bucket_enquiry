@@ -172,3 +172,5 @@ table.t th{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacin
  .sheet{border:0;padding:0}.done-hero{padding:0}
 }
 @media(max-width:900px){.big2{grid-template-columns:1fr}}
+
+.about{background:var(--mist);border:1px solid var(--line);border-radius:var(--r);padding:10px 16px;margin:0 0 16px;font-size:14px}.about summary{cursor:pointer;font-weight:700;color:var(--accent-d)}.about ul{margin:8px 0 2px;padding-left:18px;color:var(--mute)}.about li{margin:4px 0}.about b{color:var(--text)}
