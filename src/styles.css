@@ -220,3 +220,11 @@ table.t th{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacin
 
 .newver{position:fixed;left:50%;top:12px;transform:translateX(-50%);z-index:2000;background:#111;color:#fff;padding:10px 16px;border-radius:12px;font-size:14px;box-shadow:0 4px 16px rgba(0,0,0,.35)}
 .newver button{margin-left:10px;background:var(--accent,#990000);color:#fff;border:0;border-radius:8px;padding:6px 12px;font-weight:700;cursor:pointer}
+
+.sl{position:absolute;top:60px;left:6px;width:30px;height:30px;border-radius:50%;background:rgba(0,0,0,.55);color:#fff;font-size:22px;line-height:28px;text-align:center;z-index:40;cursor:pointer}
+.sl.r{left:auto;right:6px}.sl:hover{background:rgba(0,0,0,.8)}
+.dots{position:absolute;top:140px;left:0;right:0;display:flex;justify-content:center;gap:5px;z-index:40}
+.dots i{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.7);box-shadow:0 0 2px rgba(0,0,0,.6)}.dots i.on{background:var(--accent,#900)}
+.lbn{position:absolute;top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;border:0;background:rgba(0,0,0,.55);color:#fff;font-size:30px;cursor:pointer;line-height:40px}
+.lbn.l{left:10px}.lbn.r{right:10px}.lbn:hover{background:rgba(0,0,0,.85)}
+.lbk{opacity:.8;margin-left:8px}
