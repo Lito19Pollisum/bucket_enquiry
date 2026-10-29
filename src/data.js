@@ -789,7 +789,7 @@ export const DATA = {
   },
   {
    "img": "c_rolling",
-   "name": "Rolling and Bending Service",
+   "name": "Rolling and Bending",
    "desc": "Plate and section rolling and bending."
   },
   {
