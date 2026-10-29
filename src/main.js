@@ -17,7 +17,7 @@ const TEST_IMGS=["c_loadtest1","c_loadtest2","c_loadtest3","c_loadtest4","c_load
 const LIFT_IMGS=["c_liftframe","c_spreader","c_liftframe2","c_liftoffset","c_magnetic","c_liftbarge","c_sbsling","c_liftrect","c_sbprecast","c_sbwall"];
 const LIFT_GROUPS=[["c_liftframe","c_liftbarge","c_liftrect","c_liftframe2","c_sbsling","c_sbprecast"],["c_spreader","c_liftoffset","c_magnetic","c_sbwall"]];
 const GEAR_IMGS=["c_chainblock","c_shackles"];
-const SVC_IMGS=["c_watersilo","c_endplate","c_rolling","c_corbel","c_mudtank","c_platform1"];
+const SVC_IMGS=["c_watersilo","c_endplate","c_rolling","c_svc_rolling","c_svc_bending","c_svc_pressbrake","c_svc_punching","c_svc_shearing","c_svc_cutting","c_corbel","c_mudtank","c_platform1"];
 const CUSTOM_TYPES=["Concrete bucket","Sand / skip bucket","Hopper","Man cage / basket","Cylinder rack","Storage / transfer cage","Tank / other fabrication","Not sure"].concat([]);
 const MODES={
  custom:{name:'Custom-Made',types:CUSTOM_TYPES,quick:c=>!LIFT_IMGS.includes(c.img)&&!SVC_IMGS.includes(c.img)&&!GEAR_IMGS.includes(c.img)&&!TEST_IMGS.includes(c.img),hide:[],csv:'Custom',list:'Custom Items in your Enquiry',add:'Add a Custom Item',edit:'Edit Custom Item',empty:'No custom items yet.',toast:'Custom item added'},
@@ -319,7 +319,7 @@ function bind(){
 }
 function guessType(n){n=n.toLowerCase();
  if(/man|basket/.test(n))return'Man cage / basket';if(/cage/.test(n))return'Storage / transfer cage';if(/hopper/.test(n)&&!/self/.test(n))return'Hopper';
- if(/spreader/.test(n)&&/test/.test(n))return'Spreader beam / lifting frame';if(/lifting frame/.test(n)&&/test/.test(n))return'Spreader beam / lifting frame';if(/platform/.test(n))return'Steel platform';if(/shackle/.test(n))return'Shackle';if(/chain block/.test(n))return'Chain block';if(/corbel/.test(n))return'Steel corbel';if(/mud tank/.test(n))return'Mud tank';if(/silo/.test(n))return'Circular water silo';if(/end plate/.test(n))return'Waterstop end plate';if(/rolling|bending/.test(n))return'Rolling / bending service';if(/spreader/.test(n))return'Spreader beam';if(/frame/.test(n))return'Lifting frame';if(/tank|trolley/.test(n))return'Tank / other fabrication';return'Concrete bucket'}
+ if(/spreader/.test(n)&&/test/.test(n))return'Spreader beam / lifting frame';if(/lifting frame/.test(n)&&/test/.test(n))return'Spreader beam / lifting frame';if(/platform/.test(n))return'Steel platform';if(/shackle/.test(n))return'Shackle';if(/chain block/.test(n))return'Chain block';if(/corbel/.test(n))return'Steel corbel';if(/mud tank/.test(n))return'Mud tank';if(/silo/.test(n))return'Circular water silo';if(/end plate/.test(n))return'Waterstop end plate';if(/rolling|bending|braking|punching|shearing|cutting/.test(n))return'Rolling / bending service';if(/spreader/.test(n))return'Spreader beam';if(/frame/.test(n))return'Lifting frame';if(/tank|trolley/.test(n))return'Tank / other fabrication';return'Concrete bucket'}
 
 /* ---------- Follow-up chat ---------- */
 const CHAT={open:false,msgs:[{who:'bot',text:'Hi. Following up on an enquiry? Pick an option or type your message.'}],ref:'',email:''};
