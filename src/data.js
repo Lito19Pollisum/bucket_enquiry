@@ -795,6 +795,34 @@ export const DATA = {
   {
    "img": "c_mudtank",
    "name": "Mud Tank"
+  },
+  {
+   "img": "c_liftoffset",
+   "name": "Offset Spreader Beam"
+  },
+  {
+   "img": "c_magnetic",
+   "name": "Magnetic Spreader Beam"
+  },
+  {
+   "img": "c_liftbarge",
+   "name": "Lifting Frame with Rope Slings"
+  },
+  {
+   "img": "c_sbsling",
+   "name": "Spreader Beam with Slings"
+  },
+  {
+   "img": "c_liftrect",
+   "name": "Rectangular Lifting Frame"
+  },
+  {
+   "img": "c_sbprecast",
+   "name": "Precast Spreader Beam"
+  },
+  {
+   "img": "c_sbwall",
+   "name": "Precast Wall Spreader Beam"
   }
  ]
 };
