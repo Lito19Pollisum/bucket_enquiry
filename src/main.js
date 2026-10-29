@@ -13,18 +13,19 @@ document.getElementById('brandLogo').src=IMG.brand_logo;document.getElementById(
 
 const FAM=DATA.fam, CATS=[...new Set(FAM.map(f=>f.cat))];
 const BYCODE={};FAM.forEach(f=>f.models.forEach(m=>BYCODE[m.code]={fam:f,m}));
+const TEST_IMGS=["c_loadtest1","c_loadtest2","c_loadtest3","c_loadtest4","c_loadtest5"];
 const LIFT_IMGS=["c_liftframe","c_spreader","c_liftframe2","c_liftoffset","c_magnetic","c_liftbarge","c_sbsling","c_liftrect","c_sbprecast","c_sbwall"];
 const LIFT_GROUPS=[["c_liftframe","c_liftbarge","c_liftrect","c_liftframe2","c_sbsling"],["c_spreader","c_liftoffset","c_magnetic","c_sbprecast","c_sbwall"]];
 const GEAR_IMGS=["c_chainblock"];
 const SVC_IMGS=["c_watersilo","c_endplate","c_rolling","c_corbel","c_mudtank","c_platform1"];
 const CUSTOM_TYPES=["Concrete bucket","Sand / skip bucket","Hopper","Man cage / basket","Cylinder rack","Storage / transfer cage","Tank / other fabrication","Not sure"].concat([]);
 const MODES={
- custom:{name:'Custom-Made',types:CUSTOM_TYPES,quick:c=>!LIFT_IMGS.includes(c.img)&&!SVC_IMGS.includes(c.img)&&!GEAR_IMGS.includes(c.img),hide:[],csv:'Custom',list:'Custom Items in your Enquiry',add:'Add a Custom Item',edit:'Edit Custom Item',empty:'No custom items yet.',toast:'Custom item added'},
+ custom:{name:'Custom-Made',types:CUSTOM_TYPES,quick:c=>!LIFT_IMGS.includes(c.img)&&!SVC_IMGS.includes(c.img)&&!GEAR_IMGS.includes(c.img)&&!TEST_IMGS.includes(c.img),hide:[],csv:'Custom',list:'Custom Items in your Enquiry',add:'Add a Custom Item',edit:'Edit Custom Item',empty:'No custom items yet.',toast:'Custom item added'},
  svc:{name:'Other Fabrication Services',intro:'Circular water silos, waterstop end plates, steel corbels, mud tanks, steel platforms, rolling and bending, and customised steel fabrication, made to your drawings.',types:["Circular water silo","Waterstop end plate","Rolling / bending service","Steel corbel","Mud tank","Steel platform","Customised steel fabrication","Other fabrication service"],quick:c=>SVC_IMGS.includes(c.img),hide:[],csv:'Fabrication service',list:'Other Fabrication Services in Your Enquiry',add:'Add Other Fabrication Service',edit:'Edit Other Fabrication Service',empty:'No fabrication services yet.',toast:'Service added'},
  insp:{name:'Inspection',intro:'On-site inspection, re-certification and PE testing of lifting equipment such as buckets, lifting frames and spreader beams.',types:["Bucket / cage","Lifting frame / spreader beam","Lifting gear (sling, shackle, hook)","Other lifting equipment"],quick:null,hide:['dims','cap','mat'],csv:'Inspection',list:'Inspections in your Enquiry',add:'Add an Item for Inspection',edit:'Edit Inspection',empty:'No inspections yet.',toast:'Inspection added'},
  lift:{name:'Lifting Frame & Spreader Beam',types:["Lifting frame","Spreader beam"],quick:c=>LIFT_IMGS.includes(c.img),hide:[],csv:'Lifting frame / spreader beam',list:'Lifting Frame / Spreader Beam Items in your Enquiry',add:'Add a Lifting Frame or Spreader Beam',edit:'Edit Item',empty:'No lifting frames or spreader beams yet.',toast:'Item added'},
  gear:{name:'Lifting Gears',types:["Wire rope sling","Wire rope","Chain sling","Chain block","Webbing sling","Round sling","Shackle","Snatch block","Hook","Eyebolt","Lifting clamp","Lifting beam","Other lifting gear"],quick:c=>GEAR_IMGS.includes(c.img),hide:['cap'],csv:'Lifting gear',list:'Lifting Gears in your Enquiry',add:'Add a Lifting Gear',edit:'Edit Lifting Gear',empty:'No lifting gears yet.',toast:'Lifting gear added'},
- test:{name:'Load Testing',types:["Lifting gear (sling, shackle, hook)","Spreader beam / lifting frame","Crane","Hoist / chain block","Bucket / cage / other equipment"],quick:null,hide:['dims','cap','mat'],csv:'Load testing',list:'Load Tests in your Enquiry',add:'Add an Item for Load Testing',edit:'Edit Load Test',empty:'No load tests yet.',toast:'Load test added'}
+ test:{name:'Load Testing',types:["Lifting gear (sling, shackle, hook)","Spreader beam / lifting frame","Crane","Hoist / chain block","Bucket / cage / other equipment"],quick:c=>TEST_IMGS.includes(c.img),hide:['dims','cap','mat'],csv:'Load testing',list:'Load Tests in your Enquiry',add:'Add an Item for Load Testing',edit:'Edit Load Test',empty:'No load tests yet.',toast:'Load test added'}
 };
 const modeOf=c=>c.kind&&MODES[c.kind]?c.kind:'custom';
 const inMode=m=>S.customs.filter(c=>modeOf(c)===m);
@@ -318,7 +319,7 @@ function bind(){
 }
 function guessType(n){n=n.toLowerCase();
  if(/man|basket/.test(n))return'Man cage / basket';if(/cage/.test(n))return'Storage / transfer cage';if(/hopper/.test(n)&&!/self/.test(n))return'Hopper';
- if(/platform/.test(n))return'Steel platform';if(/chain block/.test(n))return'Chain block';if(/corbel/.test(n))return'Steel corbel';if(/mud tank/.test(n))return'Mud tank';if(/silo/.test(n))return'Circular water silo';if(/end plate/.test(n))return'Waterstop end plate';if(/rolling|bending/.test(n))return'Rolling / bending service';if(/spreader/.test(n))return'Spreader beam';if(/frame/.test(n))return'Lifting frame';if(/tank|trolley/.test(n))return'Tank / other fabrication';return'Concrete bucket'}
+ if(/spreader/.test(n)&&/test/.test(n))return'Spreader beam / lifting frame';if(/lifting frame/.test(n)&&/test/.test(n))return'Spreader beam / lifting frame';if(/platform/.test(n))return'Steel platform';if(/chain block/.test(n))return'Chain block';if(/corbel/.test(n))return'Steel corbel';if(/mud tank/.test(n))return'Mud tank';if(/silo/.test(n))return'Circular water silo';if(/end plate/.test(n))return'Waterstop end plate';if(/rolling|bending/.test(n))return'Rolling / bending service';if(/spreader/.test(n))return'Spreader beam';if(/frame/.test(n))return'Lifting frame';if(/tank|trolley/.test(n))return'Tank / other fabrication';return'Concrete bucket'}
 
 /* ---------- Follow-up chat ---------- */
 const CHAT={open:false,msgs:[{who:'bot',text:'Hi. Following up on an enquiry? Pick an option or type your message.'}],ref:'',email:''};
