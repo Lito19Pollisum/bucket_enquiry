@@ -824,7 +824,7 @@ export const DATA = {
   },
   {
    "img": "c_sbprecast",
-   "name": "Precast Spreader Beam"
+   "name": "Lifting Frame with Crane"
   },
   {
    "img": "c_sbwall",

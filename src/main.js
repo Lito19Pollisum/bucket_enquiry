@@ -15,7 +15,7 @@ const FAM=DATA.fam, CATS=[...new Set(FAM.map(f=>f.cat))];
 const BYCODE={};FAM.forEach(f=>f.models.forEach(m=>BYCODE[m.code]={fam:f,m}));
 const TEST_IMGS=["c_loadtest1","c_loadtest2","c_loadtest3","c_loadtest4","c_loadtest5"];
 const LIFT_IMGS=["c_liftframe","c_spreader","c_liftframe2","c_liftoffset","c_magnetic","c_liftbarge","c_sbsling","c_liftrect","c_sbprecast","c_sbwall"];
-const LIFT_GROUPS=[["c_liftframe","c_liftbarge","c_liftrect","c_liftframe2","c_sbsling"],["c_spreader","c_liftoffset","c_magnetic","c_sbprecast","c_sbwall"]];
+const LIFT_GROUPS=[["c_liftframe","c_liftbarge","c_liftrect","c_liftframe2","c_sbsling","c_sbprecast"],["c_spreader","c_liftoffset","c_magnetic","c_sbwall"]];
 const GEAR_IMGS=["c_chainblock"];
 const SVC_IMGS=["c_watersilo","c_endplate","c_rolling","c_corbel","c_mudtank","c_platform1"];
 const CUSTOM_TYPES=["Concrete bucket","Sand / skip bucket","Hopper","Man cage / basket","Cylinder rack","Storage / transfer cage","Tank / other fabrication","Not sure"].concat([]);
