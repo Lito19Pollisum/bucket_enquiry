@@ -13,6 +13,7 @@ document.getElementById('brandLogo').src=IMG.brand_logo;document.getElementById(
 const FAM=DATA.fam, CATS=[...new Set(FAM.map(f=>f.cat))];
 const BYCODE={};FAM.forEach(f=>f.models.forEach(m=>BYCODE[m.code]={fam:f,m}));
 const LIFT_IMGS=["c_liftframe","c_spreader","c_liftoffset","c_magnetic","c_liftbarge","c_sbsling","c_liftrect","c_sbprecast","c_sbwall"];
+const LIFT_GROUPS=[["c_liftframe","c_liftbarge","c_liftrect"],["c_spreader","c_liftoffset","c_magnetic","c_sbsling","c_sbprecast","c_sbwall"]];
 const SVC_IMGS=["c_watersilo","c_endplate","c_rolling","c_corbel","c_mudtank"];
 const CUSTOM_TYPES=["Concrete bucket","Sand / skip bucket","Hopper","Man cage / basket","Cylinder rack","Storage / transfer cage","Tank / other fabrication","Not sure"].concat([]);
 const MODES={
@@ -130,7 +131,7 @@ ${mine.length?`<h2>${M.list}</h2><div class="list">${mine.map(([c,i])=>`<div cla
 <div class="panel">
  <h2>${S.editing!==null?M.edit:M.add}</h2>
 ${M.quick?` <p style="margin:0;color:var(--mute);font-size:14px">Start from something similar in our past work (optional):</p>
- <div class="quick">${DATA.custom.filter(M.quick).map(c=>`<button data-quick="${c.img}" class="${d.img===c.img?'on':''}"><img src="${IMG[c.img]}" alt=""><span>${c.name}</span></button>`).join('')}</div>`:''}
+ ${(mode==='lift'?[['Lifting frame',LIFT_GROUPS[0]],['Spreader beam',LIFT_GROUPS[1]]]:[['',null]]).map(([h,g])=>`${h?`<h3 class="qh">${h}</h3>`:''}<div class="quick">${DATA.custom.filter(M.quick).filter(c=>!g||g.includes(c.img)).map(c=>`<button data-quick="${c.img}" class="${d.img===c.img?'on':''}"><img src="${IMG[c.img]}" alt=""><span>${c.name}</span></button>`).join('')}</div>`).join('')}`:''}
  <div class="form">
   <div class="f ${d.bad?.type?'bad':''}"><label>What type of item? <small>(required)</small></label><select id="c_type"><option value="">Select…</option>${TYPES.map(t=>`<option ${d.type===t?'selected':''}>${t}</option>`).concat(d.type&&!TYPES.includes(d.type)?[`<option selected>${esc(d.type)}</option>`]:[]).join('')}</select><div class="err">Please choose or select a starting point above.</div></div>
   <div class="f"><label>Quantity</label><div class="qty"><button data-cq="-1" type="button" aria-label="Decrease">−</button><input type="number" id="c_qty" min="1" max="999" value="${d.qty}"><button data-cq="1" type="button" aria-label="Increase">+</button></div></div>
