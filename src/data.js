@@ -775,6 +775,18 @@ export const DATA = {
   {
    "img": "c_matcage",
    "name": "Lifting Material Cage"
+  },
+  {
+   "img": "c_watersilo",
+   "name": "Circular Water Silo"
+  },
+  {
+   "img": "c_endplate",
+   "name": "Waterstop End Plate"
+  },
+  {
+   "img": "c_rolling",
+   "name": "Rolling and Bending Service"
   }
  ]
 };
