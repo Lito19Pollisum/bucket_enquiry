@@ -425,14 +425,3 @@ function lightbox(c){
  setInterval(check,60000);
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)check()});
 })();
-
-/* Header slideshow: catalogue buckets and custom-made photos */
-(function(){const bg=document.getElementById('heroBg');if(!bg)return;
- const other=[...LIFT_IMGS,...SVC_IMGS,...ROLL_IMGS,...GEAR_IMGS,...TEST_IMGS];
- const keys=[...['superbucket','cdcb','sdcb','hopper','mancage','rescue','sand','recumbent','cylrack','liftcyl'],...DATA.custom.map(c=>c.img).filter(k=>!other.includes(k))].filter(k=>IMG[k]);
- const mix=[];const a=keys.slice(0,10),b=keys.slice(10);for(let i=0;i<Math.max(a.length,b.length);i++){if(b[i])mix.push(b[i]);if(a[i])mix.push(a[i])}
- const mk=k=>{const s=document.createElement('div');s.className='hs';s.style.setProperty('--u','url('+IMG[k]+')');s.innerHTML='<img alt="" src="'+IMG[k]+'">';return s};
- const slides=mix.map(mk);slides.forEach(s=>bg.appendChild(s));if(!slides.length)return;
- let i=0;slides[0].classList.add('on');
- if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;
- setInterval(()=>{if(document.hidden)return;slides[i].classList.remove('on');i=(i+1)%slides.length;slides[i].classList.add('on')},4000)})();
