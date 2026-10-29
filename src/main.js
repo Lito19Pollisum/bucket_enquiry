@@ -131,7 +131,7 @@ ${mine.length?`<h2>${M.list}</h2><div class="list">${mine.map(([c,i])=>`<div cla
 <div class="panel">
  <h2>${S.editing!==null?M.edit:M.add}</h2>
 ${M.quick?` <p style="margin:0;color:var(--mute);font-size:14px">Start from something similar in our past work (optional):</p>
- ${(mode==='lift'?[['Lifting frame',LIFT_GROUPS[0]],['Spreader beam',LIFT_GROUPS[1]]]:[['',null]]).map(([h,g])=>`${h?`<h3 class="qh">${h}</h3>`:''}<div class="quick">${DATA.custom.filter(M.quick).filter(c=>!g||g.includes(c.img)).map(c=>`<button data-quick="${c.img}" class="${d.img===c.img?'on':''}"><img src="${IMG[c.img]}" alt="${c.name}" title="${c.name}">${mode==='lift'?'':`<span>${c.name}</span>`}</button>`).join('')}</div>`).join('')}`:''}
+ ${(mode==='lift'?[['Lifting frame',LIFT_GROUPS[0]],['Spreader beam',LIFT_GROUPS[1]]]:[['',null]]).map(([h,g])=>`${h?`<h3 class="qh">${h}</h3>`:''}<div class="quick${mode==='lift'?' big':''}">${DATA.custom.filter(M.quick).filter(c=>!g||g.includes(c.img)).map(c=>`<button data-quick="${c.img}" class="${d.img===c.img?'on':''}"><img src="${IMG[c.img]}" alt="${c.name}" title="${c.name}">${mode==='lift'?'':`<span>${c.name}</span>`}</button>`).join('')}</div>`).join('')}`:''}
  <div class="form">
   <div class="f ${d.bad?.type?'bad':''}"><label>What type of item? <small>(required)</small></label><select id="c_type"><option value="">Select…</option>${TYPES.map(t=>`<option ${d.type===t?'selected':''}>${t}</option>`).concat(d.type&&!TYPES.includes(d.type)?[`<option selected>${esc(d.type)}</option>`]:[]).join('')}</select><div class="err">Please choose or select a starting point above.</div></div>
   <div class="f"><label>Quantity</label><div class="qty"><button data-cq="-1" type="button" aria-label="Decrease">−</button><input type="number" id="c_qty" min="1" max="999" value="${d.qty}"><button data-cq="1" type="button" aria-label="Increase">+</button></div></div>
@@ -279,7 +279,7 @@ function bind(){
  });
  const td=$('#toDetails');if(td)td.onclick=()=>{readDraft();if(!itemCount()){toast('Please select at least one item');return}go(2)};
  // custom
- A.querySelectorAll('[data-quick]').forEach(b=>b.onclick=()=>{readDraft();const c=DATA.custom.find(x=>x.img===b.dataset.quick);S.draft.img=c.img;S.draft.type=guessType(c.name);S.draft.rem=S.draft.rem||'Similar to: '+c.name;render()});
+ A.querySelectorAll('[data-quick]').forEach(b=>b.onclick=()=>{readDraft();const c=DATA.custom.find(x=>x.img===b.dataset.quick);S.draft.img=c.img;S.draft.type=guessType(c.name);S.draft.rem=S.draft.rem||'Similar to: '+c.name;render();if(S.tab==='lift')lightbox(IMG[c.img],c.name)});
  A.querySelectorAll('[data-cq]').forEach(b=>b.onclick=()=>{const i=$('#c_qty');i.value=Math.max(1,Math.min(999,(parseInt(i.value)||1)+(+b.dataset.cq)))});
  const un=$('#c_unsure');if(un)un.onchange=()=>{readDraft();render()};
  const fi=$('#c_files');if(fi)fi.onchange=()=>{readDraft();S.draft.files=[...S.draft.files,...[...fi.files].map(f=>f.name)];render()};
@@ -378,3 +378,14 @@ async function chatSend(text){
 const _render=render;render=function(){_render();const r=document.getElementById('chat');if(r)r.classList.toggle('up',S.step===1);const i=document.getElementById('chatRef');if(i&&S.ref){i.value=S.ref;i.readOnly=true}};
 chatRender();
 render();
+
+/* ---------- Photo lightbox (stays until closed) ---------- */
+function lightbox(src,name){
+ let o=document.getElementById('lb');if(o)o.remove();
+ o=document.createElement('div');o.id='lb';o.className='lb';
+ o.innerHTML=`<div class="lbin"><button class="lbx" aria-label="Close">✕</button><img src="${src}" alt="${esc(name)}"></div>`;
+ const close=()=>{o.remove();document.removeEventListener('keydown',k)};
+ const k=e=>{if(e.key==='Escape')close()};
+ o.onclick=e=>{if(e.target===o||e.target.classList.contains('lbx'))close()};
+ document.addEventListener('keydown',k);document.body.appendChild(o);
+}
