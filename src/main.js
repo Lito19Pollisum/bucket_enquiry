@@ -101,7 +101,6 @@ function card(f,m){
  rows.push(['Own weight',m.self]);
  return `<div class="card ${on?'sel':''}" tabindex="0" role="button" aria-pressed="${on}" data-code="${m.code}">
  <div class="tick">${on?'✓':''}</div>
- <div class="ph"><img src="${IMG[f.img]}" alt="${esc(f.name)}" loading="lazy"></div>
  <div class="body">
   <div><div class="code">${m.code}${/^(Round|Square)$/.test(m.extra||'')?` <span class="tag">${m.extra}</span>`:''}</div>
   <div class="capline"><span class="cap">${esc(m.cap)}</span><span style="color:var(--mute);font-size:13px">capacity</span></div></div>
@@ -112,8 +111,7 @@ function card(f,m){
 function vStd(){
  const fams=FAM.filter(f=>S.cat==='All'||f.cat===S.cat);
  return `<div class="chips">${['All',...CATS].map(c=>`<button class="chip ${S.cat===c?'on':''}" data-cat="${c}">${c}</button>`).join('')}</div>`+
- fams.map(f=>`<section class="fam"><div class="fam-head"><div><h2>${f.name}</h2><p>${esc(f.desc)}</p></div></div>
- ${f.note?`<p class="note">${esc(f.note)}</p>`:''}
+ fams.map(f=>`<section class="fam"><div class="fam-head"><div class="fph"><img src="${IMG[f.img]}" alt="${esc(f.name)}" loading="lazy"></div><div class="ftxt"><h2>${f.name}</h2><p>${esc(f.desc)}</p>${f.note?`<p class="note">${esc(f.note)}</p>`:''}<span class="pickhint">Choose a size below</span></div></div>
  <div class="grid">${f.models.map(m=>card(f,m)).join('')}</div></section>`).join('')+
  `<div class="panel" style="text-align:center"><b>Can't find the right size?</b><p style="margin:4px 0 12px;color:var(--mute)">We fabricate to your requirements.</p><button class="btn" data-tab="custom">Request a custom-made item</button></div>`}
 
