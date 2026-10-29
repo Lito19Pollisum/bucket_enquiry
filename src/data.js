@@ -835,28 +835,12 @@ export const DATA = {
    "desc": "Manual chain block for lifting loads, in a range of capacities."
   },
   {
-   "img": "c_pitbucket",
-   "name": "Open-Top Lifting Bucket"
-  },
-  {
    "img": "c_slingbucket",
    "name": "Lifting Bucket with Wire Slings"
   },
   {
    "img": "c_twinhopper",
    "name": "Twin Discharge Hopper"
-  },
-  {
-   "img": "c_cyltrolley1",
-   "name": "Cylinder Trolley (Tilted)"
-  },
-  {
-   "img": "c_cyltrolley2",
-   "name": "Cylinder Trolley"
-  },
-  {
-   "img": "c_matbin",
-   "name": "Material Bin"
   },
   {
    "img": "c_tipskip",
@@ -870,6 +854,10 @@ export const DATA = {
    "img": "c_platform1",
    "name": "Steel Platform with Handrails",
    "desc": "Steel platform with handrails, made to your size and site requirements."
+  },
+  {
+   "img": "c_cyltrolley",
+   "name": "Cylinder Trolley"
   }
  ]
 };
