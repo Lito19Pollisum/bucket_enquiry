@@ -778,23 +778,28 @@ export const DATA = {
   },
   {
    "img": "c_watersilo",
-   "name": "Circular Water Silo"
+   "name": "Circular Water Silo",
+   "desc": "Circular steel water silo, fabricated to your volume and site requirements."
   },
   {
    "img": "c_endplate",
-   "name": "Waterstop End Plate"
+   "name": "Waterstop End Plate",
+   "desc": "Steel waterstop end plates, fabricated to your drawings."
   },
   {
    "img": "c_rolling",
-   "name": "Rolling and Bending Service"
+   "name": "Rolling and Bending Service",
+   "desc": "Steel plate rolling, bending, press braking, punching, shearing and cutting."
   },
   {
    "img": "c_corbel",
-   "name": "Steel Corbel"
+   "name": "Steel Corbel",
+   "desc": "High-yield mild steel corbels for precast beam support and installation. Our engineers confirm the capacity and position with you."
   },
   {
    "img": "c_mudtank",
-   "name": "Mud Tank"
+   "name": "Mud Tank",
+   "desc": "Mud tank for waste storage, sized to your site and volume. Inlet and outlet pipes and access ladder available."
   },
   {
    "img": "c_liftoffset",
