@@ -237,3 +237,17 @@ table.t th{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacin
 .quick.big button.hd img{height:auto;border-radius:10px 10px 0 0}
 .sl{top:40%}.dots{top:8px}
 .quick.big button{max-width:min(100%,420px)}
+
+/* photo always fills its tile: no blank space, rows line up */
+.quick.big{align-items:stretch}
+.quick.big button{display:flex;flex-direction:column;overflow:hidden}
+.quick.big button img,.quick.big.top button img,.quick.big.contain button img{flex:1 1 auto;min-height:0;width:100%;height:100%;object-fit:cover;object-position:center}
+.quick.big button.hd img{flex:1 1 auto}
+.quick.big button:hover,.quick.big button:focus-visible{overflow:visible}
+
+/* final: natural photo shape, uniform row height, nothing stretched or padded */
+.quick.big{align-items:flex-start;gap:12px}
+.quick.big::after{display:none}
+.quick.big button{display:block;overflow:visible;padding:0}
+.quick.big button img,.quick.big.top button img,.quick.big.contain button img{flex:none;width:100%;height:auto;object-fit:fill;border-radius:10px;display:block}
+.quick.big button.hd img{border-radius:10px 10px 0 0}
