@@ -14,7 +14,7 @@ header.hero{background:var(--maroon);color:#fff;overflow:hidden}
 .hero-pic{position:relative;min-width:0}
 .hero-pic img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 38%;clip-path:polygon(16% 0,100% 0,100% 100%,0 100%)}
 .endbar{height:16px;background:var(--maroon-f)}
-.wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+.wrap{max-width:1600px;margin:0 auto;padding:0 32px}
 .top .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-top:12px;padding-bottom:12px}
 .top img{height:44px;display:block}
 .top .contact{font-size:13px;color:var(--mute);text-align:right}
