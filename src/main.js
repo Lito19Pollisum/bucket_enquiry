@@ -60,7 +60,7 @@ function render(){
  else if(S.step===2)h+=vDetails();
  else if(S.step===3)h+=vReview();
  else if(S.step===4)h+=vDone();
- a.innerHTML=h+`<div class="foot">${COMPANY} · Tel (65) 6755 7600 · www.pollisum.com<br>Enquiry only — no payment is taken. Prices are confirmed in our quotation.</div>`;
+ a.innerHTML=h+`<div class="foot">${COMPANY} · Tel (65) 6755 7600 · www.pollisum.com<br>Enquiry only — no payment is taken. Prices are confirmed in our quotation.<br><small style="opacity:.55">Version ${__BUILD__}</small></div>`;
  bind();
 }
 
@@ -391,3 +391,24 @@ function lightbox(src,name,desc){
  o.onclick=e=>{if(e.target===o||e.target.classList.contains('lbx'))close()};
  document.addEventListener('keydown',k);document.body.appendChild(o);
 }
+
+/* ---------- New-version check: tells the visitor when a newer deploy is live ---------- */
+(function(){
+ const cur=(document.querySelector('script[src*="assets/index-"]')||{}).src||'';
+ const name=u=>(u.match(/assets\/index-[\w-]+\.js/)||[''])[0];
+ const mine=name(cur);if(!mine)return;
+ async function check(){
+  try{
+   const h=await fetch('/?_='+Date.now(),{cache:'no-store'}).then(r=>r.text());
+   const now=name(h);
+   if(now&&now!==mine&&!document.getElementById('newver')){
+    const b=document.createElement('div');b.id='newver';b.className='newver';
+    b.innerHTML='A new version of this page is available. <button type="button">Refresh now</button>';
+    b.querySelector('button').onclick=()=>location.reload();
+    document.body.appendChild(b);
+   }
+  }catch(e){}
+ }
+ setInterval(check,60000);
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden)check()});
+})();
