@@ -13,9 +13,11 @@ document.getElementById('brandLogo').src=IMG.brand_logo;document.getElementById(
 const FAM=DATA.fam, CATS=[...new Set(FAM.map(f=>f.cat))];
 const BYCODE={};FAM.forEach(f=>f.models.forEach(m=>BYCODE[m.code]={fam:f,m}));
 const LIFT_IMGS=["c_liftframe","c_spreader"];
-const CUSTOM_TYPES=["Concrete bucket","Sand / skip bucket","Hopper","Man cage / basket","Cylinder rack","Storage / transfer cage","Tank / other fabrication","Circular water silo","Waterstop end plate","Rolling / bending service","Customised steel fabrication","Not sure"].concat([]);
+const SVC_IMGS=["c_watersilo","c_endplate","c_rolling"];
+const CUSTOM_TYPES=["Concrete bucket","Sand / skip bucket","Hopper","Man cage / basket","Cylinder rack","Storage / transfer cage","Tank / other fabrication","Not sure"].concat([]);
 const MODES={
- custom:{name:'Custom-made',types:CUSTOM_TYPES,quick:c=>!LIFT_IMGS.includes(c.img),hide:[],csv:'Custom',list:'Custom items in your enquiry',add:'Add a custom item',edit:'Edit custom item',empty:'No custom items yet.',toast:'Custom item added'},
+ custom:{name:'Custom-made',types:CUSTOM_TYPES,quick:c=>!LIFT_IMGS.includes(c.img)&&!SVC_IMGS.includes(c.img),hide:[],csv:'Custom',list:'Custom items in your enquiry',add:'Add a custom item',edit:'Edit custom item',empty:'No custom items yet.',toast:'Custom item added'},
+ svc:{name:'Fabrication Services',types:["Circular water silo","Waterstop end plate","Rolling / bending service","Customised steel fabrication","Other fabrication service"],quick:c=>SVC_IMGS.includes(c.img),hide:[],csv:'Fabrication service',list:'Fabrication services in your enquiry',add:'Add a fabrication service',edit:'Edit fabrication service',empty:'No fabrication services yet.',toast:'Service added'},
  lift:{name:'Lifting Frame & Spreader Beam',types:["Lifting frame","Spreader beam"],quick:c=>LIFT_IMGS.includes(c.img),hide:[],csv:'Lifting frame / spreader beam',list:'Lifting frame / spreader beam items in your enquiry',add:'Add a lifting frame or spreader beam',edit:'Edit item',empty:'No lifting frames or spreader beams yet.',toast:'Item added'},
  gear:{name:'Lifting Gears',types:["Wire rope sling","Chain sling","Webbing sling","Round sling","Shackle","Hook","Eyebolt","Lifting clamp","Lifting beam","Other lifting gear"],quick:null,hide:['cap'],csv:'Lifting gear',list:'Lifting gears in your enquiry',add:'Add a lifting gear',edit:'Edit lifting gear',empty:'No lifting gears yet.',toast:'Lifting gear added'},
  test:{name:'Load Testing',types:["Lifting gear (sling, shackle, hook)","Spreader beam / lifting frame","Crane","Hoist / chain block","Bucket / cage / other equipment"],quick:null,hide:['dims','cap','mat'],csv:'Load testing',list:'Load tests in your enquiry',add:'Add an item for load testing',edit:'Edit load test',empty:'No load tests yet.',toast:'Load test added'}
@@ -80,7 +82,7 @@ function vItems(){
 <p class="purpose">Select the models you want and set quantities, or describe a custom-made item. Everything you pick is collected for your quotation.</p>
 <div class="tabs" role="tablist">
  <button class="tab ${S.tab==='std'?'on':''}" data-tab="std">Standard bucket${Object.keys(S.sel).length?`<span class="badge">${Object.keys(S.sel).length}</span>`:''}</button>
- ${['custom','lift','gear','test'].map(k=>`<button class="tab ${S.tab===k?'on':''}" data-tab="${k}">${MODES[k].name.replace('&','&amp;')}${inMode(k).length?`<span class="badge">${inMode(k).length}</span>`:''}</button>`).join('\n ')}
+ ${['custom','svc','lift','gear','test'].map(k=>`<button class="tab ${S.tab===k?'on':''}" data-tab="${k}">${MODES[k].name.replace('&','&amp;')}${inMode(k).length?`<span class="badge">${inMode(k).length}</span>`:''}</button>`).join('\n ')}
 </div>
 ${S.tab==='std'?`<details class="about"><summary>About our buckets and cages</summary><ul>
 <li><b>Concrete bucket:</b> delivers concrete by crane through a bottom valve. Square types suit filling forms and bulk moves; round types suit pouring.</li>
