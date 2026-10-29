@@ -13,11 +13,11 @@ document.getElementById('brandLogo').src=IMG.brand_logo;document.getElementById(
 const FAM=DATA.fam, CATS=[...new Set(FAM.map(f=>f.cat))];
 const BYCODE={};FAM.forEach(f=>f.models.forEach(m=>BYCODE[m.code]={fam:f,m}));
 const LIFT_IMGS=["c_liftframe","c_spreader"];
-const SVC_IMGS=["c_watersilo","c_endplate","c_rolling"];
+const SVC_IMGS=["c_watersilo","c_endplate","c_rolling","c_corbel","c_mudtank"];
 const CUSTOM_TYPES=["Concrete bucket","Sand / skip bucket","Hopper","Man cage / basket","Cylinder rack","Storage / transfer cage","Tank / other fabrication","Not sure"].concat([]);
 const MODES={
  custom:{name:'Custom-made',types:CUSTOM_TYPES,quick:c=>!LIFT_IMGS.includes(c.img)&&!SVC_IMGS.includes(c.img),hide:[],csv:'Custom',list:'Custom items in your enquiry',add:'Add a custom item',edit:'Edit custom item',empty:'No custom items yet.',toast:'Custom item added'},
- svc:{name:'Fabrication Services',intro:'Circular water silos, waterstop end plates, rolling and bending, and customised steel fabrication, made to your drawings.',types:["Circular water silo","Waterstop end plate","Rolling / bending service","Customised steel fabrication","Other fabrication service"],quick:c=>SVC_IMGS.includes(c.img),hide:[],csv:'Fabrication service',list:'Fabrication services in your enquiry',add:'Add a fabrication service',edit:'Edit fabrication service',empty:'No fabrication services yet.',toast:'Service added'},
+ svc:{name:'Fabrication Services',intro:'Circular water silos, waterstop end plates, steel corbels, mud tanks, rolling and bending, and customised steel fabrication, made to your drawings.',types:["Circular water silo","Waterstop end plate","Rolling / bending service","Steel corbel","Mud tank","Customised steel fabrication","Other fabrication service"],quick:c=>SVC_IMGS.includes(c.img),hide:[],csv:'Fabrication service',list:'Fabrication services in your enquiry',add:'Add a fabrication service',edit:'Edit fabrication service',empty:'No fabrication services yet.',toast:'Service added'},
  insp:{name:'Inspection',intro:'On-site inspection, re-certification and PE testing of lifting equipment such as buckets, lifting frames and spreader beams.',types:["Bucket / cage","Lifting frame / spreader beam","Lifting gear (sling, shackle, hook)","Other lifting equipment"],quick:null,hide:['dims','cap','mat'],csv:'Inspection',list:'Inspections in your enquiry',add:'Add an item for inspection',edit:'Edit inspection',empty:'No inspections yet.',toast:'Inspection added'},
  lift:{name:'Lifting Frame & Spreader Beam',types:["Lifting frame","Spreader beam"],quick:c=>LIFT_IMGS.includes(c.img),hide:[],csv:'Lifting frame / spreader beam',list:'Lifting frame / spreader beam items in your enquiry',add:'Add a lifting frame or spreader beam',edit:'Edit item',empty:'No lifting frames or spreader beams yet.',toast:'Item added'},
  gear:{name:'Lifting Gears',types:["Wire rope sling","Chain sling","Webbing sling","Round sling","Shackle","Hook","Eyebolt","Lifting clamp","Lifting beam","Other lifting gear"],quick:null,hide:['cap'],csv:'Lifting gear',list:'Lifting gears in your enquiry',add:'Add a lifting gear',edit:'Edit lifting gear',empty:'No lifting gears yet.',toast:'Lifting gear added'},
@@ -315,7 +315,7 @@ function bind(){
 }
 function guessType(n){n=n.toLowerCase();
  if(/man|basket/.test(n))return'Man cage / basket';if(/cage/.test(n))return'Storage / transfer cage';if(/hopper/.test(n)&&!/self/.test(n))return'Hopper';
- if(/silo/.test(n))return'Circular water silo';if(/end plate/.test(n))return'Waterstop end plate';if(/rolling|bending/.test(n))return'Rolling / bending service';if(/spreader/.test(n))return'Spreader beam';if(/frame/.test(n))return'Lifting frame';if(/tank|trolley/.test(n))return'Tank / other fabrication';return'Concrete bucket'}
+ if(/corbel/.test(n))return'Steel corbel';if(/mud tank/.test(n))return'Mud tank';if(/silo/.test(n))return'Circular water silo';if(/end plate/.test(n))return'Waterstop end plate';if(/rolling|bending/.test(n))return'Rolling / bending service';if(/spreader/.test(n))return'Spreader beam';if(/frame/.test(n))return'Lifting frame';if(/tank|trolley/.test(n))return'Tank / other fabrication';return'Concrete bucket'}
 
 /* ---------- Follow-up chat ---------- */
 const CHAT={open:false,msgs:[{who:'bot',text:'Hi. Following up on an enquiry? Pick an option or type your message.'}],ref:'',email:''};
