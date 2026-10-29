@@ -104,7 +104,7 @@ export const DATA = {
    "id": "rcb",
    "cat": "Concrete Buckets",
    "name": "Center Discharge Recumbent Bucket",
-   "img": "recumbent",
+   "img": "f_rcb",
    "desc": "Larger capacity with a lower height to suit complex terrain. Spring handle for easy control.",
    "models": [
     {
@@ -158,7 +158,7 @@ export const DATA = {
    "id": "cdcb",
    "cat": "Concrete Buckets",
    "name": "Center Discharge Concrete Bucket",
-   "img": "cdcb",
+   "img": "f_cdcb",
    "desc": "Fast, direct unloading with a lever-operated discharge. Forklift pockets can be added on request.",
    "models": [
     {
@@ -239,7 +239,7 @@ export const DATA = {
    "id": "sdcb",
    "cat": "Concrete Buckets",
    "name": "Side Discharge Concrete Bucket",
-   "img": "sdcb",
+   "img": "f_sdcb",
    "desc": "Fast side unloading with a lever-operated discharge. Forklift pockets can be added on request.",
    "models": [
     {
@@ -420,7 +420,7 @@ export const DATA = {
    "id": "sb",
    "cat": "Sand Buckets",
    "name": "Sand Bucket",
-   "img": "sand",
+   "img": "f_sb",
    "desc": "Made from mild steel plate for heavy materials such as sand, gravel, excavation waste and scrap metal.",
    "models": [
     {
@@ -510,7 +510,7 @@ export const DATA = {
    "id": "hop",
    "cat": "Hoppers",
    "name": "Concrete Hopper",
-   "img": "hopper",
+   "img": "f_hop",
    "desc": "For fast, direct unloading of concrete. Available in round and square versions.",
    "models": [
     {
@@ -555,7 +555,7 @@ export const DATA = {
    "id": "cr",
    "cat": "Cylinder Racks",
    "name": "Cylinder Rack",
-   "img": "cylrack",
+   "img": "f_cr",
    "desc": "Fully welded steel stand for acetylene, argon, butane, CO₂, helium, hydrogen and nitrogen cylinders.",
    "models": [
     {
@@ -636,7 +636,7 @@ export const DATA = {
    "id": "mc",
    "cat": "Man Cages",
    "name": "Man Cage",
-   "img": "mancage",
+   "img": "f_mc",
    "desc": "Transports personnel to carry out work safely over a short duration.",
    "note": "Load test certification and engineer endorsement are confirmed in the quotation.",
    "models": [
@@ -682,7 +682,7 @@ export const DATA = {
    "id": "rmc",
    "cat": "Man Cages",
    "name": "Rescue Man Cage",
-   "img": "rescue",
+   "img": "f_rmc",
    "desc": "Transports personnel during rescue operations; large enough for a rescue stretcher. Safety door and locking system, sloped roof.",
    "note": "Load test certification and engineer endorsement are confirmed in the quotation.",
    "models": [
