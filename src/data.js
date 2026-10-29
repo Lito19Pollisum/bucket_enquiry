@@ -1,4 +1,4 @@
-// Catalogue data transcribed from the Pollisum catalogue (24.09.26).
+// Catalogue data transcribed from the Pollisum catalogue (24.09.26), updated from the Sept 2026 price list (29.10.26).
 export const DATA = {
  "fam": [
   {
@@ -14,7 +14,7 @@ export const DATA = {
      "dims": "Ø1200 × H1370 mm",
      "swl": "1.2 ton",
      "self": "280 kg",
-     "outlet": "Ø200 mm",
+     "outlet": "Ø190 mm",
      "extra": null
     },
     {
@@ -23,7 +23,7 @@ export const DATA = {
      "dims": "Ø1200 × H1500 mm",
      "swl": "1.8 ton",
      "self": "295 kg",
-     "outlet": "Ø200 mm",
+     "outlet": "Ø190 mm",
      "extra": null
     },
     {
@@ -32,7 +32,7 @@ export const DATA = {
      "dims": "Ø1400 × H1500 mm",
      "swl": "2.4 ton",
      "self": "320 kg",
-     "outlet": "Ø200 mm",
+     "outlet": "Ø190 mm",
      "extra": null
     },
     {
@@ -41,7 +41,7 @@ export const DATA = {
      "dims": "Ø1400 × H1630 mm",
      "swl": "2.88 ton",
      "self": "330 kg",
-     "outlet": "Ø200 mm",
+     "outlet": "Ø190 mm",
      "extra": null
     },
     {
@@ -50,7 +50,7 @@ export const DATA = {
      "dims": "Ø1600 × H1650 mm",
      "swl": "3.6 ton",
      "self": "390 kg",
-     "outlet": "Ø200 mm",
+     "outlet": "Ø190 mm",
      "extra": null
     },
     {
@@ -59,7 +59,7 @@ export const DATA = {
      "dims": "Ø1800 × H1650 mm",
      "swl": "4.8 ton",
      "self": "435 kg",
-     "outlet": "Ø200 mm",
+     "outlet": "Ø190 mm",
      "extra": null
     },
     {
@@ -68,7 +68,7 @@ export const DATA = {
      "dims": "Ø2100 × H1680 mm",
      "swl": "6.0 ton",
      "self": "530 kg",
-     "outlet": "Ø200 mm",
+     "outlet": "Ø190 mm",
      "extra": null
     },
     {
@@ -77,7 +77,25 @@ export const DATA = {
      "dims": "Ø2325 × H1725 mm",
      "swl": "7.2 ton",
      "self": "650 kg",
-     "outlet": "Ø200 mm",
+     "outlet": "Ø190 mm",
+     "extra": null
+    },
+    {
+     "code": "SPB-400",
+     "cap": "4.0 m³",
+     "dims": "Ø2325 × H1980 mm",
+     "swl": "9.6 ton",
+     "self": "750 kg",
+     "outlet": "Ø190 mm",
+     "extra": null
+    },
+    {
+     "code": "SPB-500",
+     "cap": "5.0 m³",
+     "dims": "Ø2945 × H1857 mm",
+     "swl": "12.0 ton",
+     "self": "1150 kg",
+     "outlet": "Ø190 mm",
      "extra": null
     }
    ]
@@ -128,7 +146,7 @@ export const DATA = {
     {
      "code": "RCB-500",
      "cap": "5.0 m³",
-     "dims": "L2220 × W2260 × H3778 mm",
+     "dims": "L2220 × W2260 × H3738 mm",
      "swl": "12.0 ton",
      "self": "1560 kg",
      "outlet": "Ø220 mm",
@@ -146,9 +164,9 @@ export const DATA = {
     {
      "code": "CDCB-050",
      "cap": "0.50 m³",
-     "dims": "L1220 × W1220 × H1050 mm",
+     "dims": "L1200 × W1200 × H1050 mm",
      "swl": "1.2 ton",
-     "self": "180 kg",
+     "self": "181 kg",
      "outlet": null,
      "extra": null
     },
@@ -265,7 +283,7 @@ export const DATA = {
      "cap": "1.5 m³",
      "dims": "L1310 × W1350 × H1500 mm",
      "swl": "3.6 ton",
-     "self": "262 kg",
+     "self": "245 kg",
      "outlet": null,
      "extra": null
     },
@@ -293,6 +311,15 @@ export const DATA = {
      "dims": "L1800 × W1800 × H1650 mm",
      "swl": "7.2 ton",
      "self": "465 kg",
+     "outlet": null,
+     "extra": null
+    },
+    {
+     "code": "SDCB-400",
+     "cap": "4.0 m³",
+     "dims": "L1800 × W1800 × H2000 mm",
+     "swl": "9.6 ton",
+     "self": "TBC",
      "outlet": null,
      "extra": null
     }
@@ -458,6 +485,24 @@ export const DATA = {
      "self": "570 kg",
      "outlet": null,
      "extra": null
+    },
+    {
+     "code": "SB-400",
+     "cap": "4.0 m³",
+     "dims": "L2699 × W1650 × H1292 mm",
+     "swl": "8.0 ton",
+     "self": "1150 kg",
+     "outlet": null,
+     "extra": null
+    },
+    {
+     "code": "SB-500",
+     "cap": "5.0 m³",
+     "dims": "L2935 × W1672 × H1650 mm",
+     "swl": "10.0 ton",
+     "self": "1100 kg",
+     "outlet": null,
+     "extra": null
     }
    ]
   },
@@ -579,7 +624,7 @@ export const DATA = {
     {
      "code": "LCR-12B",
      "cap": "12 bottles",
-     "dims": "L1000 × W1300 × H2000 mm",
+     "dims": "L1300 × W1000 × H2000 mm",
      "swl": "1500 kg",
      "self": "380 kg",
      "outlet": null,
@@ -600,7 +645,7 @@ export const DATA = {
      "cap": "Personnel",
      "dims": "L1500 × W750 × H2200 mm",
      "swl": "300 kg",
-     "self": "300 kg",
+     "self": "350 kg",
      "outlet": null,
      "extra": null
     },
@@ -609,7 +654,7 @@ export const DATA = {
      "cap": "Personnel",
      "dims": "L2000 × W750 × H2200 mm",
      "swl": "300 kg",
-     "self": "350 kg",
+     "self": "430 kg",
      "outlet": null,
      "extra": null
     },
@@ -618,7 +663,16 @@ export const DATA = {
      "cap": "Personnel",
      "dims": "L2500 × W750 × H2200 mm",
      "swl": "300 kg",
-     "self": "400 kg",
+     "self": "500 kg",
+     "outlet": null,
+     "extra": null
+    },
+    {
+     "code": "MC-3200",
+     "cap": "Personnel",
+     "dims": "L3200 × W750 × H2200 mm",
+     "swl": "300 kg",
+     "self": "625 kg",
      "outlet": null,
      "extra": null
     }
@@ -637,7 +691,7 @@ export const DATA = {
      "cap": "Personnel / stretcher",
      "dims": "L2500 × W1250 × H2200 mm",
      "swl": "500 kg",
-     "self": "690 kg",
+     "self": "650 kg",
      "outlet": null,
      "extra": null
     },
@@ -646,7 +700,7 @@ export const DATA = {
      "cap": "Personnel / stretcher",
      "dims": "L3000 × W1250 × H2200 mm",
      "swl": "500 kg",
-     "self": "755 kg",
+     "self": "820 kg",
      "outlet": null,
      "extra": null
     }
