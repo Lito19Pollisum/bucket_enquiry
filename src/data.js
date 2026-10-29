@@ -863,6 +863,26 @@ export const DATA = {
   {
    "img": "c_liftframe2",
    "name": "Lifting Frame with Pulley Sets"
+  },
+  {
+   "img": "c_loadtest1",
+   "name": "Load Test with Wireless Indicators (Frame)"
+  },
+  {
+   "img": "c_loadtest2",
+   "name": "Load Test of Lifting Frame"
+  },
+  {
+   "img": "c_loadtest3",
+   "name": "Load Test of Spreader Beam"
+  },
+  {
+   "img": "c_loadtest4",
+   "name": "Lifting Frame Test with Cranes"
+  },
+  {
+   "img": "c_loadtest5",
+   "name": "Spreader Beam Test with Cranes"
   }
  ]
 };
