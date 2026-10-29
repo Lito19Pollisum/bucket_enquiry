@@ -790,7 +790,7 @@ export const DATA = {
   {
    "img": "c_rolling",
    "name": "Rolling and Bending Service",
-   "desc": "Steel plate rolling, bending, press braking, punching, shearing and cutting."
+   "desc": "Plate and section rolling and bending."
   },
   {
    "img": "c_corbel",
@@ -887,6 +887,36 @@ export const DATA = {
   {
    "img": "c_shackles",
    "name": "Shackles and Snatch Blocks"
+  },
+  {
+   "img": "c_svc_rolling",
+   "name": "Rolling Service",
+   "desc": "Plate rolling for different thicknesses, lengths and radii."
+  },
+  {
+   "img": "c_svc_bending",
+   "name": "Bending Service",
+   "desc": "Angle bars, channels and other sections, by machine or manual heat bending."
+  },
+  {
+   "img": "c_svc_pressbrake",
+   "name": "Press Braking",
+   "desc": "Plate bending to a set angle, for trays, brackets and similar."
+  },
+  {
+   "img": "c_svc_punching",
+   "name": "Punching",
+   "desc": "Clean holes in a variety of sizes."
+  },
+  {
+   "img": "c_svc_shearing",
+   "name": "Shearing of Plates",
+   "desc": "Clean cutting of plates in various thicknesses."
+  },
+  {
+   "img": "c_svc_cutting",
+   "name": "Cutting",
+   "desc": "Cutting and drilling of steel sections and plates."
   }
  ]
 };
