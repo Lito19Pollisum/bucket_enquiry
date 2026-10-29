@@ -213,3 +213,7 @@ table.t th{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacin
 .quick.big.contain button img{object-fit:contain;background:#fff}
 
 .fab.wa{background:#1fa855;text-decoration:none}.fab.wa:hover{background:#178a45}
+
+/* show the whole item in every photo tile */
+.quick.big button img,.quick.big.top button img,.quick.big.contain button img{object-fit:contain;object-position:center;background:#fff}
+.quick.big button.hd img{background:#fff}
