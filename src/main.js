@@ -312,7 +312,7 @@ function bind(){
 }
 function guessType(n){n=n.toLowerCase();
  if(/man|basket/.test(n))return'Man cage / basket';if(/cage/.test(n))return'Storage / transfer cage';if(/hopper/.test(n)&&!/self/.test(n))return'Hopper';
- if(/spreader/.test(n))return'Spreader beam';if(/frame/.test(n))return'Lifting frame';if(/tank|trolley/.test(n))return'Tank / other fabrication';return'Concrete bucket'}
+ if(/silo/.test(n))return'Circular water silo';if(/end plate/.test(n))return'Waterstop end plate';if(/rolling|bending/.test(n))return'Rolling / bending service';if(/spreader/.test(n))return'Spreader beam';if(/frame/.test(n))return'Lifting frame';if(/tank|trolley/.test(n))return'Tank / other fabrication';return'Concrete bucket'}
 
 /* ---------- Follow-up chat ---------- */
 const CHAT={open:false,msgs:[{who:'bot',text:'Hi. Following up on an enquiry? Pick an option or type your message.'}],ref:'',email:''};
