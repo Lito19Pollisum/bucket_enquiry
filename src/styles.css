@@ -211,3 +211,5 @@ table.t th{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacin
 .qd b{display:block;color:#111;font-weight:700;margin-bottom:2px}
 
 .quick.big.contain button img{object-fit:contain;background:#fff}
+
+.fab.wa{background:#1fa855;text-decoration:none}.fab.wa:hover{background:#178a45}

@@ -348,7 +348,8 @@ function chatRender(){
   <div class="qr">${QUICK.map(q=>`<button type="button" data-q2="${esc(q)}">${esc(q)}</button>`).join('')}</div>
   <form id="chatForm"><input id="chatIn" type="text" placeholder="Type your message" autocomplete="off" aria-label="Your message"><button class="btn pri sm" type="submit">Send</button></form>
  </section>
- <button class="fab" id="chatFab" aria-expanded="${CHAT.open}" aria-controls="chatPanel"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/></svg>${CHAT.open?'Close':'Follow up'}</button>`;
+ <button class="fab" id="chatFab" aria-expanded="${CHAT.open}" aria-controls="chatPanel"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/></svg>${CHAT.open?'Close':'Follow up'}</button>
+ <a class="fab wa" id="waBtn" href="https://wa.me/6596428377?text=${encodeURIComponent(ref?'Hi, I have a question about my enquiry '+ref+'.':'Hi, I have an enquiry.')}" target="_blank" rel="noopener"><svg width="22" height="22" viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.200zm4.500-6.100c-.2-.1-1.500-.7-1.700-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.200-.3.200-.5.100a6.700 6.700 0 0 1-3.300-2.900c-.2-.4.200-.4.700-1.300.1-.2 0-.3 0-.5l-.8-1.800c-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.5.100-.7.300-.2.300-.9.900-.9 2.200s.9 2.500 1.100 2.700c.1.200 1.800 2.800 4.400 3.900 1.600.7 2.300.8 3.100.7.500-.1 1.500-.6 1.700-1.200.2-.6.2-1.100.2-1.200-.1-.1-.2-.2-.5-.3z"/></svg>WhatsApp</a></button>`;
  chatLog();
  if(CHAT.open){const i=document.getElementById('chatIn');i&&i.focus()}}
 async function chatSend(text){
