@@ -828,6 +828,11 @@ export const DATA = {
   {
    "img": "c_sbwall",
    "name": "Precast Wall Spreader Beam"
+  },
+  {
+   "img": "c_chainblock",
+   "name": "Chain Block",
+   "desc": "Manual chain block for lifting loads, in a range of capacities."
   }
  ]
 };
