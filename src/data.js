@@ -816,7 +816,7 @@ export const DATA = {
   },
   {
    "img": "c_sbsling",
-   "name": "Spreader Beam with Slings"
+   "name": "X-Frame Lifting Frame with Slings"
   },
   {
    "img": "c_liftrect",
