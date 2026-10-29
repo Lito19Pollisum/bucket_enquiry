@@ -228,3 +228,12 @@ table.t th{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacin
 .lbn{position:absolute;top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;border:0;background:rgba(0,0,0,.55);color:#fff;font-size:30px;cursor:pointer;line-height:40px}
 .lbn.l{left:10px}.lbn.r{right:10px}.lbn:hover{background:rgba(0,0,0,.85)}
 .lbk{opacity:.8;margin-left:8px}
+
+/* justified gallery: every tile takes the shape of its photo, so there is no empty space */
+.quick.big{display:flex;flex-wrap:wrap;gap:12px;grid-template-columns:none}
+.quick.big::after{content:'';flex-grow:999}
+.quick.big button{height:auto;min-width:0;max-width:100%;background:#fff}
+.quick.big button img,.quick.big.top button img,.quick.big.contain button img{width:100%;height:auto;object-fit:cover;display:block;border-radius:10px;background:#fff}
+.quick.big button.hd img{height:auto;border-radius:10px 10px 0 0}
+.sl{top:40%}.dots{top:8px}
+.quick.big button{max-width:min(100%,560px)}
