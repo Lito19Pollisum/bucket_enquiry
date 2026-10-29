@@ -883,6 +883,10 @@ export const DATA = {
   {
    "img": "c_loadtest5",
    "name": "Spreader Beam Test with Cranes"
+  },
+  {
+   "img": "c_shackles",
+   "name": "Shackles and Snatch Blocks"
   }
  ]
 };
