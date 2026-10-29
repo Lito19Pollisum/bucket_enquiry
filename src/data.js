@@ -833,6 +833,38 @@ export const DATA = {
    "img": "c_chainblock",
    "name": "Chain Block",
    "desc": "Manual chain block for lifting loads, in a range of capacities."
+  },
+  {
+   "img": "c_pitbucket",
+   "name": "Open-Top Lifting Bucket"
+  },
+  {
+   "img": "c_slingbucket",
+   "name": "Lifting Bucket with Wire Slings"
+  },
+  {
+   "img": "c_twinhopper",
+   "name": "Twin Discharge Hopper"
+  },
+  {
+   "img": "c_cyltrolley1",
+   "name": "Cylinder Trolley (Tilted)"
+  },
+  {
+   "img": "c_cyltrolley2",
+   "name": "Cylinder Trolley"
+  },
+  {
+   "img": "c_matbin",
+   "name": "Material Bin"
+  },
+  {
+   "img": "c_tipskip",
+   "name": "Tipping Skip Bucket"
+  },
+  {
+   "img": "c_meshcage",
+   "name": "Mesh Material Cage"
   }
  ]
 };
