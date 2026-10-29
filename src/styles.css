@@ -236,4 +236,4 @@ table.t th{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacin
 .quick.big button img,.quick.big.top button img,.quick.big.contain button img{width:100%;height:auto;object-fit:cover;display:block;border-radius:10px;background:#fff}
 .quick.big button.hd img{height:auto;border-radius:10px 10px 0 0}
 .sl{top:40%}.dots{top:8px}
-.quick.big button{max-width:min(100%,560px)}
+.quick.big button{max-width:min(100%,420px)}
