@@ -433,7 +433,7 @@ function lightbox(c){
  if(keys.length<3)return;
  const shuf=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
  let pool=[];const next=()=>{const g=[];while(g.length<3){if(!pool.length)pool=shuf(keys).filter(k=>!g.includes(k));g.push(pool.pop())}return g};
- const mk=()=>{const s=document.createElement('div');s.className='hs';s.innerHTML=next().map(k=>'<div class="t"><img alt="" src="'+IMG[k]+'"></div>').join('');bg.appendChild(s);return s};
+ const mk=()=>{const s=document.createElement('div');s.className='hs';s.innerHTML=next().map(k=>'<div class="t" style="--u:url('+IMG[k]+')"><img alt="" src="'+IMG[k]+'"></div>').join('');bg.appendChild(s);return s};
  let cur=mk();requestAnimationFrame(()=>cur.classList.add('on'));
  if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;
  setInterval(()=>{if(document.hidden)return;const n=mk();requestAnimationFrame(()=>requestAnimationFrame(()=>{n.classList.add('on');cur.classList.remove('on');const o=cur;setTimeout(()=>o.remove(),1100);cur=n}))},4500)})();
