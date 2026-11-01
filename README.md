@@ -53,3 +53,4 @@ Enquiries and follow-ups are also saved to the `public.enquiries` table (project
 ### Dashboard
 
 `/admin.html` is a private enquiries dashboard (search, filter, line items, status). It calls `api/admin.js`, which checks the `ADMIN_PASSWORD` env var and reads Supabase with the service key. Each submitted enquiry CSV is also split into rows in `public.enquiry_items`, linked to its enquiry.
+
