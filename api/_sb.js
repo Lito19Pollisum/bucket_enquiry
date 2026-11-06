@@ -86,3 +86,23 @@ export async function sbUpload(path, buf, contentType) {
   if (!r.ok) throw new Error(`storage ${r.status}: ${(await r.text()).slice(0, 200)}`);
   return path;
 }
+
+// ---- Rate limiting (stored in Supabase so it holds across serverless instances) ----
+export const clientIp = req => String((req.headers && (req.headers['x-forwarded-for'] || req.headers['x-real-ip'])) || 'unknown').split(',')[0].trim().slice(0, 64);
+
+// Counts hits for key in the window. Fails open (returns 0) if the database is unreachable.
+export async function hits(key, windowSeconds) {
+  if (!sbReady()) return 0;
+  try { return Number(await sb('rpc/rate_count', { method: 'POST', body: { p_key: key, p_window_seconds: windowSeconds } })) || 0; } catch { return 0; }
+}
+export async function addHit(key) {
+  if (!sbReady()) return;
+  try { await sb('rpc/rate_add', { method: 'POST', prefer: 'return=minimal', body: { p_key: key } }); } catch { /* ignore */ }
+}
+// true = allowed (and the hit is recorded); false = over the limit
+export async function allow(req, name, max, windowSeconds) {
+  const key = `${name}:${clientIp(req)}`;
+  if (await hits(key, windowSeconds) >= max) return false;
+  await addHit(key);
+  return true;
+}

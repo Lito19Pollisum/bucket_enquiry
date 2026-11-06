@@ -1,10 +1,11 @@
 // Hands out the next unique enquiry reference (ENQ-YYYYMMDD-NNN, Singapore date) from the database.
-import { sb, sbReady } from './_sb.js';
+import { sb, sbReady, allow } from './_sb.js';
 
 export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
   if (req.method !== 'POST') return res.status(405).json({ ok: false, error: 'method' });
   if (!sbReady()) return res.status(503).json({ ok: false, error: 'not_configured' });
+  if (!(await allow(req, 'ref', 10, 3600))) return res.status(429).json({ ok: false, error: 'rate_limited' });
   try {
     const ref = await sb('rpc/next_enquiry_ref', { method: 'POST', body: {} });
     if (typeof ref !== 'string' || !/^ENQ-\d{8}-\d{3}$/.test(ref)) throw new Error('bad ref');

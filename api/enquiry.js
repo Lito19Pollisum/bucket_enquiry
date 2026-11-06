@@ -8,7 +8,7 @@
 //   SUPABASE_URL                optional  e.g. https://vzcxtymvoyjzzfdoyzds.supabase.co
 //   SUPABASE_SERVICE_ROLE_KEY   optional  secret key; enquiries are saved to public.enquiries when both are set
 
-import { sb, sbReady, sbUpload, splitEnquiryCsv } from './_sb.js';
+import { sb, sbReady, sbUpload, splitEnquiryCsv, allow, parseCsv } from './_sb.js';
 import { buildXlsx } from './_xlsx.js';
 import { safeCsv } from './_safe.js';
 import { buildQuoteXlsx } from './_quotexlsx.js';
@@ -23,6 +23,18 @@ const REF_RE = /^ENQ-\d{8}-\d{3}$/;
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const clip = (v, n) => String(v ?? '').slice(0, n);
 const oneLine = (v, n) => clip(v, n).replace(/[\r\n]+/g, ' ').trim();
+
+// "Lifting frame ×2, Bucket ×1" from the enquiry CSV, for the subject line.
+function itemSummary(csv) {
+  try {
+    const rows = parseCsv(csv);
+    const at = rows.findIndex(r => r[0] === 'Item');
+    const items = (at < 0 ? [] : rows.slice(at + 1)).filter(r => r[0]).map(r => `${String(r[2] || r[1] || 'Item').trim()} ×${parseInt(r[7], 10) || 1}`);
+    if (!items.length) return 'Enquiry';
+    const shown = items.slice(0, 3).join(', ');
+    return (shown + (items.length > 3 ? ` +${items.length - 3} more` : '')).slice(0, 120);
+  } catch { return 'Enquiry'; }
+}
 
 async function send(payload) {
   const r = await fetch('https://api.resend.com/emails', {
@@ -67,6 +79,7 @@ export default async function handler(req, res) {
   if (typeof b === 'string') { try { b = JSON.parse(b); } catch { b = null; } }
   if (!b || typeof b !== 'object') return res.status(400).json({ ok: false, error: 'bad_request' });
   if (b.website) return res.status(200).json({ ok: true }); // honeypot: silently drop bots
+  if (!(await allow(req, 'enquiry', 10, 3600))) return res.status(429).json({ ok: false, error: 'rate_limited' }); // 10 per hour per address
 
   const kind = b.kind === 'followup' ? 'followup' : 'enquiry';
   const ref = oneLine(b.ref, 20);
@@ -83,7 +96,7 @@ export default async function handler(req, res) {
   const tag = ref ? `[${ref}] ` : '';
   const subject = kind === 'followup'
     ? `${tag}Follow-up${company ? ' — ' + company : ''}`
-    : `${tag}Enquiry — ${company || contact || email || ref}`;
+    : `${tag}Enquiry | ${itemSummary(csv)}${company || contact ? ' | ' + (company || contact) : ''}`;
 
   // Save to Supabase first (best-effort: a database failure must never block the email).
   const saved = await save({ kind, ref, company, contact, email, body: text, csv: kind === 'enquiry' ? csv : null });
@@ -128,7 +141,7 @@ export default async function handler(req, res) {
         const body = [`Thank you for your enquiry. Pollisum Fabrication has received it.`, ``, `Your reference: ${ref}`, ``,
           `Our team will review it and reply with a quotation. Please quote this reference if you contact us.`, ``,
           `A copy of what you requested:`, ``, text, ``, `If you did not make this enquiry, you can ignore this email.`].join('\n');
-        await send({ from: FROM, to: [email], reply_to: SALES, subject: `We received your enquiry ${ref}`, text: body,
+        await send({ from: FROM, to: [email], reply_to: SALES, subject: `[${ref}] We received your enquiry`, text: body,
           html: `<pre style="font:14px/1.5 Consolas,Menlo,monospace;white-space:pre-wrap">${esc(body)}</pre>` });
       } catch (e) { console.error('confirmation failed', e.message); }
     }
