@@ -315,3 +315,10 @@ body.sheet-open #chat{display:none}
 .hero-tag{margin:6px 0 0;font-size:15px;font-weight:700;letter-spacing:.02em;color:#fff;opacity:.92}
 @media(max-width:720px){.hero-tag{font-size:13px;margin-top:4px}.hero-in{min-height:132px}}
 @media(min-width:721px){.hero-copy{max-width:clamp(300px,calc(100vw - min(62vw,900px) - 80px),640px)}.hero-title{font-size:clamp(22px,2.6vw,34px)}}
+
+/* Tagline: each half rises into place in turn, once, on page load */
+.hero-tag span{display:inline-block;opacity:0;transform:translateY(10px);animation:tagIn .7s cubic-bezier(.2,.7,.2,1) forwards}
+.hero-tag span:nth-child(1){animation-delay:.35s}
+.hero-tag span:nth-child(2){animation-delay:.95s}
+@keyframes tagIn{to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){.hero-tag span{animation:none;opacity:1;transform:none}}
