@@ -52,8 +52,11 @@ $('#tb').addEventListener('click',async e=>{
  const s=e.target.closest('select[data-st]');if(s){try{await api({method:'POST',body:JSON.stringify({id:+s.dataset.st,status:s.value})});ROWS.find(r=>r.id==s.dataset.st).status=s.value;render()}catch(x){alert(x.message)}return}
  const tr=e.target.closest('tr.row');if(tr){const id=+tr.dataset.id;OPEN.has(id)?OPEN.delete(id):OPEN.add(id);render()}});
 ['q','st','kd'].forEach(i=>$('#'+i).addEventListener('input',render));$('#rf').onclick=()=>load().catch(x=>alert(x.message));
-$('#login').onsubmit=async e=>{e.preventDefault();PW=$('#pw').value;try{await load();$('#login').hidden=true;$('#app').hidden=false;$('#out').hidden=false;qinit()}catch(x){$('#lerr').textContent=x.message}};
-$('#out').onclick=()=>location.reload();
+const SK='adm_pw';const ss={get:()=>{try{return sessionStorage.getItem(SK)}catch{return null}},set:v=>{try{sessionStorage.setItem(SK,v)}catch{}},del:()=>{try{sessionStorage.removeItem(SK)}catch{}}};
+async function enter(pw,quiet){PW=pw;try{await load();ss.set(pw);$('#login').hidden=true;$('#app').hidden=false;$('#out').hidden=false;qinit()}catch(x){ss.del();PW='';if(!quiet)$('#lerr').textContent=x.message}}
+$('#login').onsubmit=e=>{e.preventDefault();enter($('#pw').value)};
+$('#out').onclick=()=>{ss.del();location.reload()};
+{const k=ss.get();if(k)enter(k,true)}
 // Auto-save draft quotations (PDF + Excel) into a chosen folder (e.g. the M: drive AUTO QUOTE folder) while this page is open.
 const idb=()=>new Promise((ok,no)=>{const r=indexedDB.open('qs',1);r.onupgradeneeded=()=>r.result.createObjectStore('k');r.onsuccess=()=>ok(r.result);r.onerror=no});
 const kv=async(m,k,v)=>{const d=await idb();return new Promise((ok,no)=>{const t=d.transaction('k',m==='get'?'readonly':'readwrite').objectStore('k');const q=m==='get'?t.get(k):t.put(v,k);q.onsuccess=()=>ok(q.result);q.onerror=no})};
