@@ -19,7 +19,7 @@ const LIFT_GROUPS=[["c_liftframe","c_liftbarge","c_liftrect","c_liftframe2","c_s
 const GEAR_IMGS=["c_chainblock","c_shackles"];
 const ROLL_IMGS=["c_rolling","c_svc_rolling","c_svc_bending","c_svc_pressbrake","c_svc_punching","c_svc_shearing","c_svc_cutting"];
 const SVC_IMGS=["c_watersilo","c_endplate","c_corbel","c_mudtank","c_platform1"];
-const CUSTOM_TYPES=["Concrete bucket","Sand / skip bucket","Hopper","Man cage / basket","Cylinder rack","Storage / transfer cage","Tank / other fabrication","Not sure"].concat([]);
+const CUSTOM_TYPES=["Concrete bucket","Side discharge bucket","Lifting bucket","Forklift-pocket bucket","Self-dumping hopper / skip bucket","Twin discharge hopper","Man basket","Material / storage cage","Water tank","Trolley","Other custom item","Not sure"].concat([]);
 const TAB_TEXT={
  custom:{},
  svc:{app:['Intended application / use','e.g. water storage at a construction site'],spec:['Other specifications','e.g. wall thickness, access ladder, paint colour']},
@@ -329,8 +329,9 @@ function bind(){
  const ne=$('#newEnq');if(ne)ne.onclick=()=>{S.sel={};S.customs=[];S.cust={};S.ref=null;S.sent=false;S.draft=null;S.editing=null;S.cat='All';go(0)};
 }
 function guessType(n){n=n.toLowerCase();
- if(/man|basket/.test(n))return'Man cage / basket';if(/cage/.test(n))return'Storage / transfer cage';if(/hopper/.test(n)&&!/self/.test(n))return'Hopper';
- if(/spreader/.test(n)&&/test/.test(n))return'Spreader beam / lifting frame';if(/lifting frame/.test(n)&&/test/.test(n))return'Spreader beam / lifting frame';if(/platform/.test(n))return'Steel platform';if(/shackle/.test(n))return'Shackle';if(/chain block/.test(n))return'Chain block';if(/corbel/.test(n))return'Steel corbel';if(/mud tank/.test(n))return'Mud tank';if(/silo/.test(n))return'Circular water silo';if(/end plate/.test(n))return'Waterstop end plate';if(/rolling/.test(n))return'Rolling';if(/bending/.test(n))return'Bending';if(/braking/.test(n))return'Press braking';if(/punching/.test(n))return'Punching';if(/shearing/.test(n))return'Shearing';if(/cutting/.test(n))return'Cutting';if(/spreader/.test(n))return'Spreader beam';if(/frame/.test(n))return'Lifting frame';if(/tank|trolley/.test(n))return'Tank / other fabrication';return'Concrete bucket'}
+ if(/side discharge/.test(n))return'Side discharge bucket';if(/twin/.test(n))return'Twin discharge hopper';if(/self-dumping|tipping|skip/.test(n))return'Self-dumping hopper / skip bucket';if(/front handle|forklift/.test(n))return'Forklift-pocket bucket';if(/lift(ing)? bucket/.test(n))return'Lifting bucket';if(/batching/.test(n))return'Concrete bucket';if(/water tank/.test(n))return'Water tank';if(/trolley/.test(n))return'Trolley';if(/man|basket/.test(n))return'Man basket';if(/cage/.test(n))return'Material / storage cage';
+ if(/hopper/.test(n))return'Twin discharge hopper';
+ if(/spreader/.test(n)&&/test/.test(n))return'Spreader beam / lifting frame';if(/lifting frame/.test(n)&&/test/.test(n))return'Spreader beam / lifting frame';if(/platform/.test(n))return'Steel platform';if(/shackle/.test(n))return'Shackle';if(/chain block/.test(n))return'Chain block';if(/corbel/.test(n))return'Steel corbel';if(/mud tank/.test(n))return'Mud tank';if(/silo/.test(n))return'Circular water silo';if(/end plate/.test(n))return'Waterstop end plate';if(/rolling/.test(n))return'Rolling';if(/bending/.test(n))return'Bending';if(/braking/.test(n))return'Press braking';if(/punching/.test(n))return'Punching';if(/shearing/.test(n))return'Shearing';if(/cutting/.test(n))return'Cutting';if(/spreader/.test(n))return'Spreader beam';if(/frame/.test(n))return'Lifting frame';return'Other custom item'}
 
 /* ---------- Follow-up chat ---------- */
 const CHAT={open:false,msgs:[{who:'bot',text:'Hi. Following up on an enquiry? Pick an option or type your message.'}],ref:'',email:''};
