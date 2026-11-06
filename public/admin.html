@@ -45,11 +45,10 @@ function render(){
   if(OPEN.has(r.id)){
    h+=`<tr class="detail"><td colspan="6"><div><b>${esc(r.contact)}</b> · <a href="mailto:${esc(r.email)}">${esc(r.email)}</a> · ${esc(r.phone)}</div>`+
    (r.project||r.location||r.required_date?`<div class="muted">${[r.project&&'Project: '+esc(r.project),r.location&&'Site: '+esc(r.location),r.required_date&&'Required: '+esc(r.required_date)].filter(Boolean).join(' · ')}</div>`:'')+
-   (r.remarks?`<div>Remarks: ${esc(r.remarks)}</div>`:'')+`<div><button class="ghost" data-rs="${r.id}">Re-send email to sales</button></div>`+
+   (r.remarks?`<div>Remarks: ${esc(r.remarks)}</div>`:'')+
    (its.length?`<table class="items"><tr><th>#</th><th>Type</th><th>Model</th><th>Product</th><th>Capacity</th><th>SWL</th><th>Size / requirements</th><th>Qty</th><th>Notes</th></tr>${its.sort((a,b)=>a.id-b.id).map(i=>`<tr><td>${esc(i.item_no)}</td><td>${esc(i.type)}</td><td>${esc(i.model)}</td><td>${esc(i.product)}</td><td>${esc(i.capacity)}</td><td>${esc(i.swl)}</td><td>${esc(i.size_requirements)}</td><td>${i.qty}</td><td>${esc(i.notes)}</td></tr>`).join('')}</table>`:`<pre style="white-space:pre-wrap">${esc(r.body)}</pre>`)+`</td></tr>`}
   return h}).join('')}
 $('#tb').addEventListener('click',async e=>{
- const rb=e.target.closest('button[data-rs]');if(rb){rb.disabled=true;try{await api({method:'POST',body:JSON.stringify({id:+rb.dataset.rs,resend:true})});rb.textContent='Sent to sales'}catch(x){rb.disabled=false;alert(x.message.includes('503')?'Email is not set up yet (sender address missing).':x.message)}return}
  const s=e.target.closest('select[data-st]');if(s){try{await api({method:'POST',body:JSON.stringify({id:+s.dataset.st,status:s.value})});ROWS.find(r=>r.id==s.dataset.st).status=s.value;render()}catch(x){alert(x.message)}return}
  const tr=e.target.closest('tr.row');if(tr){const id=+tr.dataset.id;OPEN.has(id)?OPEN.delete(id):OPEN.add(id);render()}});
 ['q','st','kd'].forEach(i=>$('#'+i).addEventListener('input',render));$('#rf').onclick=()=>load().catch(x=>alert(x.message));
