@@ -266,7 +266,7 @@ function plainText(){
  if(c.remarks)L.push('','REMARKS',c.remarks);
  return L.join('\n')}
 function csvText(){
- const c=S.cust,q=v=>'"'+String(v??'').replace(/"/g,'""')+'"',rows=[];
+ const c=S.cust,q=v=>{v=String(v??'');if(/^[=+\-@\t\r]/.test(v)&&!/^[+-]?[\d\s().,-]+$/.test(v))v="'"+v;return '"'+v.replace(/"/g,'""')+'"'},rows=[];
  rows.push(['Enquiry reference',S.ref],['Date',new Date().toISOString().slice(0,10)],['Company',c.company],['Contact person',c.contact],['Email',c.email],['Phone',c.phone],['Project / ref',c.project],['Delivery location',c.location],['Required date',c.date],['Remarks',c.remarks],[]);
  rows.push(['Item','Type','Model / item','Product','Capacity','SWL','Size / requirements','Qty','Notes']);
  stdRows().forEach((r,i)=>rows.push([i+1,'Standard',r.code,r.fam,r.cap,r.swl,r.dims,r.qty,'']));
