@@ -77,13 +77,13 @@ export default async function handler(req, res) {
   const csv = b.csv ? safeCsv(clip(b.csv, 60000)) : '';
 
   if (!REF_RE.test(ref) && !(kind === 'followup' && ref === '')) return res.status(400).json({ ok: false, error: 'ref' });
-  if (!EMAIL_RE.test(email)) return res.status(400).json({ ok: false, error: 'email' });
+  if (email ? !EMAIL_RE.test(email) : kind !== 'enquiry') return res.status(400).json({ ok: false, error: 'email' }); // site customers may have no email: phone only
   if (!text.trim()) return res.status(400).json({ ok: false, error: 'empty' });
 
   const tag = ref ? `[${ref}] ` : '';
   const subject = kind === 'followup'
     ? `${tag}Follow-up${company ? ' — ' + company : ''}`
-    : `${tag}Enquiry — ${company || contact || email}`;
+    : `${tag}Enquiry — ${company || contact || email || ref}`;
 
   // Save to Supabase first (best-effort: a database failure must never block the email).
   const saved = await save({ kind, ref, company, contact, email, body: text, csv: kind === 'enquiry' ? csv : null });
@@ -107,7 +107,7 @@ export default async function handler(req, res) {
       from: FROM,
       to: [SALES],
       ...(CC && CC.toLowerCase() !== SALES.toLowerCase() ? { cc: [CC] } : {}),
-      reply_to: email,
+      ...(email ? { reply_to: email } : {}),
       subject,
       text,
       html: `<pre style="font:14px/1.5 Consolas,Menlo,monospace;white-space:pre-wrap">${esc(text)}</pre>`,
@@ -121,6 +121,17 @@ export default async function handler(req, res) {
       }
     }
     await send(toSales);
+
+    // Confirmation to the customer (only if they gave an email). Fixed wording; never blocks the enquiry.
+    if (kind === 'enquiry' && email) {
+      try {
+        const body = [`Thank you for your enquiry. Pollisum Fabrication has received it.`, ``, `Your reference: ${ref}`, ``,
+          `Our team will review it and reply with a quotation. Please quote this reference if you contact us.`, ``,
+          `A copy of what you requested:`, ``, text, ``, `If you did not make this enquiry, you can ignore this email.`].join('\n');
+        await send({ from: FROM, to: [email], reply_to: SALES, subject: `We received your enquiry ${ref}`, text: body,
+          html: `<pre style="font:14px/1.5 Consolas,Menlo,monospace;white-space:pre-wrap">${esc(body)}</pre>` });
+      } catch (e) { console.error('confirmation failed', e.message); }
+    }
 
     return res.status(200).json({ ok: true });
   } catch (e) {
