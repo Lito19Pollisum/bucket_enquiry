@@ -256,6 +256,7 @@ function vReview(){
  <div class="rev-h" style="margin-top:18px"><span></span><button class="btn sm" data-go="2">Edit details</button></div>
 </div>
 <input id="hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0">
+<p class="reply-note">We reply within 1 working day.</p>
 <div class="nav"><button class="btn" data-go="2">Back</button><button class="btn pri" id="submit">Submit enquiry / Request quotation</button></div>`}
 
 /* ---------- Done ---------- */

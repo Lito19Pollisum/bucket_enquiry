@@ -310,3 +310,5 @@ table.t th{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacin
  .sheet{max-height:55vh}
 }
 body.sheet-open #chat{display:none}
+.reply-note{margin:14px 0 0;text-align:right;color:var(--mute);font-size:14px}
+@media(max-width:720px){.reply-note{text-align:center}}
