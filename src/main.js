@@ -448,3 +448,5 @@ function lightbox(c){
  let cur=mk();requestAnimationFrame(()=>cur.classList.add('on'));
  if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;
  setInterval(()=>{if(document.hidden)return;const n=mk();requestAnimationFrame(()=>requestAnimationFrame(()=>{n.classList.add('on');cur.classList.remove('on');const o=cur;setTimeout(()=>o.remove(),1100);cur=n}))},4500)})();
+
+if("serviceWorker" in navigator&&location.protocol==="https:")addEventListener("load",()=>navigator.serviceWorker.register("/sw.js").catch(()=>{}));
