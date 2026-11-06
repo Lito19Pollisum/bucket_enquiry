@@ -81,9 +81,9 @@ function vType(){return `
 <p class="lead">Pick one. We send you a quotation.</p>
 <p class="purpose">Start here. You can add the other kind later.</p>
 <div class="big2">
- <button class="choice" data-type="std"><img src="${IMG.cdcb}" alt=""><h2>Standard Bucket</h2><p>Pick from our catalogue of buckets, hoppers, racks and cages.</p><span class="go">Browse the catalogue →</span></button>
- <button class="choice" data-type="custom"><img src="${IMG.c_fronthandle}" alt=""><h2>Custom-Made Bucket</h2><p>Need a different size? Tell us what you need and we will design it.</p><span class="go">Describe what you need →</span></button>
- <button class="choice" data-type="svc"><img src="${IMG.c_watersilo}" alt=""><h2>Other Fabrication Services</h2><p>Water silos, end plates, corbels, mud tanks and customised steel fabrication.</p><span class="go">Describe what you need →</span></button>
+ <button class="choice" data-type="std"><img src="${IMG.superbucket}" alt=""><h2>Standard Bucket</h2><p>Pick from our catalogue of buckets, hoppers, racks and cages.</p><span class="go">Browse the catalogue →</span></button>
+ <button class="choice" data-type="custom"><img src="${IMG.c_liftbucket}" alt=""><h2>Custom-Made Bucket</h2><p>Need a different size? Tell us what you need and we will design it.</p><span class="go">Describe what you need →</span></button>
+ <button class="choice" data-type="svc"><img src="${IMG.c_corbel}" alt=""><h2>Other Fabrication Services</h2><p>Water silos, end plates, corbels, mud tanks and customised steel fabrication.</p><span class="go">Describe what you need →</span></button>
  <button class="choice" data-type="lift"><img src="${IMG.c_liftcard}" alt=""><h2>Lifting Frame &amp; Spreader Beam</h2><p>Tell us the load, span and lifting points and we will design it.</p><span class="go">Describe what you need →</span></button>
  <button class="choice" data-type="gear"><img src="${IMG.c_chainblock}" alt=""><h2>Lifting Gears</h2><p>Slings, shackles, hooks, eyebolts, clamps and other lifting gear.</p><span class="go">Describe what you need →</span></button>
  <button class="choice" data-type="test"><img src="${IMG.c_loadtest1}" alt=""><h2>Load Testing &amp; Visual Inspection</h2><p>Proof load test, visual inspection and certification for your lifting gear and equipment.</p><span class="go">Request a test or inspection →</span></button>
