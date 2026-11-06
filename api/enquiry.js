@@ -3,7 +3,8 @@
 // Environment variables (Vercel > Project Settings > Environment Variables):
 //   RESEND_API_KEY  required  API key from resend.com
 //   RESEND_FROM     required  e.g. Pollisum Enquiries <enquiries@pollisum.com> (domain verified in Resend)
-//   SALES_EMAIL     optional  inbox that receives enquiries (default fabrication@pollisum.com)
+//   SALES_EMAIL     optional  inbox that receives enquiries (default DnF_Admin3@pollisum.com)
+//   CC_EMAIL        optional  copied on every enquiry (default fabrication@pollisum.com)
 //   SUPABASE_URL                optional  e.g. https://vzcxtymvoyjzzfdoyzds.supabase.co
 //   SUPABASE_SERVICE_ROLE_KEY   optional  secret key; enquiries are saved to public.enquiries when both are set
 
@@ -12,7 +13,8 @@ import { buildXlsx } from './_xlsx.js';
 import { safeCsv } from './_safe.js';
 import { buildQuoteXlsx } from './_quotexlsx.js';
 
-const SALES = process.env.SALES_EMAIL || 'fabrication@pollisum.com';
+const SALES = process.env.SALES_EMAIL || 'DnF_Admin3@pollisum.com';
+const CC = process.env.CC_EMAIL === undefined ? 'fabrication@pollisum.com' : process.env.CC_EMAIL.trim();
 const FROM = process.env.RESEND_FROM || '';
 const KEY = process.env.RESEND_API_KEY || '';
 const EMAIL_RE = /^[^\s@<>"]+@[^\s@<>"]+\.[^\s@<>"]+$/;
@@ -104,6 +106,7 @@ export default async function handler(req, res) {
     const toSales = {
       from: FROM,
       to: [SALES],
+      ...(CC && CC.toLowerCase() !== SALES.toLowerCase() ? { cc: [CC] } : {}),
       reply_to: email,
       subject,
       text,
