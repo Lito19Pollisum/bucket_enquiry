@@ -7,7 +7,8 @@ const urls = import.meta.glob('./assets/images/*.{jpg,png}', { eager: true, quer
 const IMG = Object.fromEntries(Object.entries(urls).map(([p, u]) => [p.split('/').pop().replace(/\.\w+$/, ''), u]));
 /* ===== Configuration ===== */
 // Set VITE_SALES_EMAIL in Vercel (Project Settings > Environment Variables) or in .env
-const SALES_EMAIL = import.meta.env.VITE_SALES_EMAIL || "fabrication@pollisum.com";
+const SALES_EMAIL = import.meta.env.VITE_SALES_EMAIL || "DnF_Admin3@pollisum.com";
+const CC_EMAIL = import.meta.env.VITE_CC_EMAIL ?? "fabrication@pollisum.com";
 const COMPANY="Pollisum Fabrication Pte Ltd";
 document.getElementById('brandLogo').src=IMG.brand_logo;
 
@@ -315,7 +316,7 @@ function bind(){
   S.sent=await postSales({kind:'enquiry',ref:S.ref,company:S.cust.company,contact:S.cust.contact,email:S.cust.email,text:plainText(),csv:csvText(),website:hp?hp.value:''});
   if(!S.sent)toast('Could not send your enquiry. Please try again.');
   go(4)};
- const m=$('#mail');if(m)m.onclick=()=>{location.href=`mailto:${SALES_EMAIL}?subject=${encodeURIComponent('['+S.ref+'] Enquiry — '+S.cust.company)}&body=${encodeURIComponent(plainText())}`};
+ const m=$('#mail');if(m)m.onclick=()=>{location.href=`mailto:${SALES_EMAIL}?${CC_EMAIL?'cc='+encodeURIComponent(CC_EMAIL)+'&':''}subject=${encodeURIComponent('['+S.ref+'] Enquiry — '+S.cust.company)}&body=${encodeURIComponent(plainText())}`};
  const rt=$('#retry');if(rt)rt.onclick=async()=>{
   if(rt.disabled)return;rt.disabled=true;rt.textContent='Sending…';
   S.sent=await postSales({kind:'enquiry',ref:S.ref,company:S.cust.company,contact:S.cust.contact,email:S.cust.email,text:plainText(),csv:csvText(),website:''});
