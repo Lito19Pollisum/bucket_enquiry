@@ -20,6 +20,15 @@ const GEAR_IMGS=["c_chainblock","c_shackles"];
 const ROLL_IMGS=["c_rolling","c_svc_rolling","c_svc_bending","c_svc_pressbrake","c_svc_punching","c_svc_shearing","c_svc_cutting"];
 const SVC_IMGS=["c_watersilo","c_endplate","c_corbel","c_mudtank","c_platform1"];
 const CUSTOM_TYPES=["Concrete bucket","Sand / skip bucket","Hopper","Man cage / basket","Cylinder rack","Storage / transfer cage","Tank / other fabrication","Not sure"].concat([]);
+const TAB_TEXT={
+ custom:{},
+ svc:{app:['Intended application / use','e.g. water storage at a construction site'],spec:['Other specifications','e.g. wall thickness, access ladder, paint colour']},
+ roll:{app:['Intended application / use','e.g. rolling 12 mm plate to 1200 mm diameter'],spec:['Material grade and thickness','e.g. S275 plate, 12 mm thick, rolled to 600 mm radius'],swl:null},
+ insp:{unsure:['I\'m not sure what inspection is needed — please advise','Our team will recommend the suitable inspection or re-certification.'],app:['Equipment and where it is used','e.g. 2 ton concrete bucket used at a tower crane'],spec:['Other requirements','e.g. previous LE number, certificate needed for MOM submission'],swl:'SWL / WLL of the equipment'},
+ lift:{unsure:['I\'m not sure about the specifications — please recommend','Tell us the load, span and lifting points and our team will design it.'],app:['What will it lift?','e.g. 25 ton precast beams, 12 m long'],spec:['Span, lifting points and headroom','e.g. 6 m span, 4 lifting points, 2 m headroom']},
+ gear:{unsure:['I\'m not sure about the specifications — please recommend','Our team will suggest the suitable size and capacity for your lift.'],app:['Intended application / use','e.g. rigging steel plates on site'],spec:['Length, legs and end fittings','e.g. 4 m, 2 legs, hook and master link']},
+ test:{unsure:['I\'m not sure about the test requirements — please advise','Our team will advise the suitable test load and certificate.'],app:['Item to be tested','e.g. 3 ton spreader beam, 6 m long'],spec:['Test load and certificate requirements','e.g. 125% proof load, witnessed'],swl:'SWL / WLL of the item'}
+};
 const MODES={
  custom:{name:'Custom-Made',types:CUSTOM_TYPES,quick:c=>!LIFT_IMGS.includes(c.img)&&!SVC_IMGS.includes(c.img)&&!ROLL_IMGS.includes(c.img)&&!GEAR_IMGS.includes(c.img)&&!TEST_IMGS.includes(c.img),hide:[],csv:'Custom',list:'Custom Items in your Enquiry',add:'Add a Custom Item',edit:'Edit Custom Item',empty:'No custom items yet.',toast:'Custom item added'},
  svc:{name:'Other Fabrication Services',intro:'Circular water silos, waterstop end plates, steel corbels, mud tanks, steel platforms and customised steel fabrication, made to your drawings.',types:["Circular water silo","Waterstop end plate","Steel corbel","Mud tank","Steel platform","Customised steel fabrication","Other fabrication service"],quick:c=>SVC_IMGS.includes(c.img),hide:[],csv:'Fabrication service',list:'Other Fabrication Services in Your Enquiry',add:'Add Other Fabrication Service',edit:'Edit Other Fabrication Service',empty:'No fabrication services yet.',toast:'Service added'},
@@ -130,7 +139,7 @@ function vStd(){
 function vCustom(mode){
  const d=S.draft||(S.draft=newDraft());
  const M=MODES[mode],mine=S.customs.map((c,i)=>[c,i]).filter(([c])=>modeOf(c)===mode),TYPES=M.types;
- const ns=d.unsure;
+ const ns=d.unsure;const TT=TAB_TEXT[mode]||{};
  return `
 <div class="purpose" style="margin-bottom:12px">${M.intro?M.intro+' ':''}Describe what you need. If you are not sure about the technical details, tick the recommendation box and we will advise.</div>
 ${mine.length?`<h2>${M.list}</h2><div class="list">${mine.map(([c,i])=>`<div class="item"><img src="${IMG[c.img||'c_liftframe']}" alt=""><div class="t"><b>${esc(c.type)} × ${c.qty}</b><span>${esc(customSummary(c))}</span></div><button class="btn sm" data-editc="${i}">Edit</button><button class="btn sm" data-delc="${i}" aria-label="Remove">✕</button></div>`).join('')}</div>`:''}
@@ -141,16 +150,16 @@ ${M.quick?` <p style="margin:0;color:var(--mute);font-size:14px">Start from some
  <div class="form">
   <div class="f ${d.bad?.type?'bad':''}"><label>What type of item? <small>(required)</small></label><select id="c_type"><option value="">Select…</option>${TYPES.map(t=>`<option ${d.type===t?'selected':''}>${t}</option>`).concat(d.type&&!TYPES.includes(d.type)?[`<option selected>${esc(d.type)}</option>`]:[]).join('')}</select><div class="err">Please choose or select a starting point above.</div></div>
   <div class="f"><label>Quantity</label><div class="qty"><button data-cq="-1" type="button" aria-label="Decrease">−</button><input type="number" id="c_qty" min="1" max="999" value="${d.qty}"><button data-cq="1" type="button" aria-label="Increase">+</button></div></div>
-  <div class="f full"><label class="recommend"><input type="checkbox" id="c_unsure" ${ns?'checked':''}><span><b>I'm not sure about the specifications — please recommend</b><span>Our team will suggest suitable dimensions and capacity based on your application.</span></span></label></div>
+  <div class="f full"><label class="recommend"><input type="checkbox" id="c_unsure" ${ns?'checked':''}><span><b>${(TT.unsure||["I'm not sure about the specifications — please recommend","Our team will suggest suitable dimensions and capacity based on your application."])[0]}</b><span>${(TT.unsure||["","Our team will suggest suitable dimensions and capacity based on your application."])[1]}</span></span></label></div>
   ${mode==='test'||mode==='insp'?`<div class="f"><label>${mode==='insp'?'Service required':'Test required'}</label><select id="c_test">${(mode==='insp'?['','On-site inspection','Re-certification','PE inspection / testing','Not sure, please advise']:['','Proof load test with certificate','Load test and thorough examination','Re-test / re-certification','Not sure, please advise']).map(o=>`<option value="${o}" ${d.test===o?'selected':''}>${o||'Select…'}</option>`).join('')}</select></div>
-  <div class="f"><label>Where will the ${mode==='insp'?'inspection':'test'} be done?</label><select id="c_where">${['','At our site (customer premises)','At Pollisum workshop','Not sure'].map(o=>`<option value="${o}" ${d.where===o?'selected':''}>${o||'Select…'}</option>`).join('')}</select></div>`:''}
-  <div class="f full"><label>Intended application / use <small>(what will it be used for?)</small></label><input type="text" id="c_app" value="${esc(d.app)}" placeholder="e.g. lifting concrete to a 10th-floor slab"></div>
+  ${mode==='test'?`<div class="f"><label>Where will the test be done?</label><div class="fixed">Pollisum yard. All load tests are conducted at our yard.</div></div>`:`<div class="f"><label>Where will the inspection be done?</label><select id="c_where">${['','At our site (customer premises)','At Pollisum workshop','Not sure'].map(o=>`<option value="${o}" ${d.where===o?'selected':''}>${o||'Select…'}</option>`).join('')}</select></div>`}`:''}
+  <div class="f full"><label>${(TT.app||['Intended application / use'])[0]}${TT.app?'':' <small>(what will it be used for?)</small>'}</label><input type="text" id="c_app" value="${esc(d.app)}" placeholder="${(TT.app||[0,'e.g. lifting concrete to a 10th-floor slab'])[1]}"></div>
   ${M.hide.includes('dims')?'':`  <div class="f full"><label>Dimensions in mm <small>(if known)</small></label><div class="row3">
    <input type="number" id="c_l" placeholder="Length" value="${esc(d.l)}" ${ns?'disabled':''}><input type="number" id="c_w" placeholder="Width" value="${esc(d.w)}" ${ns?'disabled':''}><input type="number" id="c_h" placeholder="Height" value="${esc(d.h)}" ${ns?'disabled':''}><input type="number" id="c_dia" placeholder="Diameter" value="${esc(d.dia)}" ${ns?'disabled':''}></div></div>`}
   ${M.hide.includes('cap')?'':`  <div class="f"><label>Capacity <small>(m³, if known)</small></label><input type="number" step="any" id="c_cap" value="${esc(d.cap)}" ${ns?'disabled':''} placeholder="e.g. 1.5"></div>`}
-  <div class="f"><label>Required SWL / WLL <small>(if known)</small></label><div class="row2"><input type="number" step="any" id="c_swl" value="${esc(d.swl)}" ${ns?'disabled':''} placeholder="e.g. 3"><select id="c_swlu" ${ns?'disabled':''}><option ${d.swlu==='ton'?'selected':''}>ton</option><option ${d.swlu==='kg'?'selected':''}>kg</option></select></div></div>
+  <div class="f"><label>${TT.swl||'Required SWL / WLL'} <small>(if known)</small></label><div class="row2"><input type="number" step="any" id="c_swl" value="${esc(d.swl)}" ${ns?'disabled':''} placeholder="e.g. 3"><select id="c_swlu" ${ns?'disabled':''}><option ${d.swlu==='ton'?'selected':''}>ton</option><option ${d.swlu==='kg'?'selected':''}>kg</option></select></div></div>
   ${M.hide.includes('mat')?'':`  <div class="f"><label>Material <small>(if known)</small></label><select id="c_mat" ${ns?'disabled':''}>${['','Mild steel','Galvanised','Stainless steel','Other'].map(o=>`<option value="${o}" ${d.mat===o?'selected':''}>${o||'Not specified'}</option>`).join('')}</select></div>`}
-  <div class="f"><label>Other specifications <small>(optional)</small></label><input type="text" id="c_spec" value="${esc(d.spec)}" placeholder="e.g. forklift pockets, paint colour"></div>
+  <div class="f"><label>${(TT.spec||['Other specifications'])[0]} <small>(optional)</small></label><input type="text" id="c_spec" value="${esc(d.spec)}" placeholder="${(TT.spec||[0,'e.g. forklift pockets, paint colour'])[1]}"></div>
   <div class="f full"><label>Additional remarks</label><textarea id="c_rem" placeholder="Anything else we should know?">${esc(d.rem)}</textarea></div>
   <div class="f full"><label>Drawing, sketch, photo or reference <small>(optional)</small></label>
    <div class="drop"><input type="file" id="c_files" multiple accept="image/*,.pdf,.dwg,.dxf,.doc,.docx,.xls,.xlsx"><div style="margin-top:6px">Files are not uploaded from this page. Please attach them to the email when you send your enquiry.</div>
@@ -175,7 +184,7 @@ function readDraft(){
  const d=S.draft;if(!d)return;
  const g=id=>{const e=document.getElementById(id);return e?e.value:null};
  const set=(k,id)=>{const v=g(id);if(v!==null)d[k]=v};
- set('type','c_type');set('test','c_test');set('where','c_where');set('app','c_app');set('l','c_l');set('w','c_w');set('h','c_h');set('dia','c_dia');set('cap','c_cap');set('swl','c_swl');set('swlu','c_swlu');set('mat','c_mat');set('spec','c_spec');set('rem','c_rem');
+ set('type','c_type');set('test','c_test');set('where','c_where');if(S.tab==='test')d.where='Pollisum yard';set('app','c_app');set('l','c_l');set('w','c_w');set('h','c_h');set('dia','c_dia');set('cap','c_cap');set('swl','c_swl');set('swlu','c_swlu');set('mat','c_mat');set('spec','c_spec');set('rem','c_rem');
  const q=g('c_qty');if(q!==null)d.qty=Math.max(1,Math.min(999,parseInt(q)||1));
  const u=document.getElementById('c_unsure');if(u)d.unsure=u.checked;
 }

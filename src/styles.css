@@ -257,3 +257,5 @@ table.t th{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacin
 
 /* lifting gear tiles: same photo height so portrait and landscape photos sit level */
 .quick.big.contain button img{height:230px;object-fit:contain;background:#fff}
+
+.fixed{padding:12px 14px;background:var(--accent-l);border-radius:10px;font-size:14px;color:var(--ink,#222)}
