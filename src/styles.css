@@ -312,3 +312,6 @@ table.t th{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacin
 body.sheet-open #chat{display:none}
 .reply-note{margin:14px 0 0;text-align:right;color:var(--mute);font-size:14px}
 @media(max-width:720px){.reply-note{text-align:center}}
+.hero-tag{margin:6px 0 0;font-size:15px;font-weight:700;letter-spacing:.02em;color:#fff;opacity:.92}
+@media(max-width:720px){.hero-tag{font-size:13px;margin-top:4px}.hero-in{min-height:132px}}
+@media(min-width:721px){.hero-copy{max-width:clamp(300px,calc(100vw - min(62vw,900px) - 80px),640px)}.hero-title{font-size:clamp(22px,2.6vw,34px)}}
