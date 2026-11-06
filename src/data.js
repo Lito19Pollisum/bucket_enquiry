@@ -829,7 +829,7 @@ export const DATA = {
   {
    "img": "c_chainblock",
    "name": "Chain Block",
-   "desc": "Manual chain block for lifting loads, in a range of capacities."
+   "desc": "Manual hand-chain hoist for lifting and positioning loads, in a range of capacities."
   },
   {
    "img": "c_slingbucket",
@@ -882,7 +882,8 @@ export const DATA = {
   },
   {
    "img": "c_shackles",
-   "name": "Shackles and Snatch Blocks"
+   "name": "Shackles and Snatch Blocks",
+   "desc": "Shackles and snatch blocks for rigging and lifting, in a range of sizes and capacities."
   },
   {
    "img": "c_svc_rolling",
