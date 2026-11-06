@@ -139,7 +139,7 @@ export default async function handler(req, res) {
     if (kind === 'enquiry' && email) {
       try {
         const body = [`Thank you for your enquiry. Pollisum Fabrication has received it.`, ``, `Your reference: ${ref}`, ``,
-          `Our team will review it and reply with a quotation. Please quote this reference if you contact us.`, ``,
+          `Our team will review it and reply within 1 working day. Please quote this reference if you contact us.`, ``,
           `A copy of what you requested:`, ``, text, ``, `If you did not make this enquiry, you can ignore this email.`].join('\n');
         await send({ from: FROM, to: [email], reply_to: SALES, subject: `[${ref}] We received your enquiry`, text: body,
           html: `<pre style="font:14px/1.5 Consolas,Menlo,monospace;white-space:pre-wrap">${esc(body)}</pre>` });
