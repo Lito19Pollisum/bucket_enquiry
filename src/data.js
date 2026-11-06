@@ -844,10 +844,6 @@ export const DATA = {
    "name": "Twin Discharge Hopper"
   },
   {
-   "img": "c_tipskip",
-   "name": "Tipping Skip Bucket"
-  },
-  {
    "img": "c_meshcage",
    "name": "Mesh Material Cage"
   },
