@@ -725,10 +725,6 @@ export const DATA = {
    "name": "Front Handle Bucket with Forklift Pocket"
   },
   {
-   "img": "c_bottomopen",
-   "name": "Bottom Open Bucket"
-  },
-  {
    "img": "c_selfhopper",
    "name": "Self-Dumping Hopper"
   },
@@ -842,6 +838,10 @@ export const DATA = {
   {
    "img": "c_twinhopper",
    "name": "Twin Discharge Hopper"
+  },
+  {
+   "img": "c_tipskip",
+   "name": "Tipping Skip Bucket"
   },
   {
    "img": "c_meshcage",
