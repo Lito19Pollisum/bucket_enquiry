@@ -170,7 +170,7 @@ table.t th{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacin
 }
 @media(max-width:420px){.grid{grid-template-columns:1fr}.card .ph{height:140px}}
 @media print{
- body{background:#fff}#chat,.hero,.endbar,header.top,.steps,.actions,.bar,.noprint,.foot,.toast,.purpose,.done-hero .ok{display:none!important}
+ body{background:#fff}#chat,.hero,.endbar,header.top,.steps,.stepnow,.actions,.bar,.noprint,.foot,.toast,.purpose,.done-hero .ok{display:none!important}
  .sheet{border:0;padding:0}.done-hero{padding:0}
 }
 @media(max-width:900px){.big2{grid-template-columns:1fr}}
@@ -261,3 +261,30 @@ table.t th{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacin
 .fixed{padding:12px 14px;background:var(--accent-l);border-radius:10px;font-size:14px;color:var(--ink,#222)}
 
 .privacy-note{margin:12px 2px 0;font-size:13px;color:var(--mute)}.privacy-note a{color:var(--accent)}
+
+.stepnow{display:none}
+@media(max-width:720px){
+ /* 1. floating buttons: compact round icons so they stop covering content */
+ #chat{gap:10px;bottom:16px}
+ .fab{min-height:46px;width:46px;padding:0;justify-content:center;border-radius:50%}
+ .fab .ft{display:none}
+ #chat.open-panel .fab .ft{display:none}
+ /* 2. shorter header on phones */
+ .hero-in{min-height:120px}
+ .hero-copy{padding:14px 12px 14px 16px}
+ .hero-copy img{height:28px}
+ .hero-copy hr{margin:8px 0 8px}
+ .hero-title{font-size:17px}
+ .hs{top:10px;bottom:10px}
+ /* 3. category chips: one sideways-scrolling row */
+ .chips{flex-wrap:nowrap;overflow-x:auto;margin:0 -16px 16px;padding:2px 16px 6px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+ .chips::-webkit-scrollbar{display:none}
+ .chips .chip{flex:none;white-space:nowrap}
+ /* 4. tabs: tighter, with a fade at the right edge to show they scroll */
+ .tabs{gap:2px;margin-bottom:14px;-webkit-mask-image:linear-gradient(90deg,#000 88%,transparent);mask-image:linear-gradient(90deg,#000 88%,transparent);scrollbar-width:none}
+ .tabs::-webkit-scrollbar{display:none}
+ .tab{padding:10px 12px;flex:none}
+ /* 5. step bar: clear "Step n of 4" line */
+ .steps{margin:14px 0 4px}.steps li .l{display:none!important}
+ .stepnow{display:block;margin:6px 0 10px;font-size:13px;font-weight:700;color:var(--mute);text-transform:uppercase;letter-spacing:.06em}
+}
