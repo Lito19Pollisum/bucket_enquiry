@@ -42,6 +42,29 @@ const inMode=m=>S.customs.filter(c=>modeOf(c)===m);
 const modeLabel=c=>modeOf(c)==='custom'?'':MODES[modeOf(c)].csv+' – ';
 const S={step:0,tab:'std',cat:'All',sel:{},customs:[],cust:{},ref:null,editing:null,draft:null,files:[]};
 const $=s=>document.querySelector(s);
+// Progress is kept for this browser tab only, so a reload or app switch does not lose the selection.
+const PK='pe_progress',MK='pe_contact';
+const store={get:k=>{try{return JSON.parse(sessionStorage.getItem(k))}catch{return null}},set:(k,v)=>{try{sessionStorage.setItem(k,JSON.stringify(v))}catch{}},del:k=>{try{sessionStorage.removeItem(k)}catch{}}};
+const mem={get:k=>{try{return JSON.parse(localStorage.getItem(k))}catch{return null}},set:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch{}},del:k=>{try{localStorage.removeItem(k)}catch{}}};
+function saveProgress(){
+ if(S.step===4||(!itemCount()&&S.step===0&&!Object.keys(S.cust).length)){store.del(PK);return}
+ const {bad,...cust}=S.cust;
+ store.set(PK,{step:S.step,tab:S.tab,cat:S.cat,sel:S.sel,customs:S.customs,cust});
+}
+function restoreProgress(){
+ const p=store.get(PK);if(!p)return;
+ try{
+  if(p.sel&&typeof p.sel==='object')S.sel=Object.fromEntries(Object.entries(p.sel).filter(([c,q])=>BYCODE[c]&&Number.isInteger(q)&&q>0));
+  if(Array.isArray(p.customs))S.customs=p.customs.filter(c=>c&&typeof c==='object');
+  if(p.cust&&typeof p.cust==='object')S.cust=p.cust;
+  if(typeof p.tab==='string'&&(p.tab==='std'||MODES[p.tab]))S.tab=p.tab;
+  if(typeof p.cat==='string')S.cat=p.cat;
+  S.step=Number.isInteger(p.step)&&p.step>=0&&p.step<=3?p.step:0;
+  if(S.step>0&&!itemCount())S.step=S.step===1?1:0;
+  history.replaceState({step:S.step},'');
+ }catch{store.del(PK)}
+}
+
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const STEPS=["Enquiry type","Choose items","Your details","Review & send"];
 let T;function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(T);T=setTimeout(()=>t.classList.remove('show'),1800)}
@@ -58,7 +81,7 @@ async function postSales(payload){
   return r.ok&&j.ok===true;
  }catch(e){return false}
 }
-function go(n){S.step=n;if(!history.state||history.state.step!==n)history.pushState({step:n},'');render();window.scrollTo({top:0})}
+function go(n){S.step=n;S.sheet=false;if(!history.state||history.state.step!==n)history.pushState({step:n},'');render();window.scrollTo({top:0})}
 // Browser back / forward arrows move between the steps instead of leaving the page.
 history.replaceState({step:0},'');
 window.addEventListener('popstate',e=>{const n=e.state&&Number.isInteger(e.state.step)?e.state.step:0;if(n>0&&!itemCount()&&n!==1){S.step=1}else S.step=n;if(S.step===1&&!S.tab)S.tab='std';render();window.scrollTo({top:0})});
@@ -74,6 +97,8 @@ function render(){
  else if(S.step===4)h+=vDone();
  a.innerHTML=h+`<div class="foot">${COMPANY} · Tel (65) 6755 7600 · www.pollisum.com<br>Enquiry only — no payment is taken. Prices are confirmed in our quotation.<br><a href="/privacy.html" target="_blank" rel="noopener" style="color:inherit">Privacy notice</a><br><small style="opacity:.55">Version ${__BUILD__}</small></div>`;
  bind();
+ document.body.classList.toggle('sheet-open',!!(S.sheet&&itemCount()&&S.step===1));
+ saveProgress();
 }
 
 /* ---------- Step 1: type ---------- */
@@ -82,13 +107,13 @@ function vType(){return `
 <p class="lead">Pick one. We send you a quotation.</p>
 <p class="purpose">Start here. You can add the other kind later.</p>
 <div class="big2">
- <button class="choice" data-type="std"><img src="${IMG.superbucket}" alt=""><h2>Standard Bucket</h2><p>Pick from our catalogue of buckets, hoppers, racks and cages.</p><span class="go">Browse the catalogue →</span></button>
- <button class="choice" data-type="custom"><img src="${IMG.c_liftbucket}" alt=""><h2>Custom-Made Bucket</h2><p>Need a different size? Tell us what you need and we will design it.</p><span class="go">Describe what you need →</span></button>
- <button class="choice" data-type="svc"><img src="${IMG.c_corbel}" alt=""><h2>Other Fabrication Services</h2><p>Water silos, end plates, corbels, mud tanks and customised steel fabrication.</p><span class="go">Describe what you need →</span></button>
- <button class="choice" data-type="lift"><img src="${IMG.c_liftcard}" alt=""><h2>Lifting Frame &amp; Spreader Beam</h2><p>Tell us the load, span and lifting points and we will design it.</p><span class="go">Describe what you need →</span></button>
- <button class="choice" data-type="gear"><img src="${IMG.c_chainblock}" alt=""><h2>Lifting Gears</h2><p>Slings, shackles, hooks, eyebolts, clamps and other lifting gear.</p><span class="go">Describe what you need →</span></button>
- <button class="choice" data-type="test"><img src="${IMG.c_loadtest1}" alt=""><h2>Load Testing &amp; Visual Inspection</h2><p>Proof load test, visual inspection and certification for your lifting gear and equipment.</p><span class="go">Request a test or inspection →</span></button>
- <button class="choice" data-type="roll"><img src="${IMG.c_svc_bending}" alt=""><h2>Rolling &amp; Bending Service</h2><p>Plate rolling, bending, press braking, punching, shearing and cutting.</p><span class="go">Describe what you need →</span></button>
+ <button class="choice" data-type="std"><img loading="lazy" decoding="async" src="${IMG.superbucket}" alt=""><h2>Standard Bucket</h2><p>Pick from our catalogue of buckets, hoppers, racks and cages.</p><span class="go">Browse the catalogue →</span></button>
+ <button class="choice" data-type="custom"><img loading="lazy" decoding="async" src="${IMG.c_liftbucket}" alt=""><h2>Custom-Made Bucket</h2><p>Need a different size? Tell us what you need and we will design it.</p><span class="go">Describe what you need →</span></button>
+ <button class="choice" data-type="svc"><img loading="lazy" decoding="async" src="${IMG.c_corbel}" alt=""><h2>Other Fabrication Services</h2><p>Water silos, end plates, corbels, mud tanks and customised steel fabrication.</p><span class="go">Describe what you need →</span></button>
+ <button class="choice" data-type="lift"><img loading="lazy" decoding="async" src="${IMG.c_liftcard}" alt=""><h2>Lifting Frame &amp; Spreader Beam</h2><p>Tell us the load, span and lifting points and we will design it.</p><span class="go">Describe what you need →</span></button>
+ <button class="choice" data-type="gear"><img loading="lazy" decoding="async" src="${IMG.c_chainblock}" alt=""><h2>Lifting Gears</h2><p>Slings, shackles, hooks, eyebolts, clamps and other lifting gear.</p><span class="go">Describe what you need →</span></button>
+ <button class="choice" data-type="test"><img loading="lazy" decoding="async" src="${IMG.c_loadtest1}" alt=""><h2>Load Testing &amp; Visual Inspection</h2><p>Proof load test, visual inspection and certification for your lifting gear and equipment.</p><span class="go">Request a test or inspection →</span></button>
+ <button class="choice" data-type="roll"><img loading="lazy" decoding="async" src="${IMG.c_svc_bending}" alt=""><h2>Rolling &amp; Bending Service</h2><p>Plate rolling, bending, press braking, punching, shearing and cutting.</p><span class="go">Describe what you need →</span></button>
 </div>`}
 
 /* ---------- Step 2: items ---------- */
@@ -108,7 +133,8 @@ ${S.tab==='std'?`<details class="about"><summary>About our buckets and cages</su
 <li><b>Sizes:</b> standard buckets are 0.5 to 2.5 m³. Larger sizes are made to order.</li></ul></details>`:''}
 ${S.tab==='std'?vStd():vCustom(S.tab)}
 <div class="bar"><div class="wrap">
- <div class="sum">${cnt?`<b>${cnt} item${cnt>1?'s':''}</b> · ${totalAll()} unit${totalAll()>1?'s':''} selected`:'Nothing selected yet'}</div>
+ ${S.sheet&&cnt?`<div class="sheet" role="dialog" aria-label="Selected items"><div class="sheet-h"><b>Your selection</b><button class="sheet-x" id="sheetX" aria-label="Close">✕</button></div>${Object.entries(S.sel).map(([code,q])=>`<div class="sheet-r"><span><b>${code}</b> × ${q}<small>${esc(BYCODE[code].fam.name)}</small></span><button data-rmstd="${code}" aria-label="Remove ${code}">Remove</button></div>`).join('')}${S.customs.map((c,i)=>`<div class="sheet-r"><span><b>${esc(c.type)}</b> × ${c.qty}<small>${esc(MODES[modeOf(c)].name)}</small></span><button data-rmc="${i}" aria-label="Remove ${esc(c.type)}">Remove</button></div>`).join('')}</div>`:''}
+ <div class="sum">${cnt?`<button class="sumbtn" id="sumBtn" aria-expanded="${!!S.sheet}"><b>${cnt} item${cnt>1?'s':''}</b> · ${totalAll()} unit${totalAll()>1?'s':''} <span class="rv">${S.sheet?'Hide ▾':'Review ▴'}</span></button>`:'Nothing selected yet'}</div>
  <div style="display:flex;gap:10px"><button class="btn" data-go="0">Back</button><button class="btn pri" id="toDetails">Continue</button></div>
 </div></div>`}
 
@@ -130,7 +156,7 @@ function card(f,m){
 function vStd(){
  const fams=FAM.filter(f=>S.cat==='All'||f.cat===S.cat);
  return `<div class="chips">${['All',...CATS].map(c=>`<button class="chip ${S.cat===c?'on':''}" data-cat="${c}">${c}</button>`).join('')}</div>`+
- fams.map(f=>`<section class="fam"><div class="fam-head"><div class="fph"><img src="${IMG[f.img]}" alt="${esc(f.name)}" loading="lazy"></div><div class="ftxt"><h2>${f.name}</h2><p>${esc(f.desc)}</p>${f.note?`<p class="note">${esc(f.note)}</p>`:''}<span class="pickhint">Choose a size below</span></div></div>
+ fams.map(f=>`<section class="fam"><div class="fam-head"><div class="fph"><img data-zoomfam="${esc(f.name)}" src="${IMG[f.img]}" alt="${esc(f.name)}" loading="lazy" decoding="async" title="Tap to enlarge"></div><div class="ftxt"><h2>${f.name}</h2><p>${esc(f.desc)}</p>${f.note?`<p class="note">${esc(f.note)}</p>`:''}<span class="pickhint">Choose a size below</span></div></div>
  <div class="grid">${f.models.map(m=>card(f,m)).join('')}</div></section>`).join('')+
  `<div class="panel" style="text-align:center"><b>Can't find the right size?</b><p style="margin:4px 0 12px;color:var(--mute)">We fabricate to your requirements.</p><button class="btn" data-tab="custom">Request a custom-made item</button></div>`}
 
@@ -189,6 +215,7 @@ function readDraft(){
 }
 
 /* ---------- Step 3: details ---------- */
+const KB={email:'inputmode="email" autocapitalize="none" autocorrect="off" spellcheck="false"',phone:'inputmode="tel"',company:'autocapitalize="words"',contact:'autocapitalize="words"',project:'autocapitalize="sentences"',location:'autocapitalize="words"'};
 const FIELDS=[['company','Company name','text',1],['contact','Contact person','text',1],['email','Email for confirmation','email',0],['phone','Contact number','tel',1],['project','Project name / reference','text',0],['location','Delivery / site location','text',0],['date','Required delivery date','date',0]];
 function vDetails(){
  const c=S.cust;
@@ -196,13 +223,14 @@ function vDetails(){
 <h1>Your details</h1>
 <p class="purpose">So our sales team knows who to contact and where the items are needed.</p>
 <div class="panel"><div class="form">
-${FIELDS.map(([k,l,t,req])=>`<div class="f ${c.bad?.[k]?'bad':''}"><label for="d_${k}">${l} ${req?'<small>(required)</small>':'<small>(optional)</small>'}</label><input id="d_${k}" type="${t}" value="${esc(c[k])}" ${k==='date'?'min="'+new Date().toISOString().slice(0,10)+'"':''} autocomplete="${({company:'organization',contact:'name',email:'email',phone:'tel'})[k]||'off'}"><div class="err">${k==='email'?'Please enter a valid email address.':'This field is required.'}</div></div>`).join('')}
+${FIELDS.map(([k,l,t,req])=>`<div class="f ${c.bad?.[k]?'bad':''}"><label for="d_${k}">${l} ${req?'<small>(required)</small>':'<small>(optional)</small>'}</label><input id="d_${k}" type="${t}" value="${esc(c[k])}" ${k==='date'?'min="'+new Date().toISOString().slice(0,10)+'"':''} autocomplete="${({company:'organization',contact:'name',email:'email',phone:'tel'})[k]||'off'}" ${KB[k]||''}><div class="err">${k==='email'?'Please enter a valid email address.':'This field is required.'}</div></div>`).join('')}
 <div class="f full"><label for="d_remarks">Additional remarks <small>(optional)</small></label><textarea id="d_remarks">${esc(c.remarks)}</textarea></div>
 </div></div>
+<label class="remember"><input type="checkbox" id="d_remember" ${S.remember===false?'':'checked'}> Remember my company and contact details on this device for next time</label>
 <p class="privacy-note">We use these details only to prepare your quotation and contact you about this enquiry. <a href="/privacy.html" target="_blank" rel="noopener">Read our privacy notice</a>.</p>
 <div class="nav"><button class="btn" data-go="1">Back</button><button class="btn pri" id="toReview">Review enquiry</button></div>`}
 
-function readDetails(){FIELDS.forEach(([k])=>{const e=document.getElementById('d_'+k);if(e)S.cust[k]=e.value.trim()});const r=document.getElementById('d_remarks');if(r)S.cust.remarks=r.value.trim()}
+function readDetails(){const rm=document.getElementById('d_remember');if(rm)S.remember=rm.checked;FIELDS.forEach(([k])=>{const e=document.getElementById('d_'+k);if(e)S.cust[k]=e.value.trim()});const r=document.getElementById('d_remarks');if(r)S.cust.remarks=r.value.trim()}
 function validateDetails(){
  readDetails();const bad={};
  FIELDS.forEach(([k,,,req])=>{if(req&&!S.cust[k])bad[k]=1});
@@ -292,6 +320,11 @@ function bind(){
   const inp=c.querySelector('.qty input');
   if(inp){inp.onclick=e=>e.stopPropagation();inp.onchange=()=>{S.sel[code]=Math.max(1,Math.min(999,parseInt(inp.value)||1));keep()}}
  });
+ const sbt=$('#sumBtn');if(sbt)sbt.onclick=()=>{readDraft();S.sheet=!S.sheet;const y=window.scrollY;render();window.scrollTo({top:y})};
+ const sx=$('#sheetX');if(sx)sx.onclick=()=>{S.sheet=false;const y=window.scrollY;render();window.scrollTo({top:y})};
+ A.querySelectorAll('[data-rmstd]').forEach(b=>b.onclick=()=>{delete S.sel[b.dataset.rmstd];if(!itemCount())S.sheet=false;const y=window.scrollY;render();window.scrollTo({top:y})});
+ A.querySelectorAll('[data-rmc]').forEach(b=>b.onclick=()=>{readDraft();S.customs.splice(+b.dataset.rmc,1);S.editing=null;if(!itemCount())S.sheet=false;const y=window.scrollY;render();window.scrollTo({top:y})});
+ A.querySelectorAll('[data-zoomfam]').forEach(i=>i.onclick=()=>{const f=FAM.find(x=>x.name===i.dataset.zoomfam);if(f)lightbox({img:f.img,name:f.name,desc:f.desc})});
  const td=$('#toDetails');if(td)td.onclick=()=>{readDraft();if(!itemCount()){toast('Please select at least one item');return}go(2)};
  // custom
  A.querySelectorAll('[data-quick]').forEach(b=>b.onclick=ev=>{const sl=ev.target.closest('[data-sl]');if(sl){ev.stopPropagation();const c0=DATA.custom.find(x=>x.img===sl.dataset.for),n=slides(c0).length;SL[c0.img]=((SL[c0.img]||0)+(+sl.dataset.sl)+n)%n;readDraft();render();return}readDraft();const c=DATA.custom.find(x=>x.img===b.dataset.quick);S.draft.img=c.img;S.draft.type=guessType(c.name);S.draft.rem=S.draft.rem||'Similar to: '+c.name;render();lightbox(c)});
@@ -316,6 +349,7 @@ function bind(){
   const hp=document.getElementById('hp');
   S.sent=await postSales({kind:'enquiry',ref:S.ref,company:S.cust.company,contact:S.cust.contact,email:S.cust.email,text:plainText(),csv:csvText(),website:hp?hp.value:''});
   if(!S.sent)toast('Could not send your enquiry. Please try again.');
+  else if(S.remember===false)mem.del(MK);else{const {company,contact,email,phone}=S.cust;mem.set(MK,{company,contact,email,phone})}
   go(4)};
  const m=$('#mail');if(m)m.onclick=()=>{location.href=`mailto:${SALES_EMAIL}?${CC_EMAIL?'cc='+encodeURIComponent(CC_EMAIL)+'&':''}subject=${encodeURIComponent('['+S.ref+'] Enquiry — '+S.cust.company)}&body=${encodeURIComponent(plainText())}`};
  const rt=$('#retry');if(rt)rt.onclick=async()=>{
@@ -328,7 +362,7 @@ function bind(){
   try{const r=await fetch('/api/xlsx',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({csv:csvText()})});if(!r.ok)throw 0;save(await r.blob(),S.ref+'.xlsx')}
   catch{save(new Blob([csvText()],{type:'text/csv'}),S.ref+'.csv')}};
  const pr=$('#print');if(pr)pr.onclick=()=>window.print();
- const ne=$('#newEnq');if(ne)ne.onclick=()=>{S.sel={};S.customs=[];S.cust={};S.ref=null;S.sent=false;S.draft=null;S.editing=null;S.cat='All';go(0)};
+ const ne=$('#newEnq');if(ne)ne.onclick=()=>{S.sel={};S.customs=[];S.cust={};S.ref=null;S.sent=false;S.draft=null;S.editing=null;S.cat='All';store.del(PK);go(0)};
 }
 function guessType(n){n=n.toLowerCase();
  if(/side discharge/.test(n))return'Custom-made concrete bucket';if(/twin/.test(n))return'Twin discharge hopper';if(/self-dumping|tipping|skip/.test(n))return'Self-dumping hopper / skip bucket';if(/front handle|forklift/.test(n))return'Forklift-pocket bucket';if(/lift(ing)? bucket/.test(n))return'Lifting bucket';if(/batching/.test(n))return'Custom-made concrete bucket';if(/water tank/.test(n))return'Water tank';if(/trolley/.test(n))return'Trolley';if(/man|basket/.test(n))return'Other custom item';if(/cage/.test(n))return'Material / storage cage';
@@ -395,6 +429,9 @@ async function chatSend(text){
 })();
 const _render=render;render=function(){_render();const r=document.getElementById('chat');if(r)r.classList.toggle('up',S.step===1);const i=document.getElementById('chatRef');if(i&&S.ref){i.value=S.ref;i.readOnly=true}};
 chatRender();
+document.addEventListener('input',e=>{if(e.target&&typeof e.target.id==='string'&&e.target.id.startsWith('d_')&&S.step===2){readDetails();saveProgress()}});
+restoreProgress();
+{const m=mem.get(MK);if(m&&typeof m==='object'&&!S.cust.company&&!S.cust.contact){['company','contact','email','phone'].forEach(k=>{if(typeof m[k]==='string')S.cust[k]=m[k]})}}
 render();
 
 /* ---------- Photo lightbox (stays until closed) ---------- */

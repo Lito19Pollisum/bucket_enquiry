@@ -288,3 +288,25 @@ table.t th{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacin
  .steps{margin:14px 0 4px}.steps li .l{display:none!important}
  .stepnow{display:block;margin:6px 0 10px;font-size:13px;font-weight:700;color:var(--mute);text-transform:uppercase;letter-spacing:.06em}
 }
+
+.fam-head .fph img{cursor:zoom-in}
+.remember{display:flex;align-items:center;gap:10px;margin:14px 0 4px;font-size:14px;color:var(--mute);cursor:pointer}
+.remember input{width:18px;height:18px;accent-color:var(--accent);flex:none}
+.bar{position:sticky}.bar .wrap{position:relative}
+.sumbtn{background:none;border:0;padding:6px 0;font:inherit;color:var(--mute);text-align:left;cursor:pointer;display:flex;flex-wrap:wrap;gap:0 6px;align-items:baseline}
+.sumbtn b{color:var(--text);font-size:16px}.sumbtn .rv{color:var(--accent);font-weight:700;font-size:13px}
+.sheet{position:absolute;left:0;right:0;bottom:100%;background:#fff;border:1px solid var(--line);border-bottom:0;border-radius:14px 14px 0 0;box-shadow:0 -6px 18px rgba(0,0,0,.12);max-height:50vh;overflow:auto;padding:6px 16px 8px}
+.sheet-h{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+.sheet-x{background:none;border:0;font-size:18px;cursor:pointer;padding:4px 8px;color:var(--mute)}
+.sheet-r{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
+.sheet-r:last-child{border-bottom:0}.sheet-r small{display:block;color:var(--mute);font-size:12px}
+.sheet-r button{background:none;border:0;color:var(--accent);font-weight:700;cursor:pointer;padding:6px 4px;flex:none}
+@media(max-width:720px){
+ /* shorter first screen: compact enquiry-type cards */
+ .choice{padding:14px 16px;gap:6px;border-radius:14px}
+ .choice .ico{height:80px}.choice img{height:84px}
+ .choice h2{font-size:18px}.choice p{font-size:14px;line-height:1.35}
+ .choice .go{font-size:14px}
+ .sheet{max-height:55vh}
+}
+body.sheet-open #chat{display:none}
