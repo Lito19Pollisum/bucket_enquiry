@@ -9,6 +9,7 @@
 
 import { sb, sbReady, sbUpload, splitEnquiryCsv } from './_sb.js';
 import { buildXlsx } from './_xlsx.js';
+import { safeCsv } from './_safe.js';
 import { buildQuoteXlsx } from './_quotexlsx.js';
 
 const SALES = process.env.SALES_EMAIL || 'fabrication@pollisum.com';
@@ -71,7 +72,7 @@ export default async function handler(req, res) {
   const contact = oneLine(b.contact, 120);
   const email = oneLine(b.email, 200);
   const text = clip(b.text, 20000);
-  const csv = clip(b.csv, 60000);
+  const csv = b.csv ? safeCsv(clip(b.csv, 60000)) : '';
 
   if (!REF_RE.test(ref) && !(kind === 'followup' && ref === '')) return res.status(400).json({ ok: false, error: 'ref' });
   if (!EMAIL_RE.test(email)) return res.status(400).json({ ok: false, error: 'email' });

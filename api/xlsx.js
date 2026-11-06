@@ -1,5 +1,6 @@
 // Returns a formatted Excel workbook for an enquiry CSV (used by the "Download Excel" button).
 import { buildXlsx } from './_xlsx.js';
+import { safeCsv } from './_safe.js';
 
 const REF_RE = /ENQ-\d{8}-\d{3}/;
 
@@ -7,7 +8,7 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ ok: false });
   let b = req.body;
   if (typeof b === 'string') { try { b = JSON.parse(b); } catch { b = null; } }
-  const csv = String((b && b.csv) || '').slice(0, 60000);
+  const csv = safeCsv(String((b && b.csv) || '').slice(0, 60000));
   if (!csv.includes('Enquiry reference')) return res.status(400).json({ ok: false, error: 'bad_request' });
   try {
     const buf = await buildXlsx(csv);
