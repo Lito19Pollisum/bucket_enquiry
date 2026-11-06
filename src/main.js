@@ -149,7 +149,8 @@ ${M.quick?` <p style="margin:0;color:var(--mute);font-size:14px">Start from some
   <div class="f"><label>Quantity</label><div class="qty"><button data-cq="-1" type="button" aria-label="Decrease">−</button><input type="number" id="c_qty" min="1" max="999" value="${d.qty}"><button data-cq="1" type="button" aria-label="Increase">+</button></div></div>
   <div class="f full"><label class="recommend"><input type="checkbox" id="c_unsure" ${ns?'checked':''}><span><b>${(TT.unsure||["I'm not sure about the specifications — please recommend","Our team will suggest suitable dimensions and capacity based on your application."])[0]}</b><span>${(TT.unsure||["","Our team will suggest suitable dimensions and capacity based on your application."])[1]}</span></span></label></div>
   ${mode==='test'||mode==='insp'?`<div class="f"><label>Service required</label><select id="c_test">${(mode==='insp'?['','On-site inspection','Re-certification','PE inspection / testing','Not sure, please advise']:['','Proof load test with certificate','Load test and visual inspection','Visual inspection only','Re-test / re-certification','Not sure, please advise']).map(o=>`<option value="${o}" ${d.test===o?'selected':''}>${o||'Select…'}</option>`).join('')}</select></div>
-  ${mode==='test'?`<div class="f"><label>Where will the test be done?</label><div class="fixed">Pollisum yard. All load tests are conducted at our yard.</div></div>`:`<div class="f"><label>Where will the inspection be done?</label><select id="c_where">${['','At our site (customer premises)','At Pollisum workshop','Not sure'].map(o=>`<option value="${o}" ${d.where===o?'selected':''}>${o||'Select…'}</option>`).join('')}</select></div>`}`:''}
+  ${mode==='test'?(d.test==='Visual inspection only'?`<div class="f"><label>Where will the inspection be done?</label><div class="fixed">At client site.</div></div>
+  <div class="f full"><label>Site address / location <small>(for the inspection)</small></label><input type="text" id="c_site" value="${esc(d.site)}" placeholder="e.g. project name, street address, contact at site"></div>`:`<div class="f"><label>Where will the test be done?</label><div class="fixed">Pollisum yard. All load tests are conducted at our yard.</div></div>`):`<div class="f"><label>Where will the inspection be done?</label><select id="c_where">${['','At our site (customer premises)','At Pollisum workshop','Not sure'].map(o=>`<option value="${o}" ${d.where===o?'selected':''}>${o||'Select…'}</option>`).join('')}</select></div>`}`:''}
   <div class="f full"><label>${(TT.app||['Intended application / use'])[0]}${TT.app?'':' <small>(what will it be used for?)</small>'}</label><input type="text" id="c_app" value="${esc(d.app)}" placeholder="${(TT.app||[0,'e.g. lifting concrete to a 10th-floor slab'])[1]}"></div>
   ${M.hide.includes('dims')?'':`  <div class="f full"><label>Dimensions in mm <small>(if known)</small></label><div class="row3">
    <input type="number" id="c_l" placeholder="Length" value="${esc(d.l)}" ${ns?'disabled':''}><input type="number" id="c_w" placeholder="Width" value="${esc(d.w)}" ${ns?'disabled':''}><input type="number" id="c_h" placeholder="Height" value="${esc(d.h)}" ${ns?'disabled':''}><input type="number" id="c_dia" placeholder="Diameter" value="${esc(d.dia)}" ${ns?'disabled':''}></div></div>`}
@@ -168,10 +169,10 @@ ${M.quick?` <p style="margin:0;color:var(--mute);font-size:14px">Start from some
  </div>
 </div>
 ${!mine.length?`<div class="empty"><span class="ic">🛠️</span>${M.empty} Fill in the form above and press “Add to enquiry”.</div>`:''}`}
-function newDraft(){return{test:'',where:'',type:'',img:null,qty:1,unsure:false,app:'',l:'',w:'',h:'',dia:'',cap:'',swl:'',swlu:'ton',mat:'',spec:'',rem:'',files:[],bad:{}}}
+function newDraft(){return{test:'',where:'',site:'',type:'',img:null,qty:1,unsure:false,app:'',l:'',w:'',h:'',dia:'',cap:'',swl:'',swlu:'ton',mat:'',spec:'',rem:'',files:[],bad:{}}}
 function customSummary(c){
  if(c.unsure)return 'Recommendation requested'+(c.app?' · '+c.app:'');
- const p=[];if(c.test)p.push(c.test);if(c.where)p.push(c.where);
+ const p=[];if(c.test)p.push(c.test);if(c.where)p.push(c.where);if(c.site)p.push(c.site);
  const dim=[c.l&&'L'+c.l,c.w&&'W'+c.w,c.h&&'H'+c.h,c.dia&&'Ø'+c.dia].filter(Boolean).join(' × ');
  if(dim)p.push(dim+' mm');if(c.cap)p.push(c.cap+' m³');if(c.swl)p.push('SWL '+c.swl+' '+c.swlu);if(c.mat)p.push(c.mat);
  if(c.app)p.push(c.app);
@@ -181,7 +182,7 @@ function readDraft(){
  const d=S.draft;if(!d)return;
  const g=id=>{const e=document.getElementById(id);return e?e.value:null};
  const set=(k,id)=>{const v=g(id);if(v!==null)d[k]=v};
- set('type','c_type');set('test','c_test');set('where','c_where');if(S.tab==='test')d.where='Pollisum yard';set('app','c_app');set('l','c_l');set('w','c_w');set('h','c_h');set('dia','c_dia');set('cap','c_cap');set('swl','c_swl');set('swlu','c_swlu');set('mat','c_mat');set('spec','c_spec');set('rem','c_rem');
+ set('type','c_type');set('test','c_test');set('where','c_where');set('site','c_site');if(S.tab==='test')d.where=d.test==='Visual inspection only'?'At client site':'Pollisum yard';set('app','c_app');set('l','c_l');set('w','c_w');set('h','c_h');set('dia','c_dia');set('cap','c_cap');set('swl','c_swl');set('swlu','c_swlu');set('mat','c_mat');set('spec','c_spec');set('rem','c_rem');
  const q=g('c_qty');if(q!==null)d.qty=Math.max(1,Math.min(999,parseInt(q)||1));
  const u=document.getElementById('c_unsure');if(u)d.unsure=u.checked;
 }
@@ -293,6 +294,7 @@ function bind(){
  // custom
  A.querySelectorAll('[data-quick]').forEach(b=>b.onclick=ev=>{const sl=ev.target.closest('[data-sl]');if(sl){ev.stopPropagation();const c0=DATA.custom.find(x=>x.img===sl.dataset.for),n=slides(c0).length;SL[c0.img]=((SL[c0.img]||0)+(+sl.dataset.sl)+n)%n;readDraft();render();return}readDraft();const c=DATA.custom.find(x=>x.img===b.dataset.quick);S.draft.img=c.img;S.draft.type=guessType(c.name);S.draft.rem=S.draft.rem||'Similar to: '+c.name;render();lightbox(c)});
  A.querySelectorAll('[data-cq]').forEach(b=>b.onclick=()=>{const i=$('#c_qty');i.value=Math.max(1,Math.min(999,(parseInt(i.value)||1)+(+b.dataset.cq)))});
+ const ct=$('#c_test');if(ct)ct.onchange=()=>{readDraft();render()};
  const un=$('#c_unsure');if(un)un.onchange=()=>{readDraft();render()};
  const fi=$('#c_files');if(fi)fi.onchange=()=>{readDraft();S.draft.files=[...S.draft.files,...[...fi.files].map(f=>f.name)];render()};
  const ac=$('#addCustom');if(ac)ac.onclick=()=>{
