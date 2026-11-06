@@ -1,6 +1,6 @@
 // Private enquiries dashboard API. Requires header x-admin-password matching ADMIN_PASSWORD (set in Vercel).
 import { timingSafeEqual } from 'node:crypto';
-import { sb, sbReady } from './_sb.js';
+import { sb, sbReady, clientIp, hits, addHit } from './_sb.js';
 
 const PASS = process.env.ADMIN_PASSWORD || '';
 const STATUSES = ['new', 'quoted', 'won', 'lost', 'closed'];
@@ -13,7 +13,10 @@ const same = (a, b) => {
 export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
   if (!PASS || !sbReady()) return res.status(503).json({ ok: false, error: 'not_configured' });
-  if (!same(req.headers['x-admin-password'] || '', PASS)) return res.status(401).json({ ok: false, error: 'unauthorized' });
+  // Lockout: 5 wrong passwords from one address locks it out for 15 minutes.
+  const failKey = `adminfail:${clientIp(req)}`;
+  if (await hits(failKey, 900) >= 5) return res.status(429).json({ ok: false, error: 'locked' });
+  if (!same(req.headers['x-admin-password'] || '', PASS)) { await addHit(failKey); return res.status(401).json({ ok: false, error: 'unauthorized' }); }
 
   try {
     if (req.method === 'GET') {

@@ -72,7 +72,7 @@ function render(){
  else if(S.step===2)h+=vDetails();
  else if(S.step===3)h+=vReview();
  else if(S.step===4)h+=vDone();
- a.innerHTML=h+`<div class="foot">${COMPANY} · Tel (65) 6755 7600 · www.pollisum.com<br>Enquiry only — no payment is taken. Prices are confirmed in our quotation.<br><small style="opacity:.55">Version ${__BUILD__}</small></div>`;
+ a.innerHTML=h+`<div class="foot">${COMPANY} · Tel (65) 6755 7600 · www.pollisum.com<br>Enquiry only — no payment is taken. Prices are confirmed in our quotation.<br><a href="/privacy.html" target="_blank" rel="noopener" style="color:inherit">Privacy notice</a><br><small style="opacity:.55">Version ${__BUILD__}</small></div>`;
  bind();
 }
 
@@ -199,6 +199,7 @@ function vDetails(){
 ${FIELDS.map(([k,l,t,req])=>`<div class="f ${c.bad?.[k]?'bad':''}"><label for="d_${k}">${l} ${req?'<small>(required)</small>':'<small>(optional)</small>'}</label><input id="d_${k}" type="${t}" value="${esc(c[k])}" ${k==='date'?'min="'+new Date().toISOString().slice(0,10)+'"':''} autocomplete="${({company:'organization',contact:'name',email:'email',phone:'tel'})[k]||'off'}"><div class="err">${k==='email'?'Please enter a valid email address.':'This field is required.'}</div></div>`).join('')}
 <div class="f full"><label for="d_remarks">Additional remarks <small>(optional)</small></label><textarea id="d_remarks">${esc(c.remarks)}</textarea></div>
 </div></div>
+<p class="privacy-note">We use these details only to prepare your quotation and contact you about this enquiry. <a href="/privacy.html" target="_blank" rel="noopener">Read our privacy notice</a>.</p>
 <div class="nav"><button class="btn" data-go="1">Back</button><button class="btn pri" id="toReview">Review enquiry</button></div>`}
 
 function readDetails(){FIELDS.forEach(([k])=>{const e=document.getElementById('d_'+k);if(e)S.cust[k]=e.value.trim()});const r=document.getElementById('d_remarks');if(r)S.cust.remarks=r.value.trim()}
