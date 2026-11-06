@@ -189,7 +189,7 @@ function readDraft(){
 }
 
 /* ---------- Step 3: details ---------- */
-const FIELDS=[['company','Company name','text',1],['contact','Contact person','text',1],['email','Email address','email',1],['phone','Contact number','tel',1],['project','Project name / reference','text',0],['location','Delivery / site location','text',0],['date','Required delivery date','date',0]];
+const FIELDS=[['company','Company name','text',1],['contact','Contact person','text',1],['email','Email for confirmation','email',0],['phone','Contact number','tel',1],['project','Project name / reference','text',0],['location','Delivery / site location','text',0],['date','Required delivery date','date',0]];
 function vDetails(){
  const c=S.cust;
  return `
@@ -240,7 +240,7 @@ function vDone(){
  const head=S.sent
   ?`<div class="done-hero"><div class="ok">✓</div><h1 style="margin-top:0">Your enquiry has been sent</h1>
 <p class="lead" style="margin:0 auto 12px">Reference <span class="ref">${S.ref}</span></p>
-<p class="lead" style="margin:0 auto">Our sales team has received it${S.emailed===false?'. Press “Email to sales” to notify them from your own email':''} and will reply to <b>${esc(S.cust.email)}</b> with a quotation. Please keep your reference${att?'. To send drawings or photos, email them to '+SALES_EMAIL+' and quote the reference':''}. Need to chase us later? Use the Follow up chat at the bottom right.</p></div>
+<p class="lead" style="margin:0 auto">Our sales team has received it${S.emailed===false?'. Press “Email to sales” to notify them from your own email':''} and will ${S.cust.email?'reply to <b>'+esc(S.cust.email)+'</b>':'contact you on <b>'+esc(S.cust.phone)+'</b>'} with a quotation.${S.cust.email&&S.emailed!==false?' A confirmation email is on its way.':''} Please keep your reference${att?'. To send drawings or photos, email them to '+SALES_EMAIL+' and quote the reference':''}. Need to chase us later? Use the Follow up chat at the bottom right.</p></div>
 <div class="actions">${S.emailed===false?'<button class="btn pri" id="mail">✉ Email to sales</button>':''}<button class="btn${S.emailed===false?'':' pri'}" id="csv">Download Excel</button><button class="btn" id="print">Print / Save as PDF</button><button class="btn" id="newEnq">Start a new enquiry</button></div>`
   :`<div class="done-hero"><div class="ok">!</div><h1 style="margin-top:0">We could not send your enquiry</h1>
 <p class="lead" style="margin:0 auto 12px">Reference <span class="ref">${S.ref}</span></p>
