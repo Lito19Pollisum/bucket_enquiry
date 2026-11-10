@@ -312,24 +312,22 @@ table.t th{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacin
 body.sheet-open #chat{display:none}
 .reply-note{margin:14px 0 0;text-align:right;color:var(--mute);font-size:14px}
 @media(max-width:720px){.reply-note{text-align:center}}
-.hero-tag{margin:6px 0 0;font-size:15px;font-weight:700;letter-spacing:.02em;color:#fff;opacity:.92}
-@media(max-width:720px){.hero-tag{font-size:13px;margin-top:4px}.hero-in{min-height:132px}}
 @media(min-width:721px){.hero-copy{max-width:clamp(300px,calc(100vw - min(62vw,900px) - 80px),640px)}.hero-title{font-size:clamp(22px,2.6vw,34px)}}
 
-/* Tagline: each half rises into place in turn, once, on page load */
-.hero-tag span{display:inline-block;opacity:0;transform:translateY(10px);animation:tagIn .7s cubic-bezier(.2,.7,.2,1) forwards}
-.hero-tag span:nth-child(1){animation-delay:.35s}
-.hero-tag span:nth-child(2){animation-delay:.95s}
-@keyframes tagIn{to{opacity:1;transform:none}}
-@media(prefers-reduced-motion:reduce){.hero-tag span{animation:none;opacity:1;transform:none}}
 
-/* Tagline: bigger, with a continuous light sweep and a gentle "lift" bob */
-.hero-tag{font-size:26px;line-height:1.2;margin:10px 0 0;opacity:1;font-weight:800;letter-spacing:.01em}
-.hero-tag span{background:linear-gradient(100deg,#fff 0%,#fff 42%,#ffc9c9 50%,#fff 58%,#fff 100%);background-size:250% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;
- animation:tagIn .7s cubic-bezier(.2,.7,.2,1) forwards,tagLift 3.6s ease-in-out 1.8s infinite,tagShine 3.6s linear infinite}
-.hero-tag span:nth-child(1){animation-delay:.35s,1.8s,0s}
-.hero-tag span:nth-child(2){animation-delay:.95s,2.3s,.4s}
-@keyframes tagLift{0%,100%{transform:translateY(0)}35%{transform:translateY(-5px)}70%{transform:translateY(0)}}
+
+/* Tagline: "Built to lift." with a swinging crane hook, then "Made to ..." cycles through three endings */
+.hero-tag{margin:10px 0 0;font-size:26px;line-height:1.25;font-weight:800;letter-spacing:.01em;color:#fff}
+.hero-tag>span{display:inline-block;opacity:0;transform:translateY(10px);animation:tagIn .7s cubic-bezier(.2,.7,.2,1) forwards}
+.hero-tag .tg1{animation-delay:.3s;margin-right:.35em}
+.hero-tag .tg2{animation-delay:.8s}
+@keyframes tagIn{to{opacity:1;transform:none}}
+.hook{display:inline-block;width:.95em;height:1.45em;margin-left:.3em;vertical-align:-.4em;transform-origin:50% 0;animation:hookSwing 2.6s ease-in-out 1.1s infinite alternate;overflow:visible}
+@keyframes hookSwing{from{transform:rotate(-14deg)}to{transform:rotate(14deg)}}
+.rot{display:inline-grid;vertical-align:bottom;overflow:hidden}
+.rot .w{grid-area:1/1;opacity:0;white-space:nowrap;background:linear-gradient(100deg,#fff 0,#fff 40%,#ffc9c9 50%,#fff 60%,#fff 100%);background-size:250% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:wordCycle 9s ease-in-out infinite,tagShine 3s linear infinite}
+.rot .w:nth-child(1){animation-delay:1.2s,0s}.rot .w:nth-child(2){animation-delay:4.2s,0s}.rot .w:nth-child(3){animation-delay:7.2s,0s}
+@keyframes wordCycle{0%{opacity:0;transform:translateY(70%)}5%,30%{opacity:1;transform:none}36%,100%{opacity:0;transform:translateY(-70%)}}
 @keyframes tagShine{0%{background-position:150% 0}100%{background-position:-50% 0}}
-@media(max-width:720px){.hero-tag{font-size:19px;margin-top:6px}.hero-tag span{display:block}.hero-in{min-height:150px}}
-@media(prefers-reduced-motion:reduce){.hero-tag span{animation:none;opacity:1;transform:none;background:none;-webkit-text-fill-color:#fff;color:#fff}}
+@media(max-width:720px){.hero-tag{font-size:19px;margin-top:6px}.hero-tag>span{display:block}.hero-in{min-height:150px}}
+@media(prefers-reduced-motion:reduce){.hero-tag>span,.hook,.rot .w{animation:none;opacity:1;transform:none}.rot .w{-webkit-text-fill-color:#fff;background:none}.rot .w:nth-child(n+2){display:none}}
