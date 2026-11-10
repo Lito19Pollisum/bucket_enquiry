@@ -27,6 +27,7 @@ const TAB_TEXT={
  roll:{app:['Intended application / use','e.g. rolling 12 mm plate to 1200 mm diameter'],spec:['Material grade and thickness','e.g. S275 plate, 12 mm thick, rolled to 600 mm radius'],swl:null},
  lift:{unsure:['I\'m not sure about the specifications — please recommend','Tell us the load, span and lifting points and our team will design it.'],app:['What will it lift?','e.g. 25 ton precast beams, 12 m long'],spec:['Span, lifting points and headroom','e.g. 6 m span, 4 lifting points, 2 m headroom']},
  gear:{unsure:['I\'m not sure about the specifications — please recommend','Our team will suggest the suitable size and capacity for your lift.'],app:['Intended application / use','e.g. rigging steel plates on site'],spec:['Length, legs and end fittings','e.g. 4 m, 2 legs, hook and master link']},
+ cal:{unsure:['I\'m not sure what is needed — please advise','Our team will advise the suitable calibration and certificate.'],app:['Equipment the load cell is used with','e.g. crane load monitoring, spreader beam load test'],spec:['Brand, model, serial number and certificate needed','e.g. brand and model, calibration certificate required'],swl:'Load cell capacity'},
  test:{unsure:['I\'m not sure what is needed — please advise','Our team will advise the suitable test load, inspection and certificate.'],app:['Item to be tested or inspected','e.g. 3 ton spreader beam, 6 m long'],spec:['Test load and certificate requirements','e.g. 125% proof load, witnessed'],swl:'SWL / WLL of the item'}
 };
 const MODES={
@@ -35,6 +36,7 @@ const MODES={
  roll:{name:'Rolling & Bending Service',intro:'Plate rolling, bending, press braking, punching, shearing and cutting, done on our own machines to your drawings.',types:["Rolling","Bending","Press braking","Punching","Shearing","Cutting","Other service"],quick:c=>ROLL_IMGS.includes(c.img),hide:[],csv:'Rolling / bending service',list:'Rolling & Bending Services in Your Enquiry',add:'Add Rolling or Bending Service',edit:'Edit Rolling or Bending Service',empty:'No services yet.',toast:'Service added'},
  lift:{name:'Lifting Frame & Spreader Beam',types:["Lifting frame","Spreader beam"],quick:c=>LIFT_IMGS.includes(c.img),hide:[],csv:'Lifting frame / spreader beam',list:'Lifting Frame / Spreader Beam Items in your Enquiry',add:'Add a Lifting Frame or Spreader Beam',edit:'Edit Item',empty:'No lifting frames or spreader beams yet.',toast:'Item added'},
  gear:{name:'Lifting Gears',types:["Wire rope sling","Wire rope","Chain sling","Chain block","Webbing sling","Round sling","Shackle","Snatch block","Hook","Eyebolt","Lifting clamp","Lifting beam","Other lifting gear"],quick:c=>GEAR_IMGS.includes(c.img),hide:['dims','cap','mat'],csv:'Lifting gear',list:'Lifting Gears in your Enquiry',add:'Add a Lifting Gear',edit:'Edit Lifting Gear',empty:'No lifting gears yet.',toast:'Lifting gear added'},
+ cal:{name:'Load Cell Calibration',intro:'Calibration of load cells and load measuring equipment. Tell us the capacity, brand and model, and the certificate you need.',types:['Load cell','Load cell with handheld indicator','Crane scale / dynamometer','Load monitoring system','Other calibration item'],hide:['dims','cap','mat'],csv:'Load cell calibration',list:'Load Cell Calibration Items in your Enquiry',add:'Add a Load Cell Calibration',edit:'Edit Load Cell Calibration',empty:'No load cell calibration items yet.',toast:'Item added'},
  test:{name:'Load Testing & Visual Inspection',intro:'Proof load testing and visual inspection of lifting equipment such as buckets, lifting frames, spreader beams and lifting gear. All load tests are conducted at our yard.',types:["Lifting gear (sling, shackle, hook)","Spreader beam / lifting frame","Crane","Hoist / chain block","Bucket / cage / other equipment"],quick:c=>TEST_IMGS.includes(c.img),hide:['dims','cap','mat'],csv:'Load testing',list:'Load Tests and Inspections in your Enquiry',add:'Add an Item for Load Testing or Inspection',edit:'Edit Load Test / Inspection',empty:'No load tests or inspections yet.',toast:'Load test / inspection added'}
 };
 const modeOf=c=>c.kind&&MODES[c.kind]?c.kind:'custom';
@@ -97,6 +99,7 @@ function render(){
  else if(S.step===4)h+=vDone();
  a.innerHTML=h+`<div class="foot">${COMPANY} · Tel (65) 6755 7600 · www.pollisum.com<br>Enquiry only — no payment is taken. Prices are confirmed in our quotation.<br><a href="/privacy.html" target="_blank" rel="noopener" style="color:inherit">Privacy notice</a><br><small style="opacity:.55">Version ${__BUILD__}</small></div>`;
  bind();
+ {const tb=document.querySelector('.tabs'),on=tb&&tb.querySelector('.tab.on');if(on&&on.offsetLeft+on.offsetWidth>tb.clientWidth)tb.scrollLeft=on.offsetLeft-12}
  document.body.classList.toggle('sheet-open',!!(S.sheet&&itemCount()&&S.step===1));
  saveProgress();
 }
@@ -113,6 +116,7 @@ function vType(){return `
  <button class="choice" data-type="lift"><img loading="lazy" decoding="async" src="${IMG.c_liftcard}" alt=""><h2>Lifting Frame &amp; Spreader Beam</h2><p>Tell us the load, span and lifting points and we will design it.</p><span class="go">Describe what you need →</span></button>
  <button class="choice" data-type="gear"><img loading="lazy" decoding="async" src="${IMG.c_chainblock}" alt=""><h2>Lifting Gears</h2><p>Slings, shackles, hooks, eyebolts, clamps and other lifting gear.</p><span class="go">Describe what you need →</span></button>
  <button class="choice" data-type="test"><img loading="lazy" decoding="async" src="${IMG.c_loadtest1}" alt=""><h2>Load Testing &amp; Visual Inspection</h2><p>Proof load test, visual inspection and certification for your lifting gear and equipment.</p><span class="go">Request a test or inspection →</span></button>
+ <button class="choice" data-type="cal"><img loading="lazy" decoding="async" src="${IMG.c_loadtest3}" alt=""><h2>Load Cell Calibration</h2><p>Calibration of load cells and load measuring equipment. Tell us the capacity, brand and model.</p><span class="go">Request a calibration →</span></button>
  <button class="choice" data-type="roll"><img loading="lazy" decoding="async" src="${IMG.c_svc_bending}" alt=""><h2>Rolling &amp; Bending Service</h2><p>Plate rolling, bending, press braking, punching, shearing and cutting.</p><span class="go">Describe what you need →</span></button>
 </div>`}
 
@@ -124,7 +128,7 @@ function vItems(){
 <p class="purpose">Select the models you want and set quantities, or describe a custom-made item. Everything you pick is collected for your quotation.</p>
 <div class="tabs" role="tablist">
  <button class="tab ${S.tab==='std'?'on':''}" data-tab="std">Standard Bucket${Object.keys(S.sel).length?`<span class="badge">${Object.keys(S.sel).length}</span>`:''}</button>
- ${['custom','svc','roll','lift','gear','test'].map(k=>`<button class="tab ${S.tab===k?'on':''}" data-tab="${k}">${MODES[k].name.replace('&','&amp;')}${inMode(k).length?`<span class="badge">${inMode(k).length}</span>`:''}</button>`).join('\n ')}
+ ${['custom','svc','roll','lift','gear','test','cal'].map(k=>`<button class="tab ${S.tab===k?'on':''}" data-tab="${k}">${MODES[k].name.replace('&','&amp;')}${inMode(k).length?`<span class="badge">${inMode(k).length}</span>`:''}</button>`).join('\n ')}
 </div>
 ${S.tab==='std'?`<details class="about"><summary>About our buckets and cages</summary><ul>
 <li><b>Concrete bucket:</b> delivers concrete by crane through a bottom valve. Square types suit filling forms and bulk moves; round types suit pouring.</li>
