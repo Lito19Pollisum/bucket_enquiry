@@ -322,7 +322,7 @@ body.sheet-open #chat{display:none}
 .hero-tag .tg1{animation-delay:.3s;margin-right:.35em}
 .hero-tag .tg2{animation-delay:.8s}
 @keyframes tagIn{to{opacity:1;transform:none}}
-.hook{display:inline-block;width:.95em;height:1.45em;margin-left:.3em;vertical-align:-.4em;transform-origin:50% 0;animation:hookSwing 2.6s ease-in-out 1.1s infinite alternate;overflow:visible}
+.hook{display:inline-block;width:.9em;height:1.45em;margin-left:.3em;vertical-align:-.45em;transform-origin:67% 0;animation:hookSwing 2.6s ease-in-out 1.1s infinite alternate;overflow:visible}
 @keyframes hookSwing{from{transform:rotate(-14deg)}to{transform:rotate(14deg)}}
 .rot{display:inline-grid;vertical-align:bottom;overflow:hidden}
 .rot .w{grid-area:1/1;opacity:0;white-space:nowrap;background:linear-gradient(100deg,#fff 0,#fff 40%,#ffc9c9 50%,#fff 60%,#fff 100%);background-size:250% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:wordCycle 9s ease-in-out infinite,tagShine 3s linear infinite}
