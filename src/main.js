@@ -76,6 +76,14 @@ const totalAll=()=>totalStd()+S.customs.reduce((a,c)=>a+c.qty,0);
 const itemCount=()=>Object.keys(S.sel).length+S.customs.length;
 
 function stepper(){return `<ol class="steps">${STEPS.map((s,i)=>`<li class="${i===S.step?'on':i<S.step?'done':''}"><span class="n">${i+1}</span><span class="l">${s}</span></li>`).join('')}</ol><p class="stepnow">Step ${S.step+1} of ${STEPS.length} · ${STEPS[S.step]}</p>`}
+const FILEOBJ=new Map();
+// Uploads attached files (saved enquiry only) straight to private storage; returns names that failed.
+async function uploadFiles(ref){
+ const names=[...new Set(S.customs.flatMap(c=>c.files))],fail=[];S.upl={ok:0,fail:[]};
+ for(const n of names){const f=FILEOBJ.get(n);if(!f){fail.push(n);continue}
+  try{const r=await fetch('/api/upload',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ref,name:f.name,size:f.size})});const j=await r.json();if(!r.ok||!j.ok)throw 0;
+   const fd=new FormData();fd.append('cacheControl','3600');fd.append('',f);const u=await fetch(j.url,{method:'PUT',headers:{'x-upsert':'true'},body:fd});if(!u.ok)throw 0;S.upl.ok++}catch(e){fail.push(n)}}
+ S.upl.fail=fail;return fail}
 async function postSales(payload){
  try{
   const r=await fetch('/api/enquiry',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
@@ -192,7 +200,7 @@ ${M.quick?` <p style="margin:0;color:var(--mute);font-size:14px">Start from some
   <div class="f"><label>${(TT.spec||['Other specifications'])[0]} <small>(optional)</small></label><input type="text" id="c_spec" value="${esc(d.spec)}" placeholder="${(TT.spec||[0,'e.g. forklift pockets, paint colour'])[1]}"></div>
   <div class="f full"><label>Additional remarks</label><textarea id="c_rem" placeholder="Anything else we should know?">${esc(d.rem)}</textarea></div>
   <div class="f full"><label>Drawing, sketch, photo or reference <small>(optional)</small></label>
-   <div class="drop"><input type="file" id="c_files" multiple accept="image/*,.pdf,.dwg,.dxf,.doc,.docx,.xls,.xlsx"><div style="margin-top:6px">Files are not uploaded from this page. Please attach them to the email when you send your enquiry.</div>
+   <div class="drop"><input type="file" id="c_files" multiple accept="image/*,.pdf,.dwg,.dxf,.doc,.docx,.xls,.xlsx"><div style="margin-top:6px">Photos and drawings are uploaded with your enquiry when you submit (up to 10 files, 15 MB each).</div>
    <ul class="files">${d.files.map(n=>`<li>📎 ${esc(n)}</li>`).join('')}</ul></div></div>
  </div>
  <div class="actions" style="justify-content:flex-start;margin-bottom:0">
@@ -275,7 +283,7 @@ function vDone(){
  const head=S.sent
   ?`<div class="done-hero"><div class="ok">✓</div><h1 style="margin-top:0">Your enquiry has been sent</h1>
 <p class="lead" style="margin:0 auto 12px">Reference <span class="ref">${S.ref}</span></p>
-<p class="lead" style="margin:0 auto">Our sales team has received it${S.emailed===false?'. Press “Email to sales” to notify them from your own email':''} and will ${S.cust.email?'reply to <b>'+esc(S.cust.email)+'</b>':'contact you on <b>'+esc(S.cust.phone)+'</b>'} with a quotation.${S.cust.email&&S.emailed!==false?' A confirmation email is on its way.':''} Please keep your reference${att?'. To send drawings or photos, email them to '+SALES_EMAIL+' and quote the reference':''}. Need to chase us later? Use the Follow up chat at the bottom right.</p></div>
+<p class="lead" style="margin:0 auto">Our sales team has received it${S.emailed===false?'. Press “Email to sales” to notify them from your own email':''} and will ${S.cust.email?'reply to <b>'+esc(S.cust.email)+'</b>':'contact you on <b>'+esc(S.cust.phone)+'</b>'} with a quotation.${S.cust.email&&S.emailed!==false?' A confirmation email is on its way.':''} Please keep your reference${att&&(!S.upl||S.upl.fail.length)?'. '+(S.upl&&S.upl.ok?'Some files could not be uploaded. ':'')+'Please email your drawings or photos to '+SALES_EMAIL+' and quote the reference':att&&S.upl?'. Your attached files were uploaded':''}. Need to chase us later? Use the Follow up chat at the bottom right.</p></div>
 <div class="actions">${S.emailed===false?'<button class="btn pri" id="mail">✉ Email to sales</button>':''}<button class="btn${S.emailed===false?'':' pri'}" id="csv">Download Excel</button><button class="btn" id="print">Print / Save as PDF</button><button class="btn" id="newEnq">Start a new enquiry</button></div>`
   :`<div class="done-hero"><div class="ok">!</div><h1 style="margin-top:0">We could not send your enquiry</h1>
 <p class="lead" style="margin:0 auto 12px">Reference <span class="ref">${S.ref}</span></p>
@@ -298,7 +306,7 @@ function plainText(){
  const std=stdRows();if(!std.length)L.push('(none)');
  std.forEach((r,i)=>L.push(`${i+1}. ${r.code} — ${r.fam} | ${r.cap} | SWL ${r.swl} | ${r.dims} | Qty ${r.qty}`));
  L.push('','CUSTOM ITEMS');if(!S.customs.length)L.push('(none)');
- S.customs.forEach((x,i)=>{L.push(`C${i+1}. ${modeLabel(x)}${x.type} | Qty ${x.qty}`,`    ${customSummary(x)}`);if(x.spec)L.push(`    Other specs: ${x.spec}`);if(x.rem)L.push(`    Remarks: ${x.rem}`);if(x.files.length)L.push(`    Attachments (please attach to this email): ${x.files.join(', ')}`)});
+ S.customs.forEach((x,i)=>{L.push(`C${i+1}. ${modeLabel(x)}${x.type} | Qty ${x.qty}`,`    ${customSummary(x)}`);if(x.spec)L.push(`    Other specs: ${x.spec}`);if(x.rem)L.push(`    Remarks: ${x.rem}`);if(x.files.length)L.push(`    Attachments: ${x.files.join(', ')}`)});
  if(c.remarks)L.push('','REMARKS',c.remarks);
  return L.join('\n')}
 function csvText(){
@@ -337,7 +345,7 @@ function bind(){
  A.querySelectorAll('[data-cq]').forEach(b=>b.onclick=()=>{const i=$('#c_qty');i.value=Math.max(1,Math.min(999,(parseInt(i.value)||1)+(+b.dataset.cq)))});
  const ct=$('#c_test');if(ct)ct.onchange=()=>{readDraft();render()};
  const un=$('#c_unsure');if(un)un.onchange=()=>{readDraft();render()};
- const fi=$('#c_files');if(fi)fi.onchange=()=>{readDraft();S.draft.files=[...S.draft.files,...[...fi.files].map(f=>f.name)];render()};
+ const fi=$('#c_files');if(fi)fi.onchange=()=>{readDraft();const add=[...fi.files].filter(f=>f.size<=15728640||(toast(f.name+' is over 15 MB. Please email it instead.'),false));add.forEach(f=>FILEOBJ.set(f.name,f));S.draft.files=[...new Set([...S.draft.files,...add.map(f=>f.name)])].slice(0,10);render()};
  const ac=$('#addCustom');if(ac)ac.onclick=()=>{
   readDraft();const d=S.draft;
   if(!d.type){d.bad={type:1};render();toast('Please choose the type of item');return}
@@ -355,13 +363,15 @@ function bind(){
   const hp=document.getElementById('hp');
   S.sent=await postSales({kind:'enquiry',ref:S.ref,company:S.cust.company,contact:S.cust.contact,email:S.cust.email,text:plainText(),csv:csvText(),website:hp?hp.value:''});
   if(!S.sent)toast('Could not send your enquiry. Please try again.');
-  else if(S.remember===false)mem.del(MK);else{const {company,contact,email,phone}=S.cust;mem.set(MK,{company,contact,email,phone})}
+  else{
+   sb.textContent='Uploading files…';await uploadFiles(S.ref);
+   if(S.remember===false)mem.del(MK);else{const {company,contact,email,phone}=S.cust;mem.set(MK,{company,contact,email,phone})}}
   go(4)};
  const m=$('#mail');if(m)m.onclick=()=>{location.href=`mailto:${SALES_EMAIL}?${CC_EMAIL?'cc='+encodeURIComponent(CC_EMAIL)+'&':''}subject=${encodeURIComponent('['+S.ref+'] Enquiry — '+S.cust.company)}&body=${encodeURIComponent(plainText())}`};
  const rt=$('#retry');if(rt)rt.onclick=async()=>{
   if(rt.disabled)return;rt.disabled=true;rt.textContent='Sending…';
   S.sent=await postSales({kind:'enquiry',ref:S.ref,company:S.cust.company,contact:S.cust.contact,email:S.cust.email,text:plainText(),csv:csvText(),website:''});
-  if(!S.sent)toast('Still could not send. Please call (65) 6755 7600.');
+  if(!S.sent)toast('Still could not send. Please call (65) 6755 7600.');else await uploadFiles(S.ref);
   render();window.scrollTo({top:0})};
  const cv=$('#csv');if(cv)cv.onclick=async()=>{
   const save=(blob,name)=>{const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click()};
