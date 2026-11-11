@@ -799,6 +799,16 @@ export const DATA = {
    "desc": "Ribbed steel corbels with slotted top plates, supplied palletised and ready for installation."
   },
   {
+   "img": "c_bucketopen",
+   "name": "Open-Top Bucket",
+   "desc": "Open-top steel bucket with lifting lugs and a sloped discharge side, made to your size and load."
+  },
+  {
+   "img": "c_palletframe",
+   "name": "Stackable Pallet Frame",
+   "desc": "Stackable steel frame with chequered plate deck, forklift pockets and lifting lugs, made to your size and load."
+  },
+  {
    "img": "c_mudtank",
    "name": "Mud Tank",
    "desc": "Mud tank for waste storage, sized to your site and volume. Inlet and outlet pipes and access ladder available."
