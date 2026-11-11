@@ -794,6 +794,11 @@ export const DATA = {
    "desc": "High-yield mild steel corbels for precast beam support and installation. Our engineers confirm the capacity and position with you."
   },
   {
+   "img": "c_corbel2",
+   "name": "Steel Corbels",
+   "desc": "Ribbed steel corbels with slotted top plates, supplied palletised and ready for installation."
+  },
+  {
    "img": "c_mudtank",
    "name": "Mud Tank",
    "desc": "Mud tank for waste storage, sized to your site and volume. Inlet and outlet pipes and access ladder available."
