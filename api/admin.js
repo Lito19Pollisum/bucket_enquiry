@@ -2,6 +2,25 @@
 import { timingSafeEqual } from 'node:crypto';
 import { sb, sbReady, clientIp, hits, addHit } from './_sb.js';
 
+const URL_ = (process.env.SUPABASE_URL || '').replace(/\/$/, '');
+const KEY_ = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+const H = { apikey: KEY_, Authorization: `Bearer ${KEY_}`, 'Content-Type': 'application/json' };
+
+// Customer attachments for one enquiry: [{name, url}] with 1-hour signed download links.
+async function attachments(ref) {
+  const l = await fetch(`${URL_}/storage/v1/object/list/quotations`, { method: 'POST', headers: H, body: JSON.stringify({ prefix: `${ref}/attachments`, limit: 100 }) });
+  const objs = l.ok ? await l.json() : [];
+  const out = [];
+  for (const o of objs) {
+    if (!o.name) continue;
+    const path = `${ref}/attachments/${o.name}`;
+    const r = await fetch(`${URL_}/storage/v1/object/sign/quotations/${path.split('/').map(encodeURIComponent).join('/')}`, { method: 'POST', headers: H, body: JSON.stringify({ expiresIn: 3600 }) });
+    const j = r.ok ? await r.json() : {};
+    if (j.signedURL) out.push({ name: o.name.replace(/^[a-z0-9]+-/, ''), url: `${URL_}/storage/v1${j.signedURL}` });
+  }
+  return out;
+}
+
 const PASS = process.env.ADMIN_PASSWORD || '';
 const STATUSES = ['new', 'quoted', 'won', 'lost', 'closed'];
 
@@ -26,6 +45,7 @@ export default async function handler(req, res) {
     if (req.method === 'POST') {
       let b = req.body;
       if (typeof b === 'string') { try { b = JSON.parse(b); } catch { b = null; } }
+      if (b && typeof b.files === 'string' && /^ENQ-\d{8}-\d{3}$/.test(b.files)) return res.status(200).json({ ok: true, files: await attachments(b.files) });
       const id = Number(b && b.id);
       if (b && typeof b.quoted_by === 'string' && Number.isInteger(id)) {
         const who = b.quoted_by.replace(/[\u0000-\u001f]/g, ' ').trim().slice(0, 60);

@@ -34,6 +34,8 @@ input.qb{width:120px;padding:6px 8px;border:1px solid #ccc;border-radius:8px;fon
 const $=s=>document.querySelector(s);let PW='',ROWS=[];const OPEN=new Set();
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 async function api(opts){const r=await fetch('/api/admin',{...opts,headers:{'x-admin-password':PW,'Content-Type':'application/json'}});if(r.status===401)throw new Error('Wrong password');if(!r.ok)throw new Error('Could not load ('+r.status+')');return r.json()}
+const FILES={};
+async function loadFiles(r){if(FILES[r.id]||!r.ref)return;FILES[r.id]=[];try{const d=await api({method:'POST',body:JSON.stringify({files:r.ref})});FILES[r.id]=d.files||[];render()}catch(x){}}
 async function load(){const d=await api({});ROWS=d.rows;render()}
 function render(){names();
  const q=$('#q').value.toLowerCase(),st=$('#st').value,kd=$('#kd').value;
@@ -47,12 +49,13 @@ function render(){names();
    h+=`<tr class="detail"><td colspan="7"><div><b>${esc(r.contact)}</b> · <a href="mailto:${esc(r.email)}">${esc(r.email)}</a> · ${esc(r.phone)}</div>`+
    (r.project||r.location||r.required_date?`<div class="muted">${[r.project&&'Project: '+esc(r.project),r.location&&'Site: '+esc(r.location),r.required_date&&'Required: '+esc(r.required_date)].filter(Boolean).join(' · ')}</div>`:'')+
    (r.remarks?`<div>Remarks: ${esc(r.remarks)}</div>`:'')+
+   ((FILES[r.id]||[]).length?`<div>Attachments: ${FILES[r.id].map(f=>`<a href="${esc(f.url)}" target="_blank" rel="noopener">📎 ${esc(f.name)}</a>`).join(' · ')}</div>`:'')+
    (its.length?`<table class="items"><tr><th>#</th><th>Type</th><th>Model</th><th>Product</th><th>Capacity</th><th>SWL</th><th>Size / requirements</th><th>Qty</th><th>Notes</th></tr>${its.sort((a,b)=>a.id-b.id).map(i=>`<tr><td>${esc(i.item_no)}</td><td>${esc(i.type)}</td><td>${esc(i.model)}</td><td>${esc(i.product)}</td><td>${esc(i.capacity)}</td><td>${esc(i.swl)}</td><td>${esc(i.size_requirements)}</td><td>${i.qty}</td><td>${esc(i.notes)}</td></tr>`).join('')}</table>`:`<pre style="white-space:pre-wrap">${esc(r.body)}</pre>`)+`</td></tr>`}
   return h}).join('')}
 $('#tb').addEventListener('click',async e=>{
  const s=e.target.closest('select[data-st]');if(s){try{await api({method:'POST',body:JSON.stringify({id:+s.dataset.st,status:s.value})});ROWS.find(r=>r.id==s.dataset.st).status=s.value;render()}catch(x){alert(x.message)}return}
  if(e.target.closest('input.qb'))return;
- const tr=e.target.closest('tr.row');if(tr){const id=+tr.dataset.id;OPEN.has(id)?OPEN.delete(id):OPEN.add(id);render()}});
+ const tr=e.target.closest('tr.row');if(tr){const id=+tr.dataset.id;OPEN.has(id)?OPEN.delete(id):(OPEN.add(id),loadFiles(ROWS.find(x=>x.id===id)));render()}});
 $('#tb').addEventListener('change',async e=>{const i=e.target.closest('input.qb');if(!i)return;try{await api({method:'POST',body:JSON.stringify({id:+i.dataset.qb,quoted_by:i.value})});const r=ROWS.find(r=>r.id==i.dataset.qb);r.quoted_by=i.value.trim()||null;i.value=r.quoted_by||'';i.classList.add('saved');setTimeout(()=>i.classList.remove('saved'),1200);names()}catch(x){alert(x.message)}});
 function names(){const d=$('#qbnames');if(d)d.innerHTML=[...new Set(ROWS.map(r=>r.quoted_by).filter(Boolean))].map(n=>`<option value="${esc(n)}">`).join('')}
 ['q','st','kd'].forEach(i=>$('#'+i).addEventListener('input',render));$('#rf').onclick=()=>load().catch(x=>alert(x.message));
