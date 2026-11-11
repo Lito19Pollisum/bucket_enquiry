@@ -19,7 +19,7 @@ const LIFT_IMGS=["c_liftframe","c_spreader","c_liftframe2","c_liftframe3","c_lif
 const LIFT_GROUPS=[["c_liftframe","c_liftbarge","c_liftrect","c_liftframe2","c_liftframe3","c_sbsling","c_sbprecast"],["c_spreader","c_liftoffset","c_magnetic","c_sbwall"]];
 const GEAR_IMGS=["c_chainblock","c_shackles"];
 const ROLL_IMGS=["c_rolling","c_svc_rolling","c_svc_bending","c_svc_pressbrake","c_svc_punching","c_svc_shearing","c_svc_cutting"];
-const SVC_IMGS=["c_watersilo","c_endplate","c_corbel","c_mudtank","c_platform1"];
+const SVC_IMGS=["c_watersilo","c_endplate","c_corbel","c_corbel2","c_mudtank","c_platform1"];
 const CUSTOM_TYPES=["Custom-made concrete bucket","Lifting bucket","Forklift-pocket bucket","Self-dumping hopper / skip bucket","Twin discharge hopper","Material / storage cage","Water tank","Trolley","Other custom item","Not sure"].concat([]);
 const TAB_TEXT={
  custom:{},
