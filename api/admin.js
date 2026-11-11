@@ -20,13 +20,18 @@ export default async function handler(req, res) {
 
   try {
     if (req.method === 'GET') {
-      const rows = await sb('enquiries?select=id,created_at,kind,ref,company,contact,email,phone,project,location,required_date,remarks,body,status,enquiry_items(id,item_no,type,model,product,capacity,swl,size_requirements,qty,notes)&order=created_at.desc&limit=300');
+      const rows = await sb('enquiries?select=id,created_at,kind,ref,company,contact,email,phone,project,location,required_date,remarks,body,status,quoted_by,enquiry_items(id,item_no,type,model,product,capacity,swl,size_requirements,qty,notes)&order=created_at.desc&limit=300');
       return res.status(200).json({ ok: true, rows });
     }
     if (req.method === 'POST') {
       let b = req.body;
       if (typeof b === 'string') { try { b = JSON.parse(b); } catch { b = null; } }
       const id = Number(b && b.id);
+      if (b && typeof b.quoted_by === 'string' && Number.isInteger(id)) {
+        const who = b.quoted_by.replace(/[\u0000-\u001f]/g, ' ').trim().slice(0, 60);
+        await sb(`enquiries?id=eq.${id}`, { method: 'PATCH', prefer: 'return=minimal', body: { quoted_by: who || null } });
+        return res.status(200).json({ ok: true });
+      }
       if (!Number.isInteger(id) || !STATUSES.includes(b.status)) return res.status(400).json({ ok: false, error: 'bad_request' });
       await sb(`enquiries?id=eq.${id}`, { method: 'PATCH', prefer: 'return=minimal', body: { status: b.status } });
       return res.status(200).json({ ok: true });
