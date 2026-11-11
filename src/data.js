@@ -803,10 +803,6 @@ export const DATA = {
    "name": "Open-Top Bucket"
   },
   {
-   "img": "c_palletframe",
-   "name": "Stackable Pallet Frame"
-  },
-  {
    "img": "c_mudtank",
    "name": "Mud Tank",
    "desc": "Mud tank for waste storage, sized to your site and volume. Inlet and outlet pipes and access ladder available."
