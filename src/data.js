@@ -800,13 +800,11 @@ export const DATA = {
   },
   {
    "img": "c_bucketopen",
-   "name": "Open-Top Bucket",
-   "desc": "Open-top steel bucket with lifting lugs and a sloped discharge side, made to your size and load."
+   "name": "Open-Top Bucket"
   },
   {
    "img": "c_palletframe",
-   "name": "Stackable Pallet Frame",
-   "desc": "Stackable steel frame with chequered plate deck, forklift pockets and lifting lugs, made to your size and load."
+   "name": "Stackable Pallet Frame"
   },
   {
    "img": "c_mudtank",
