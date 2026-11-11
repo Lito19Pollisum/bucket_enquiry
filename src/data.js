@@ -861,6 +861,10 @@ export const DATA = {
    "name": "Lifting Frame with Pulley Sets"
   },
   {
+   "img": "c_liftframe3",
+   "name": "Lifting Frame with Snatch Blocks"
+  },
+  {
    "img": "c_loadtest1",
    "name": "Load Test with Wireless Indicators (Frame)"
   },
