@@ -45,6 +45,7 @@ const modeLabel=c=>modeOf(c)==='custom'?'':MODES[modeOf(c)].csv+' – ';
 const S={step:0,tab:'std',cat:'All',sel:{},customs:[],cust:{},ref:null,editing:null,draft:null,files:[]};
 const $=s=>document.querySelector(s);
 // Progress is kept for this browser tab only, so a reload or app switch does not lose the selection.
+const SL={};
 const PK='pe_progress',MK='pe_contact';
 const store={get:k=>{try{return JSON.parse(sessionStorage.getItem(k))}catch{return null}},set:(k,v)=>{try{sessionStorage.setItem(k,JSON.stringify(v))}catch{}},del:k=>{try{sessionStorage.removeItem(k)}catch{}}};
 const mem={get:k=>{try{return JSON.parse(localStorage.getItem(k))}catch{return null}},set:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch{}},del:k=>{try{localStorage.removeItem(k)}catch{}}};
@@ -437,10 +438,9 @@ chatRender();
 document.addEventListener('input',e=>{if(e.target&&typeof e.target.id==='string'&&e.target.id.startsWith('d_')&&S.step===2){readDetails();saveProgress()}});
 restoreProgress();
 {const m=mem.get(MK);if(m&&typeof m==='object'&&!S.cust.company&&!S.cust.contact){['company','contact','email','phone'].forEach(k=>{if(typeof m[k]==='string')S.cust[k]=m[k]})}}
-render();
+try{render()}catch(e){console.error('restore failed, starting fresh',e);store.del(PK);S.sel={};S.customs=[];S.cust={};S.step=0;S.tab='std';S.cat='All';history.replaceState({step:0},'');render()}
 
 /* ---------- Photo lightbox (stays until closed) ---------- */
-const SL={};
 const slides=c=>[c.img,...(c.more||[])];
 const slideOf=c=>slides(c)[SL[c.img]||0];
 function lightbox(c){
