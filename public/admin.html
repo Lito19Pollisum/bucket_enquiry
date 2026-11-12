@@ -56,8 +56,11 @@ $('#tb').addEventListener('click',async e=>{
 $('#tb').addEventListener('change',async e=>{const i=e.target.closest('input.qb');if(!i)return;try{await api({method:'POST',body:JSON.stringify({id:+i.dataset.qb,quoted_by:i.value})});const r=ROWS.find(r=>r.id==i.dataset.qb);r.quoted_by=i.value.trim()||null;i.value=r.quoted_by||'';i.classList.add('saved');setTimeout(()=>i.classList.remove('saved'),1200);names()}catch(x){alert(x.message)}});
 function names(){const d=$('#qbnames');if(d)d.innerHTML=[...new Set(ROWS.map(r=>r.quoted_by).filter(Boolean))].map(n=>`<option value="${esc(n)}">`).join('')}
 ['q','st','kd'].forEach(i=>$('#'+i).addEventListener('input',render));$('#rf').onclick=()=>load().catch(x=>alert(x.message));
-$('#login').onsubmit=async e=>{e.preventDefault();PW=$('#pw').value;try{await load();$('#login').hidden=true;$('#app').hidden=false;$('#out').hidden=false;qinit()}catch(x){$('#lerr').textContent=x.message}};
-$('#out').onclick=()=>location.reload();
+const SK='adm_pw';const ss={get:()=>{try{return sessionStorage.getItem(SK)}catch{return null}},set:v=>{try{sessionStorage.setItem(SK,v)}catch{}},del:()=>{try{sessionStorage.removeItem(SK)}catch{}}};
+async function enter(pw,quiet){PW=pw;try{await load();ss.set(pw);$('#login').hidden=true;$('#app').hidden=false;$('#out').hidden=false;qinit()}catch(x){ss.del();PW='';if(!quiet)$('#lerr').textContent=x.message}}
+$('#login').onsubmit=e=>{e.preventDefault();enter($('#pw').value)};
+$('#out').onclick=()=>{ss.del();location.reload()};
+{const k=ss.get();if(k)enter(k,true)}
 // Auto-save draft quotations (PDF + Excel) into a chosen folder (e.g. the M: drive AUTO QUOTE folder) while this page is open.
 const idb=()=>new Promise((ok,no)=>{const r=indexedDB.open('qs',1);r.onupgradeneeded=()=>r.result.createObjectStore('k');r.onsuccess=()=>ok(r.result);r.onerror=no});
 const kv=async(m,k,v)=>{const d=await idb();return new Promise((ok,no)=>{const t=d.transaction('k',m==='get'?'readonly':'readwrite').objectStore('k');const q=m==='get'?t.get(k):t.put(v,k);q.onsuccess=()=>ok(q.result);q.onerror=no})};
